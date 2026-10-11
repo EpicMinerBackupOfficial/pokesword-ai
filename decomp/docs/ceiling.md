@@ -582,3 +582,97 @@ had to be justified against the path it feeds:
 The 29 bodies are real and still unclaimed, but claiming them means teaching
 `mem_reg_offset`'s caller to use a runtime index when that path declines -- not
 loosening the parser that runs before it.
+
+## adrp is NOT closed: it was measured on the wrong program
+
+Earlier in this document, `adrp` is recorded as having two blockers, the second
+being fundamental:
+
+> 2. even given a perfectly placed symbol, this compiler will not emit the
+>    addressing form the original uses.
+>
+> Blocker 2 is the more fundamental one [...] **the retail code was built by a
+> compiler whose addressing-mode choices differ from Clang 5.0.1's.** Synthesising
+> symbols cannot bridge that. `adrp` is closed.
+
+**That is wrong, and the evidence offered for it was about a different program.**
+
+The experiment behind it was
+
+```c
+const char *f() { return blob + 0x59d; }   -> adrp; add; add; ret
+```
+
+Three instructions, against retail's two. True -- and true of an expression that
+*computes* an address from a base plus a displacement, so clang has to materialise
+the base in a scratch register. The retail body computes nothing. It names one
+address. Three further shapes:
+
+| C | codegen |
+|---|---|
+| `extern const char s[]; f() { return s; }` | `adrp; ldr` (GOT, interposable) |
+| `const char s[] = "..."; f() { return s; }` | `adrp; add` -- **retail's shape** |
+| `const char *f() { return blob + 0x59d; }` | `adrp; add; add` (the one measured) |
+
+The `extern` case goes through the GOT because the symbol might be interposed; a
+defined one is local to the object and takes the direct form. `-fPIC` and `-fno-pic`
+both emit `adrp; add` for a defined string, so this is not a PIC question either --
+and `-fPIC` is mandatory in `CFLAGS` precisely because it is right for the *global*
+accesses, which is a different case.
+
+Verified end to end, by linking rather than by inspection:
+
+```
+retail : 40d500b000741691c0035fd6     adrp x0,#0x1abd000 ; add x0,x0,#0x59d ; ret
+linked : 40d500b000741691c0035fd6     BYTE-IDENTICAL: True
+```
+
+with the body linked at its real address (`main+0x14560`) and the string placed at
+its real address (`main+0x1abd59d`).
+
+## The population
+
+All 43 `strlit-*` bodies in main's mismatch queue resolve to a real address in
+`.rodata`, and the string there is byte-identical to the one the candidate already
+generates:
+
+```
+f_14560  -> 0x01abd59d  want='ThirdPassIslandGenTask'   got='ThirdPassIslandGenTask'
+f_14590  -> 0x01aed2b1  want='PostThirdPassTask'        got='PostThirdPassTask'
+f_25d40  -> 0x01ae3636  want='PxsContext.CCDSweep'      got='PxsContext.CCDSweep'
+                                                       43 / 43 confirmed
+```
+
+So the candidates are already *semantically* right and *one placement step* from
+byte-identical. `.rodata` is verified byte-identical to the NSO by the audit, so
+the bytes are already present in the module image to be referenced -- nothing needs
+to be synthesised, only placed.
+
+## What this does not yet do
+
+Not implemented. The open work is mechanical and specific:
+
+  * emit each string into the section at its **original virtual address**, via a
+    linker script that places `.rodata` at retail's base. Clang chooses its own
+    layout; `ld.lld` is what must be told the addresses.
+  * match on the *linked* image rather than the relocatable object. Every existing
+    matcher compares `llvm-objdump -d` of a `.o`, where the adrp immediate is zero
+    and the relocation is unresolved. `work/strlit7.py` is the working proof.
+  * the `extern` spelling must not be used. It emits `adrp; ldr` and would silently
+    reintroduce the very failure this section just reopened.
+
+## Two decoder bugs found while measuring this
+
+Both produced a confident "0 of 43", and both were the tool's fault:
+
+  * **`adrp` needs the PC.** Its immediate is `page(PC) + imm21 * 4096`, so treating
+    it as an absolute address returns the delta, not the target -- `0x1aa959d`
+    where the answer is `0x1abd59d`.
+  * **Section parsing.** `llvm-objdump -h` fields were split textually, producing an
+    empty table, so all 43 addresses reported "NOT IN ANY SECTION" -- which reads
+    exactly like "the strings are not there". Reading the ELF program headers as
+    binary structures fixed it.
+
+The first was caught only because `main@0x14560`'s answer was known independently
+from a real link. **A checker that has only ever returned zero is not evidence that
+nothing matches** -- it is evidence that the checker has never worked.
