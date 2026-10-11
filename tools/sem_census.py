@@ -50,7 +50,14 @@ MODULES = ("main", "sdk", "subsdk0", "subsdk1")
 
 # Verdicts that mean "we have compilable C in hand". `compile-error` and `nocode`
 # do not: there is nothing to compare.
+#
+# `needs-link` bodies are queued too, into a separate file. They are not
+# unmatched -- an `adrp` immediate is zero in a relocatable object, so no
+# relocatable comparison can decide them -- and dropping them makes them invisible,
+# which is how a correct population of 239 went missing between the census and the
+# link-based matcher that can actually decide it.
 HAVE_CODE = ("mismatch",)
+DEFER_LINK = ("needs-link",)
 
 
 def _has_unresolved_adrp(orig, cand, relocs, mangled):
@@ -290,6 +297,7 @@ def main():
 
     mods = (a.module,) if a.module else MODULES
     queue = []
+    linkq = []
     per_shape = collections.defaultdict(collections.Counter)
     grand = collections.Counter()
     blobs = {}
@@ -313,12 +321,12 @@ def main():
             v = r.get("verdict")
             grand[v] += 1
             per_shape[r.get("shape")][v] += 1
-            if v in HAVE_CODE:
+            if v in HAVE_CODE or v in DEFER_LINK:
                 src = r.get("src") or ""
                 if len(src) > a.max_src:
                     grand["too-long"] += 1
                     continue
-                queue.append({
+                rec = {
                     "module": mod,
                     "addr": r["addr"],
                     "size": r["size"],
@@ -342,7 +350,8 @@ def main():
                     # would write bodies that compile and are wrong.
                     "tail_target_addr": r.get("tail_target_addr"),
                     "tail_orig_name": r.get("tail_orig_name"),
-                })
+                }
+                (linkq if v in DEFER_LINK else queue).append(rec)
 
     print()
     print("=" * 74)
@@ -366,6 +375,19 @@ def main():
         print("  queued to %s" % a.queue)
         by_mod = collections.Counter(q["module"] for q in queue)
         for m, n in by_mod.most_common():
+            print("    %-8s %6d" % (m, n))
+
+    if linkq:
+        # Written next to the main queue so the link-based matcher can consume it.
+        lq = os.path.splitext(a.queue)[0] + "_needs_link.json" \
+            if a.queue else "work/sem_needs_link.json"
+        p = os.path.join(ROOT, lq)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with io.open(p, "w", encoding="utf-8") as f:
+            json.dump(linkq, f)
+        print("  %d bodies need a linked comparison -> %s"
+              % (len(linkq), lq))
+        for m, n in collections.Counter(x["module"] for x in linkq).most_common():
             print("    %-8s %6d" % (m, n))
 
     return 0
