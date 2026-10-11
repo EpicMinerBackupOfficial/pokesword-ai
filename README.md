@@ -7,15 +7,15 @@
 | module | matched | total | % |
 |---|---:|---:|---:|
 | `main` | 23290 | 104004 | 22.39% |
-| `sdk` | 3627 | 26662 | 13.60% |
+| `sdk` | 3633 | 26662 | 13.63% |
 | `subsdk0` | 1007 | 9838 | 10.24% |
 | `subsdk1` | 1566 | 11530 | 13.58% |
-| **total** | **29490** | **152062** | **19.39%** |
+| **total** | **29496** | **152062** | **19.40%** |
 <!-- STATUS:END -->
 
 > **Two percentages, both correct.** This project's headline is **18.31% by
-> function count** (29,490 / 152,062). decomp.dev reports **0.67%**, which is
-> **byte-weighted** (254,436 / 38,172,368 bytes of code). They diverge because
+> function count** (29,496 / 152,062). decomp.dev reports **0.67%**, which is
+> **byte-weighted** (254,596 / 38,172,368 bytes of code). They diverge because
 > everything matched so far is a tiny accessor — the median matched function is
 > 8 bytes (`ldr ; ret`) while the median unmatched one is 132 bytes and the
 > largest is 239 KB. Byte-weighting is the harsher and more honest measure of how

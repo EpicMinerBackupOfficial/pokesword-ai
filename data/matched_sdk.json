@@ -44151,6 +44151,186 @@
    "size": 16,
    "src": "uint32_t f_4f9ae0(uint64_t a0) {\n    void* p0 = (void*)((uintptr_t)(((uint64_t)a0)));\n    *(uint32_t*)((char*)(p0)) = 0;\n    return 0;\n}\n",
    "verdict": "semantic"
+  },
+  {
+   "addr": 1777440,
+   "ident": "f_1b1f20",
+   "module": "sdk",
+   "name": "sub_1b1f20",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 7,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 7,
+    "trials": 8
+   },
+   "reason": "7 vs 7 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 28,
+   "src": "void f_1b1f20(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    void* p1 = (void*)(*(uint64_t *)((char*)(a0) + 64));\n    *(uint64_t*)((char*)(a0) + 40) = (uint64_t)((char*)(p0) - 4);\n    *(uint32_t*)((char*)(p1) + 132) = *(uint32_t*)((char*)(p0) - 4);\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
+  },
+  {
+   "addr": 1777728,
+   "ident": "f_1b2040",
+   "module": "sdk",
+   "name": "sub_1b2040",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 7,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 7,
+    "trials": 8
+   },
+   "reason": "7 vs 7 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 28,
+   "src": "void f_1b2040(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    void* p1 = (void*)(*(uint64_t *)((char*)(a0) + 64));\n    *(uint64_t*)((char*)(a0) + 40) = (uint64_t)((char*)(p0) - 4);\n    *(uint32_t*)((char*)(p1) + 112) = *(uint32_t*)((char*)(p0) - 4);\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
+  },
+  {
+   "addr": 1777760,
+   "ident": "f_1b2060",
+   "module": "sdk",
+   "name": "sub_1b2060",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 7,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 7,
+    "trials": 8
+   },
+   "reason": "7 vs 7 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 28,
+   "src": "void f_1b2060(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    void* p1 = (void*)(*(uint64_t *)((char*)(a0) + 64));\n    *(uint64_t*)((char*)(a0) + 40) = (uint64_t)((char*)(p0) - 4);\n    *(uint32_t*)((char*)(p1) + 116) = *(uint32_t*)((char*)(p0) - 4);\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
+  },
+  {
+   "addr": 1777872,
+   "ident": "f_1b20d0",
+   "module": "sdk",
+   "name": "sub_1b20d0",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 6,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 6,
+    "trials": 8
+   },
+   "reason": "6 vs 6 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 24,
+   "src": "void f_1b20d0(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    *(uint64_t*)((char*)(a0) + 40) = (uint64_t)((char*)(p0) + 4);\n    *(uint32_t*)((char*)(p0)) = *(uint32_t*)((char*)(p0) - 4);\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
+  },
+  {
+   "addr": 1777984,
+   "ident": "f_1b2140",
+   "module": "sdk",
+   "name": "sub_1b2140",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 7,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 6,
+    "trials": 8
+   },
+   "reason": "7 vs 6 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 24,
+   "src": "void f_1b2140(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    void* p1 = (void*)((uintptr_t)(((*(uint64_t*)((char*)(a0) + 40)) - (((*(int32_t*)((char*)(p0) - 4)) << 2))) - (0)));\n    *(uint32_t*)((char*)(p0)) = *(uint32_t*)((char*)(p1));\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
+  },
+  {
+   "addr": 1784496,
+   "ident": "f_1b3ab0",
+   "module": "sdk",
+   "name": "sub_1b3ab0",
+   "needs_proto": null,
+   "proof": {
+    "cand_insns": 7,
+    "layouts": [
+     "mixed",
+     "all_ptr",
+     "all_int",
+     "all_small",
+     "ptr_small",
+     "ptr_small_2",
+     "int_then_ptr"
+    ],
+    "method": "unicorn differential",
+    "orig_insns": 7,
+    "trials": 8
+   },
+   "reason": "7 vs 7 insns",
+   "shape": "straight",
+   "sig": "Pv",
+   "size": 28,
+   "src": "void f_1b3ab0(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 40));\n    void* p1 = (void*)(*(uint64_t *)((char*)(a0) + 64));\n    *(uint64_t*)((char*)(a0) + 40) = (uint64_t)((char*)(p0) + 4);\n    *(uint32_t*)((char*)(p0)) = (uint32_t)(*(uint16_t*)((char*)(p1) + 36));\n}\n",
+   "tail_orig_name": null,
+   "tail_target_addr": null,
+   "verdict": "semantic"
   }
  ],
  "module": "sdk",
