@@ -142,6 +142,30 @@ def global_of(src):
     return m.group(1), int(m.group(2))
 
 
+# A `char[1]` global is *mutable*, so clang assumes it may be interposed and
+# reaches it through the GOT:
+#
+#     adrp x0, g_f_195d60 ; ldr x0, [x0]        <- interposable
+#
+# which is 3 instructions and not retail's shape at all. Declaring the same
+# object `const` gives the compiler the same guarantee a string literal has --
+# it cannot be replaced -- and it takes the direct form:
+#
+#     adrp x0, g ; add x0, x0, :lo12:g          <- retail
+#
+# Verified on f_195d60: with `char` the `adrp` matched retail exactly and the
+# `add` did not, because a GOT `ldr` was emitted in its place.
+#
+# So the redeclaration must be `const char`, not `char`. Getting this wrong
+# produces an `adrp` that is correct and a second instruction that cannot be,
+# which reads like a placement bug rather than a linkage one.
+# `const` is load-bearing (see below) but a const object needs an initialiser in
+# C++, so the zeros are spelled out. The contents do not matter -- only the
+# address does -- and retail's own byte at that address is arbitrary anyway, which
+# is why these bodies are checked by address alone.
+GLOBAL_DECL = ('const char %s[%d] __attribute__((section(".rds%d"))) = {0};')
+
+
 def build(module, items, blob, elfsrc):
     """Compile + link every item at its retail address. -> {ident: bytes}"""
     edata, segs = load_elf_segments(elfsrc)
@@ -152,22 +176,36 @@ def build(module, items, blob, elfsrc):
     parts = []
     for i, it in enumerate(items):
         lit = literal_of(it["src"])
-        if lit is None:
+        glob = global_of(it["src"])
+        if lit is None and glob is None:
             continue
-        esc = lit.replace("\\", "\\\\").replace('"', '\\"')
-        parts.append('const char s%d[] __attribute__((section(".rds%d"))) = "%s";'
-                     % (i, i, esc))
+        if glob is not None:
+            sym, size = glob
+            # Re-declare the global in its own placeable section, keeping the size.
+            # `const` is load-bearing: see GLOBAL_DECL.
+            parts.append(GLOBAL_DECL % (sym, size, i))
+        else:
+            esc = lit.replace("\\", "\\\\").replace('"', '\\"')
+            parts.append('const char s%d[] __attribute__((section(".rds%d"))) = "%s";'
+                         % (i, i, esc))
         body = it["src"]
-        # Drop the body's own inline definition -- keeping it would give the
-        # compiler a second, differently-placed copy of the string.
-        body = re.sub(r'static const char s\[\]\s*=\s*"(?:[^"\\]|\\.)*"\s*;',
+        # Drop the body's own definition -- keeping it would give the compiler a
+        # second, differently-placed copy.
+        body = re.sub(r'static\s+char\s+g_f_\w+\s*\[\s*\d+\s*\]\s*;', '', body)
+        body = re.sub(r'static\s+const\s+char\s+s\[\]\s*=\s*"(?:[^"\\]|\\.)*"\s*;',
                       '', body)
-        # Point the return at the placed copy.
-        body = re.sub(r'return\s+s\s*;', 'return s%d;' % i, body)
-        if ("return s%d;" % i) not in body:
-            body = body.rstrip()
-            if body.endswith("}"):
-                body = body[:-1] + "  return s%d;\n}\n" % i
+        if glob is not None:
+            # Already declared above; just return it.
+            if ("return %s;" % glob[0]) not in body:
+                body = body.rstrip()
+                if body.endswith("}"):
+                    body = body[:-1] + "  return %s;\n}\n" % glob[0]
+        else:
+            body = re.sub(r'return\s+s\s*;', 'return s%d;' % i, body)
+            if ("return s%d;" % i) not in body:
+                body = body.rstrip()
+                if body.endswith("}"):
+                    body = body[:-1] + "  return s%d;\n}\n" % i
         parts.append(body)
 
     work = os.path.join(ROOT, "work", "strlit_%s" % module)
