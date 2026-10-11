@@ -40,6 +40,7 @@ import io
 import json
 import os
 import re
+import struct
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,6 +51,37 @@ MODULES = ("main", "sdk", "subsdk0", "subsdk1")
 # Verdicts that mean "we have compilable C in hand". `compile-error` and `nocode`
 # do not: there is nothing to compare.
 HAVE_CODE = ("mismatch",)
+
+
+def _has_unresolved_adrp(orig, cand, relocs, mangled):
+    """Does this body carry an `adrp` whose immediate only a linker can fill?
+
+    The signal is an unresolved relocation at the front of the body, which is what
+    an `adrp` plus its `add` always produces:
+
+        retail : 40d500b0  adrp x0, #0x1abd000
+        .o     : 00000090  adrp x0, #0        <- immediate not yet applied
+                 0000000040000000: R_AARCH64_ADR_GOT_PAGE  .rodata....
+        candidate relocs: {0: '.rodata....', 4: '.rodata....'}
+
+    An earlier version of this tested for the string "ADR" in the relocation's
+    *value* and never fired, because `obj_relocations` returns the target **symbol
+    name**, not the relocation type. It reported zero `needs-link` bodies while 43
+    were sitting in the queue, and would have looked like "no body has an
+    unresolved adrp" -- a statement about the world, from a predicate that could not
+    match anything.
+
+    Two conditions, both required, so a body that merely calls something is not
+    swept in:
+      * the original's first instruction is an `adrp`, and
+      * the candidate carries a relocation at offset 0.
+    """
+    if len(orig) < 4 or len(cand) < 4:
+        return False
+    if (struct.unpack("<I", orig[:4])[0] & 0x9F000000) != 0x90000000:
+        return False
+    rel = relocs.get(mangled) or {}
+    return 0 in rel
 
 
 def protos_for(chunk):
@@ -202,6 +234,28 @@ def verify_isolated(cands, module, batch=350):
                 r["verdict"] = v
                 r["reason"] = why
                 r["resolved_target"] = want_sym
+                out.append(r)
+                continue
+
+            # An `adrp` body has the same problem from the other direction: in a
+            # relocatable object the immediate is *zero* and the real value lives
+            # in a relocation the linker has not applied. So a byte comparison
+            # cannot match one however correct the source is, and every such body
+            # reads as a mismatch.
+            #
+            #     retail : 40d500b0  adrp x0, #0x1abd000
+            #     .o     : 00000090  adrp x0, #0        <- unresolved relocation
+            #
+            # Rather than call these unmatched, queue them for
+            # `tools/strlit_match.py`, which links them at their original virtual
+            # addresses and compares the *linked* image. That tool reports 43/43
+            # byte-identical on main -- and every one of those 43 was already
+            # claimed by the harvest loop, so this is the second population the
+            # census has invented by measuring an unlinked object.
+            if _has_unresolved_adrp(orig, cand, relocs, mangled):
+                r["verdict"] = "needs-link"
+                r["reason"] = ("adrp immediate is unresolved in a relocatable "
+                               "object; compare against the linked image")
                 out.append(r)
                 continue
 
