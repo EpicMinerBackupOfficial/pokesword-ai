@@ -2433,7 +2433,7 @@ uint64_t main_f_c3fd90(void* a0) { return *(uint64_t*)((char*)(a0) + 96); }
 // sub_c3fda0  (orig 0xc3fda0, setter)
 void main_f_c3fda0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 108) = a1; }
 
-// sub_c41280  (orig 0xc41280, setter)
+// Resume_Win_Music  (orig 0xc41280, setter)
 void main_f_c41280(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 1824) = a1; }
 
 // sub_c418f0  (orig 0xc418f0, ret_only)
@@ -3075,10 +3075,10 @@ void main_f_c95ac0(void* a0) { *(uint8_t*)((char*)(a0) + 132) = 0; }
 // sub_c95d60  (orig 0xc95d60, compare)
 bool main_f_c95d60(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 96)) == (uint64_t)(2); }
 
-// sub_c99be0  (orig 0xc99be0, getter)
+// Play_UI_Lcircuit_Count_Down  (orig 0xc99be0, getter)
 uint8_t main_f_c99be0(void* a0) { return *(uint8_t*)((char*)(a0) + 196); }
 
-// sub_c99c50  (orig 0xc99c50, compare)
+// Play_UI_common_decide  (orig 0xc99c50, compare)
 bool main_f_c99c50(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 96)) == (uint64_t)(6); }
 
 // sub_c99c60  (orig 0xc99c60, getter)
@@ -3111,7 +3111,7 @@ void main_f_c9e610(void* a0) {
     *(uint8_t*)((char*)(p0) + 192) = (uint8_t)k1;
 }
 
-// sub_c9ecd0  (orig 0xc9ecd0, straight)
+// LookAtWait_8  (orig 0xc9ecd0, straight)
 void main_f_c9ecd0(void* a0) {
     *(uint32_t*)((char*)(a0) + 164) = 45;
 }
@@ -3200,7 +3200,7 @@ void main_f_cb33d0(void* a0) {
 // sub_cb3460  (orig 0xcb3460, setter-chain)
 void main_f_cb3460(void* a0) { *(uint32_t*)((char*)(a0) + 152) = 0; *(uint16_t*)((char*)(a0) + 156) = 0; }
 
-// sub_cb3470  (orig 0xcb3470, straight)
+// Stop_Battle_Music_for865  (orig 0xcb3470, straight)
 void main_f_cb3470(void* a0, void* a1, void* a2) {
     *(uint32_t*)((char*)(a0) + 152) = *(uint32_t*)((char*)(a1));
     *(uint16_t*)((char*)(a0) + 156) = *(uint16_t*)((char*)(a2));
@@ -3925,7 +3925,7 @@ void main_f_cf4430() {}
 // sub_cf4520  (orig 0xcf4520, ret_only)
 void main_f_cf4520() {}
 
-// sub_cf4bf0  (orig 0xcf4bf0, straight-line)
+// RThigh_2  (orig 0xcf4bf0, straight-line)
 void main_f_cf4bf0(void* a0, uint64_t a1) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 120));
     *(uint64_t*)((char*)(p0) + 312) = a1;
@@ -4338,7 +4338,7 @@ void main_f_d3e090(void* a0, uint64_t a1, uint32_t a2) {
     *(uint8_t*)((char*)(a0) + 1620) = (uint8_t)((((uint32_t)a2)) & (1));
 }
 
-// sub_d45b60  (orig 0xd45b60, compare)
+// Play_UI_common_decide  (orig 0xd45b60, compare)
 bool main_f_d45b60(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 2024)) != (uint64_t)(0); }
 
 // sub_d48740  (orig 0xd48740, mov_ret)
@@ -4608,7 +4608,7 @@ void main_f_d6e670() {}
 // sub_d6e990  (orig 0xd6e990, ret_only)
 void main_f_d6e990() {}
 
-// sub_d6eef0  (orig 0xd6eef0, compare)
+// TestBGM  (orig 0xd6eef0, compare)
 bool main_f_d6eef0(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0) + 104)) != (uint64_t)(0); }
 
 // sub_d6ef30  (orig 0xd6ef30, compare)
@@ -5402,7 +5402,7 @@ void main_f_e3f430(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*
 // sub_e3f440  (orig 0xe3f440, copy2)
 void main_f_e3f440(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
-// sub_e41310  (orig 0xe41310, setter)
+// TestBGM  (orig 0xe41310, setter)
 void main_f_e41310(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 96) = a1; }
 
 // sub_e413e0  (orig 0xe413e0, ret_only)
@@ -5725,7 +5725,7 @@ uint64_t main_f_e75130(void* a0, uint64_t a1) { return *(uint64_t *)(((char *)a0
 // sub_e75c70  (orig 0xe75c70, ret_only)
 void main_f_e75c70() {}
 
-// sub_e76460  (orig 0xe76460, copy2)
+// msg_all_dead_02  (orig 0xe76460, copy2)
 void main_f_e76460(void* a0, void* a1) { *(uint64_t*)((char*)(a0) + 1488) = *(uint64_t*)((char*)(a1)); }
 
 // sub_e76a20  (orig 0xe76a20, mov_ret)
@@ -6275,7 +6275,7 @@ uint64_t main_f_ea4760(void* a0, uint64_t a1) { return ((*(uint64_t*)((char*)(a0
 // sub_ea4770  (orig 0xea4770, getter)
 uint64_t main_f_ea4770(void* a0) { return *(uint64_t*)((char*)(a0) + 152); }
 
-// sub_ea4780  (orig 0xea4780, straight)
+// Play_Camp_Switching_Toy  (orig 0xea4780, straight)
 uint64_t main_f_ea4780(void* a0, uint64_t a1) { return ((*(uint64_t*)((char*)(a0) + 160) & (uint64_t)(((uint64_t)a1))) ? 1 : 0); }
 
 // sub_ea4790  (orig 0xea4790, getter)
@@ -6554,7 +6554,7 @@ void main_f_ebcbc0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*
 // sub_ebcbe0  (orig 0xebcbe0, ret_only)
 void main_f_ebcbe0() {}
 
-// sub_ebcbf0  (orig 0xebcbf0, copy2)
+// tips  (orig 0xebcbf0, copy2)
 void main_f_ebcbf0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
 // sub_ebcc00  (orig 0xebcc00, copy2)

@@ -2074,7 +2074,7 @@ uint32_t main_f_1130330() { return 1; }
 // sub_1130370  (orig 0x1130370, getter)
 uint64_t main_f_1130370(void* a0) { return *(uint64_t*)((char*)(a0) + 1120); }
 
-// sub_1130380  (orig 0x1130380, getter)
+// PartsB  (orig 0x1130380, getter)
 uint64_t main_f_1130380(void* a0) { return *(uint64_t*)((char*)(a0) + 1128); }
 
 // sub_11307e0  (orig 0x11307e0, ret_only)
@@ -2107,7 +2107,7 @@ void main_f_11308a0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 // sub_1130c00  (orig 0x1130c00, compare)
 bool main_f_1130c00(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 136)) > (uint64_t)(2); }
 
-// sub_1130c10  (orig 0x1130c10, getter)
+// Play_Camp_SwingBell_2  (orig 0x1130c10, getter)
 uint8_t main_f_1130c10(void* a0) { return *(uint8_t*)((char*)(a0) + 152); }
 
 // sub_1130d00  (orig 0x1130d00, ptr_add)
@@ -2157,7 +2157,7 @@ void* main_f_11365d0(void* a0) { return (char*)a0 + 1104; }
 // sub_1136910  (orig 0x1136910, getter)
 uint32_t main_f_1136910(void* a0) { return *(uint32_t*)((char*)(a0) + 872); }
 
-// sub_1136c10  (orig 0x1136c10, getter)
+// Play_Camp_Pass_Ball  (orig 0x1136c10, getter)
 uint64_t main_f_1136c10(void* a0) { return *(uint64_t*)((char*)(a0) + 1248); }
 
 // sub_1136c40  (orig 0x1136c40, getter)
@@ -2358,7 +2358,7 @@ void main_f_1148ff0(void* a0, void* a1) { *(uint32_t*)((char*)(a1)) = *(uint32_t
 // sub_1149000  (orig 0x1149000, copy2)
 void main_f_1149000(void* a0, void* a1) { *(uint32_t*)((char*)(a1)) = *(uint32_t*)((char*)(a0)); }
 
-// sub_11492a0  (orig 0x11492a0, setter)
+// item  (orig 0x11492a0, setter)
 void main_f_11492a0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 112) = a1; }
 
 // sub_1149b10  (orig 0x1149b10, ret_only)
@@ -2601,10 +2601,10 @@ uint32_t main_f_1156e30() { return 1; }
 // sub_11575f0  (orig 0x11575f0, ret_only)
 void main_f_11575f0() {}
 
-// sub_1157600  (orig 0x1157600, getter)
+// item  (orig 0x1157600, getter)
 uint64_t main_f_1157600(void* a0) { return *(uint64_t*)((char*)(a0) + 120); }
 
-// sub_1157610  (orig 0x1157610, getter)
+// item  (orig 0x1157610, getter)
 uint64_t main_f_1157610(void* a0) { return *(uint64_t*)((char*)(a0) + 128); }
 
 // sub_115a6d0  (orig 0x115a6d0, ret_only)
@@ -2626,7 +2626,7 @@ void main_f_115a730(void* a0) {
     *(uint8_t*)((char*)(a0) + 784) = (uint8_t)k0;
 }
 
-// sub_115a740  (orig 0x115a740, straight)
+// fi8100_greeting01  (orig 0x115a740, straight)
 uint64_t main_f_115a740(void* a0) { return *(uint64_t*)((char*)(a0) + 792); }
 
 // sub_115b9d0  (orig 0x115b9d0, getter)
@@ -2638,7 +2638,7 @@ uint64_t main_f_115b9e0(void* a0) { return *(uint64_t*)((char*)(a0) + 936); }
 // sub_115b9f0  (orig 0x115b9f0, ptr_add)
 void* main_f_115b9f0(void* a0) { return (char*)a0 + 808; }
 
-// sub_115ba00  (orig 0x115ba00, ptr_add)
+// fi8100_greeting01  (orig 0x115ba00, ptr_add)
 void* main_f_115ba00(void* a0) { return (char*)a0 + 816; }
 
 // sub_115ba10  (orig 0x115ba10, ptr_add)
@@ -2813,7 +2813,7 @@ uint64_t main_f_1164130(void* a0) { return *(uint64_t*)((char*)(a0) + 320); }
 // sub_1164140  (orig 0x1164140, copy2)
 void main_f_1164140(void* a0, void* a1) { *(uint64_t*)((char*)(a0) + 320) = *(uint64_t*)((char*)(a1)); }
 
-// sub_1164150  (orig 0x1164150, getter)
+// Play_Camp_Get_Ball  (orig 0x1164150, getter)
 uint64_t main_f_1164150(void* a0) { return *(uint64_t*)((char*)(a0) + 176); }
 
 // sub_1165010  (orig 0x1165010, getter)
@@ -2961,10 +2961,10 @@ uint32_t main_f_116f450(void* a0, int32_t a1) {
     return *(uint32_t*)((char*)(p0) + 16);
 }
 
-// sub_1171010  (orig 0x1171010, getter)
+// Play_Camp_RandomLook  (orig 0x1171010, getter)
 uint32_t main_f_1171010(void* a0) { return *(uint32_t*)((char*)(a0) + 16); }
 
-// sub_1173310  (orig 0x1173310, straight)
+// Play_Camp_Switching_Toy  (orig 0x1173310, straight)
 void main_f_1173310(void* a0, void* a1) {
     *(uint64_t*)((char*)(a0) + 232) = *(uint64_t*)((char*)(a1) + 8);
     *(uint64_t*)((char*)(a0) + 224) = *(uint64_t*)((char*)(a1));
@@ -3006,7 +3006,7 @@ void main_f_1176c70(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 // sub_1176df0  (orig 0x1176df0, ptr_add)
 void* main_f_1176df0(void* a0) { return (char*)a0 + 184; }
 
-// sub_1178b00  (orig 0x1178b00, getter)
+// pokemon_avoid  (orig 0x1178b00, getter)
 uint64_t main_f_1178b00(void* a0) { return *(uint64_t*)((char*)(a0) + 160); }
 
 // sub_1178b10  (orig 0x1178b10, getter)
@@ -3041,7 +3041,7 @@ uint64_t main_f_1179ef0(void* a0) { return *(uint64_t*)((char*)(a0) + 96); }
 // sub_1179f00  (orig 0x1179f00, getter)
 uint32_t main_f_1179f00(void* a0) { return *(uint32_t*)((char*)(a0) + 104); }
 
-// sub_1179f30  (orig 0x1179f30, straight)
+// Play_SceneTransition_Footsteps_2  (orig 0x1179f30, straight)
 void main_f_1179f30(void* a0) {
     uint32_t k0 = 1;
     *(uint8_t*)((char*)(a0) + 200) = (uint8_t)k0;
@@ -3053,7 +3053,7 @@ uint8_t main_f_1179f40(void* a0) { return *(uint8_t*)((char*)(a0) + 200); }
 // sub_1179f50  (orig 0x1179f50, ptr_add)
 void* main_f_1179f50(void* a0) { return (char*)a0 + 208; }
 
-// sub_1179f60  (orig 0x1179f60, getter)
+// Play_UI_Camp_Licence  (orig 0x1179f60, getter)
 uint8_t main_f_1179f60(void* a0) { return *(uint8_t*)((char*)(a0) + 91); }
 
 // sub_1179fc0  (orig 0x1179fc0, ptr_add)
@@ -3088,7 +3088,7 @@ void main_f_117b930(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 // sub_117bf10  (orig 0x117bf10, getter)
 uint64_t main_f_117bf10(void* a0) { return *(uint64_t*)((char*)(a0) + 160); }
 
-// sub_117bf20  (orig 0x117bf20, straight)
+// Play_Camp_Switching_Toy  (orig 0x117bf20, straight)
 void* main_f_117bf20(void* a0) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 160));
     return (char*)(p0) - 1;
@@ -3181,7 +3181,7 @@ void main_f_1185b20(void* a0, uint32_t a1) {
     *(uint8_t*)((char*)(a0) + 96) = (uint8_t)((((uint32_t)a1)) & (1));
 }
 
-// sub_1186150  (orig 0x1186150, copy2)
+// item  (orig 0x1186150, copy2)
 void main_f_1186150(void* a0, void* a1) { *(uint64_t*)((char*)(a0) + 96) = *(uint64_t*)((char*)(a1)); }
 
 // sub_118aed0  (orig 0x118aed0, ret_only)
@@ -4297,10 +4297,10 @@ void main_f_11ca5e0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 // sub_11ca5f0  (orig 0x11ca5f0, copy2)
 void main_f_11ca5f0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
-// sub_11cc3a0  (orig 0x11cc3a0, setter)
+// Set_State_Camp_Cooking  (orig 0x11cc3a0, setter)
 void main_f_11cc3a0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 700) = a1; }
 
-// sub_11cd2e0  (orig 0x11cd2e0, setter)
+// Set_State_Camp_Cooking  (orig 0x11cd2e0, setter)
 void main_f_11cd2e0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 184) = a1; }
 
 // sub_11ceb20  (orig 0x11ceb20, straight)
@@ -4329,13 +4329,13 @@ uint8_t main_f_11d2670(void* a0) { return *(uint8_t*)((char*)(a0) + 129); }
 // sub_11d2680  (orig 0x11d2680, getter)
 uint8_t main_f_11d2680(void* a0) { return *(uint8_t*)((char*)(a0) + 130); }
 
-// sub_11d2690  (orig 0x11d2690, getter)
+// Set_State_Camp_Cooking  (orig 0x11d2690, getter)
 uint32_t main_f_11d2690(void* a0) { return *(uint32_t*)((char*)(a0) + 124); }
 
 // sub_11d26a0  (orig 0x11d26a0, getter)
 uint8_t main_f_11d26a0(void* a0) { return *(uint8_t*)((char*)(a0) + 128); }
 
-// sub_11d26b0  (orig 0x11d26b0, straight)
+// Set_State_Camp_Cooking  (orig 0x11d26b0, straight)
 void main_f_11d26b0(void* a0, uint32_t a1) {
     *(uint8_t*)((char*)(a0) + 128) = (uint8_t)((((uint32_t)a1)) & (1));
 }
@@ -6229,7 +6229,7 @@ void main_f_1246860() {}
 // sub_1246b10  (orig 0x1246b10, mov_ret)
 uint32_t main_f_1246b10() { return 1; }
 
-// sub_1248240  (orig 0x1248240, ret_only)
+// BagViewShop_7  (orig 0x1248240, ret_only)
 void main_f_1248240() {}
 
 // sub_12485f0  (orig 0x12485f0, ret_only)
@@ -6253,13 +6253,13 @@ void main_f_12491c0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 // sub_12491d0  (orig 0x12491d0, copy2)
 void main_f_12491d0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
-// sub_1249eb0  (orig 0x1249eb0, straight)
+// BagViewIngredientsCheck  (orig 0x1249eb0, straight)
 void main_f_1249eb0(void* a0) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 1512));
     *(uint8_t*)((char*)(p0) + 88) = (*(uint8_t*)((char*)(p0) + 88)) & (254);
 }
 
-// sub_1249ed0  (orig 0x1249ed0, straight)
+// BagViewIngredientsCheck  (orig 0x1249ed0, straight)
 void main_f_1249ed0(void* a0) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 2488));
     *(uint8_t*)((char*)(p0) + 88) = (*(uint8_t*)((char*)(p0) + 88)) & (254);
@@ -6819,7 +6819,7 @@ uint64_t main_f_125a0f0(void* a0) { return *(uint64_t*)((char*)(a0) + 144); }
 // sub_125b830  (orig 0x125b830, straight-line)
 uint64_t main_f_125b830(uint64_t a0, uint64_t a1) { return ((((uint64_t)a0)) + ((((uint64_t)a1)) * (272))) + (176); }
 
-// sub_125b9f0  (orig 0x125b9f0, getter)
+// cooking_result  (orig 0x125b9f0, getter)
 uint64_t main_f_125b9f0(void* a0) { return *(uint64_t*)((char*)(a0) + 1552); }
 
 // sub_125d290  (orig 0x125d290, mov_ret)
@@ -6842,13 +6842,13 @@ void main_f_1262a60(uint64_t unused0, void* a1) {
     *(uint32_t*)((char*)(a1) + 104) = 8;
 }
 
-// sub_1262fa0  (orig 0x1262fa0, getter)
+// comm_player  (orig 0x1262fa0, getter)
 uint32_t main_f_1262fa0(void* a0) { return *(uint32_t*)((char*)(a0) + 16); }
 
-// sub_1263050  (orig 0x1263050, setter)
+// system_msgwin  (orig 0x1263050, setter)
 void main_f_1263050(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 24) = a1; }
 
-// sub_1263060  (orig 0x1263060, setter)
+// system_msgwin  (orig 0x1263060, setter)
 void main_f_1263060(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 32) = a1; }
 
 // sub_12635f0  (orig 0x12635f0, getter)

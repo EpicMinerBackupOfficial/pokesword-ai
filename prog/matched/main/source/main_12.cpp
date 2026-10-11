@@ -962,19 +962,19 @@ uint64_t main_f_151be00(void* a0, uint64_t a1) { return *(uint64_t *)(((char *)a
 // sub_151c2d0  (orig 0x151c2d0, getter)
 uint64_t main_f_151c2d0(void* a0) { return *(uint64_t*)((char*)(a0) + 96); }
 
-// sub_151c2e0  (orig 0x151c2e0, getter)
+// details_main  (orig 0x151c2e0, getter)
 uint32_t main_f_151c2e0(void* a0) { return *(uint32_t*)((char*)(a0) + 112); }
 
 // sub_151c2f0  (orig 0x151c2f0, setter)
 void main_f_151c2f0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 108) = a1; }
 
-// sub_151c300  (orig 0x151c300, getter)
+// ViewDetails_5  (orig 0x151c300, getter)
 uint32_t main_f_151c300(void* a0) { return *(uint32_t*)((char*)(a0) + 116); }
 
 // sub_151c310  (orig 0x151c310, getter)
 uint32_t main_f_151c310(void* a0) { return *(uint32_t*)((char*)(a0) + 124); }
 
-// sub_151c320  (orig 0x151c320, setter)
+// ViewDetails_4  (orig 0x151c320, setter)
 void main_f_151c320(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 124) = a1; }
 
 // sub_151c330  (orig 0x151c330, getter)
@@ -992,7 +992,7 @@ uint32_t main_f_151cf70(void* a0) { return *(uint32_t*)((char*)(a0) + 1804); }
 // sub_151d580  (orig 0x151d580, setter)
 void main_f_151d580(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 1856) = a1; }
 
-// sub_151d590  (orig 0x151d590, getter)
+// ViewDetails_4  (orig 0x151d590, getter)
 uint32_t main_f_151d590(void* a0) { return *(uint32_t*)((char*)(a0) + 1856); }
 
 // sub_151d5a0  (orig 0x151d5a0, straight)
@@ -1006,7 +1006,7 @@ uint8_t main_f_151d5b0(void* a0) { return *(uint8_t*)((char*)(a0) + 2652); }
 // sub_151d5c0  (orig 0x151d5c0, compare)
 bool main_f_151d5c0(void* a0) { return (uint16_t)(*(uint16_t*)((char*)(a0) + 3104)) > (uint64_t)(7); }
 
-// sub_151e0d0  (orig 0x151e0d0, setter)
+// Play_UI_picturebook_open  (orig 0x151e0d0, setter)
 void main_f_151e0d0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 1920) = a1; }
 
 // sub_1523aa0  (orig 0x1523aa0, ret_only)
@@ -1018,10 +1018,10 @@ void main_f_15247d0(void* a0) { *(uint32_t*)((char*)(a0) + 1484) = 0; }
 // sub_15248f0  (orig 0x15248f0, getter)
 uint32_t main_f_15248f0(void* a0) { return *(uint32_t*)((char*)(a0) + 1484); }
 
-// sub_1524900  (orig 0x1524900, setter)
+// SystemMessageView_12  (orig 0x1524900, setter)
 void main_f_1524900(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 2576) = a1; }
 
-// sub_1525130  (orig 0x1525130, getter)
+// ViewDetails  (orig 0x1525130, getter)
 uint64_t main_f_1525130(void* a0) { return *(uint64_t*)((char*)(a0) + 1496); }
 
 // sub_1525940  (orig 0x1525940, getter)
@@ -1030,7 +1030,7 @@ uint32_t main_f_1525940(void* a0) { return *(uint32_t*)((char*)(a0) + 1492); }
 // sub_1527bc0  (orig 0x1527bc0, straight)
 void* main_f_1527bc0(void* a0) { return ((char *)(char*)(a0) + 1504 + (uintptr_t)(*(int16_t*)((char*)(a0) + 2530)) * 4); }
 
-// sub_1527bd0  (orig 0x1527bd0, setter-chain)
+// SystemMessageView_12  (orig 0x1527bd0, setter-chain)
 void main_f_1527bd0(void* a0, uint64_t a1, uint32_t a2) { *(uint64_t*)((char*)(a0) + 2584) = a1; *(uint32_t*)((char*)(a0) + 2592) = a2; }
 
 // sub_1527be0  (orig 0x1527be0, straight)
@@ -1041,7 +1041,7 @@ void main_f_1527be0(void* a0, uint32_t a1) {
 // sub_15288d0  (orig 0x15288d0, getter)
 uint32_t main_f_15288d0(void* a0) { return *(uint32_t*)((char*)(a0) + 1484); }
 
-// sub_1529670  (orig 0x1529670, ptr_add)
+// ViewDetails_4  (orig 0x1529670, ptr_add)
 void* main_f_1529670(void* a0) { return (char*)a0 + 1488; }
 
 // sub_152a130  (orig 0x152a130, ret_only)
@@ -1065,10 +1065,10 @@ void main_f_152b4b0() {}
 // sub_152bf60  (orig 0x152bf60, ret_only)
 void main_f_152bf60() {}
 
-// sub_152c1b0  (orig 0x152c1b0, setter)
+// ViewTop_6  (orig 0x152c1b0, setter)
 void main_f_152c1b0(void* a0) { *(uint32_t*)((char*)(a0) + 1484) = 0; }
 
-// sub_152c2d0  (orig 0x152c2d0, getter)
+// ViewTop_6  (orig 0x152c2d0, getter)
 uint32_t main_f_152c2d0(void* a0) { return *(uint32_t*)((char*)(a0) + 1484); }
 
 // sub_152e630  (orig 0x152e630, straight)
@@ -1142,13 +1142,13 @@ void main_f_15317e0(void* a0) { *(uint32_t*)((char*)(a0) + 1484) = 0; }
 // sub_1531900  (orig 0x1531900, getter)
 uint32_t main_f_1531900(void* a0) { return *(uint32_t*)((char*)(a0) + 1484); }
 
-// sub_1531910  (orig 0x1531910, setter-chain)
+// ViewDetails  (orig 0x1531910, setter-chain)
 void main_f_1531910(void* a0, uint32_t a1, uint64_t a2) { *(uint32_t*)((char*)(a0) + 1492) = a1; *(uint64_t*)((char*)(a0) + 1496) = a2; }
 
 // sub_1532790  (orig 0x1532790, getter)
 uint8_t main_f_1532790(void* a0) { return *(uint8_t*)((char*)(a0) + 1528); }
 
-// sub_15327a0  (orig 0x15327a0, getter)
+// ViewDetails_4  (orig 0x15327a0, getter)
 uint64_t main_f_15327a0(void* a0) { return *(uint64_t*)((char*)(a0) + 1496); }
 
 // sub_1532f00  (orig 0x1532f00, ret_only)
@@ -1260,7 +1260,7 @@ void main_f_153bdd0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 108) = a
 // sub_153c340  (orig 0x153c340, compare)
 bool main_f_153c340(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 176)) == (uint64_t)(3); }
 
-// sub_153c410  (orig 0x153c410, setter)
+// Play_UI_picturebook_open_2  (orig 0x153c410, setter)
 void main_f_153c410(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 1920) = a1; }
 
 // sub_1540510  (orig 0x1540510, ret_only)
@@ -1269,7 +1269,7 @@ void main_f_1540510() {}
 // sub_15407f0  (orig 0x15407f0, getter)
 uint32_t main_f_15407f0(void* a0) { return *(uint32_t*)((char*)(a0) + 1484); }
 
-// sub_1540800  (orig 0x1540800, setter)
+// SystemMessageView_13  (orig 0x1540800, setter)
 void main_f_1540800(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 1496) = a1; }
 
 // sub_1542510  (orig 0x1542510, ret_only)
@@ -1338,19 +1338,19 @@ void main_f_154e900(void* a0, void* a1) {
 // sub_1551c30  (orig 0x1551c30, compare)
 bool main_f_1551c30(void* a0) { return (uint16_t)(*(uint16_t*)((char*)(a0) + 196)) == (uint64_t)(0); }
 
-// sub_1552e80  (orig 0x1552e80, getter)
+// stack_overflow_7  (orig 0x1552e80, getter)
 uint64_t main_f_1552e80(void* a0) { return *(uint64_t*)((char*)(a0) + 168); }
 
-// sub_1552e90  (orig 0x1552e90, getter)
+// stack_overflow_7  (orig 0x1552e90, getter)
 uint32_t main_f_1552e90(void* a0) { return *(uint32_t*)((char*)(a0) + 200); }
 
-// sub_1552ea0  (orig 0x1552ea0, getter)
+// stack_overflow_7  (orig 0x1552ea0, getter)
 uint32_t main_f_1552ea0(void* a0) { return *(uint32_t*)((char*)(a0) + 188); }
 
 // sub_155dad0  (orig 0x155dad0, setter-chain)
 void main_f_155dad0(uint64_t a0, void* a1, uint64_t a2, uint64_t a3) { *(uint64_t*)((char*)(a1) + 24) = a3; *(uint64_t*)((char*)(a1) + 32) = a0; *(uint64_t*)((char*)(a1)) = 0; *(uint64_t*)((char*)(a1) + 8) = 0; *(uint64_t*)((char*)(a1) + 16) = a2; }
 
-// sub_15621a0  (orig 0x15621a0, straight)
+// gotos  (orig 0x15621a0, straight)
 uint32_t main_f_15621a0(void* a0) {
     *(uint32_t*)((char*)(a0) + 36) = *(uint32_t*)((char*)(a0) + 32);
     return *(uint32_t*)((char*)(a0) + 32);
@@ -1660,7 +1660,7 @@ void main_f_15af2d0() {}
 // sub_15af720  (orig 0x15af720, ret_only)
 void main_f_15af720() {}
 
-// sub_15b05a0  (orig 0x15b05a0, straight)
+// RequestGetStats  (orig 0x15b05a0, straight)
 void main_f_15b05a0(void* a0, void* a1) {
     *(uint8_t*)((char*)(a0) + 8) = *(uint8_t*)((char*)(a1) + 8);
     *(uint64_t*)((char*)(a0) + 16) = *(uint64_t*)((char*)(a1) + 16);
@@ -1999,7 +1999,7 @@ void main_f_15cee00() {}
 // sub_15cefa0  (orig 0x15cefa0, ret_only)
 void main_f_15cefa0() {}
 
-// sub_15d2cd0  (orig 0x15d2cd0, setter)
+// InstanceTable_408  (orig 0x15d2cd0, setter)
 void main_f_15d2cd0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 24) = a1; }
 
 // sub_15d2fc0  (orig 0x15d2fc0, ret_only)
@@ -2074,16 +2074,16 @@ void main_f_15d48f0() {}
 // sub_15d65c0  (orig 0x15d65c0, ptr_add)
 void* main_f_15d65c0(void* a0) { return (char*)a0 + 8; }
 
-// sub_15d65d0  (orig 0x15d65d0, ptr_add)
+// InstanceTable_413  (orig 0x15d65d0, ptr_add)
 void* main_f_15d65d0(void* a0) { return (char*)a0 + 128; }
 
-// sub_15d65e0  (orig 0x15d65e0, getter)
+// InstanceTable_413  (orig 0x15d65e0, getter)
 uint32_t main_f_15d65e0(void* a0) { return *(uint32_t*)((char*)(a0) + 168); }
 
 // sub_15d7280  (orig 0x15d7280, compare)
 bool main_f_15d7280(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 72)) == (uint64_t)(64); }
 
-// sub_15d7310  (orig 0x15d7310, straight)
+// InstanceTable_415  (orig 0x15d7310, straight)
 void main_f_15d7310(void* a0, uint64_t a1, void* a2) {
     *(uint64_t*)((char*)(a0) + 232) = (uint64_t)(a1);
     *(uint64_t*)((char*)(a0) + 240) = *(uint64_t*)((char*)(a2));
@@ -2131,7 +2131,7 @@ void main_f_15d98d0() {}
 // sub_15de580  (orig 0x15de580, ret_only)
 void main_f_15de580() {}
 
-// sub_15df270  (orig 0x15df270, ret_only)
+// InstanceTable_459  (orig 0x15df270, ret_only)
 void main_f_15df270() {}
 
 // sub_15e6fc0  (orig 0x15e6fc0, ptr_add)
@@ -2149,12 +2149,12 @@ uint64_t main_f_15e8a70() { return 0; }
 // sub_15e8a80  (orig 0x15e8a80, mov_ret)
 uint64_t main_f_15e8a80() { return 0; }
 
-// sub_15e8d50  (orig 0x15e8d50, straight)
+// InstanceTable_135  (orig 0x15e8d50, straight)
 void main_f_15e8d50(void* a0, uint32_t a1) {
     *(uint8_t*)((char*)(a0) + 465) = (uint8_t)((((uint32_t)a1)) & (1));
 }
 
-// sub_15eaa80  (orig 0x15eaa80, mov_ret)
+// InstanceTable_377  (orig 0x15eaa80, mov_ret)
 uint32_t main_f_15eaa80() { return 3; }
 
 // sub_15ec6b0  (orig 0x15ec6b0, ret_only)
@@ -2479,7 +2479,7 @@ uint32_t main_f_1617db0() { return 1; }
 // sub_16180c0  (orig 0x16180c0, mov_ret)
 uint32_t main_f_16180c0() { return 1; }
 
-// sub_16180d0  (orig 0x16180d0, mov_ret)
+// InstanceTable_281  (orig 0x16180d0, mov_ret)
 uint32_t main_f_16180d0() { return 1; }
 
 // sub_16184e0  (orig 0x16184e0, ret_only)
@@ -2491,7 +2491,7 @@ void main_f_1618570(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 12) = a1
 // sub_1618830  (orig 0x1618830, getter)
 uint32_t main_f_1618830(void* a0) { return *(uint32_t*)((char*)(a0)); }
 
-// sub_1618840  (orig 0x1618840, getter)
+// f_0_0_0  (orig 0x1618840, getter)
 uint32_t main_f_1618840(void* a0) { return *(uint32_t*)((char*)(a0) + 4); }
 
 // sub_1618850  (orig 0x1618850, getter)
@@ -2658,13 +2658,13 @@ void main_f_162a8f0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 592) = a
 // sub_162bf70  (orig 0x162bf70, setter)
 void main_f_162bf70(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 112) = a1; }
 
-// sub_162bf80  (orig 0x162bf80, getter)
+// Client_failed_to_receive  (orig 0x162bf80, getter)
 uint8_t main_f_162bf80(void* a0) { return *(uint8_t*)((char*)(a0) + 32); }
 
 // sub_162c010  (orig 0x162c010, getter)
 uint8_t main_f_162c010(void* a0) { return *(uint8_t*)((char*)(a0) + 33); }
 
-// sub_162c020  (orig 0x162c020, straight)
+// Client_failed_to_receive  (orig 0x162c020, straight)
 uint8_t main_f_162c020(void* a0) { return (*(uint8_t*)((char*)(a0) + 17)) & (1); }
 
 // sub_162c030  (orig 0x162c030, straight)
@@ -2676,7 +2676,7 @@ uint32_t main_f_162c0a0(uint32_t a0) { return (__builtin_bswap32(((uint32_t)a0))
 // sub_162cca0  (orig 0x162cca0, getter-chain)
 uint64_t main_f_162cca0(void* a0) { return *(uint64_t*)((char*)((*(uint64_t*)((char*)(a0))))); }
 
-// sub_162ccb0  (orig 0x162ccb0, getter-chain)
+// Client_failed_to_receive  (orig 0x162ccb0, getter-chain)
 uint64_t main_f_162ccb0(void* a0) { return *(uint64_t*)((char*)((*(uint64_t*)((char*)(a0) + 8)))); }
 
 // sub_162ccc0  (orig 0x162ccc0, compare)
@@ -2745,7 +2745,7 @@ void main_f_162ee30() {}
 // sub_162ee40  (orig 0x162ee40, ret_only)
 void main_f_162ee40() {}
 
-// sub_162eec0  (orig 0x162eec0, getter)
+// InstanceTable_399  (orig 0x162eec0, getter)
 uint64_t main_f_162eec0(void* a0) { return *(uint64_t*)((char*)(a0) + 32); }
 
 // sub_162fa70  (orig 0x162fa70, straight-line)
@@ -2871,7 +2871,7 @@ void main_f_1639d10(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 8) = a1;
 // sub_163a5d0  (orig 0x163a5d0, ret_only)
 void main_f_163a5d0() {}
 
-// sub_163f4a0  (orig 0x163f4a0, straight)
+// InstanceTable_135  (orig 0x163f4a0, straight)
 void main_f_163f4a0(void* a0, uint64_t a1, void* a2) {
     uint32_t k0 = 1;
     *(uint64_t*)((char*)(a0) + 8) = (uint64_t)(a1);
@@ -3058,14 +3058,14 @@ void main_f_1655070() {}
 // sub_1655170  (orig 0x1655170, ret_only)
 void main_f_1655170() {}
 
-// sub_1655190  (orig 0x1655190, straight)
+// JoinMeshJob_WaitLeaveMesh_2  (orig 0x1655190, straight)
 uint32_t main_f_1655190(void* a0) {
     *(uint32_t*)((char*)(a0)) = 1;
     *(uint8_t*)((char*)(a0) + 40) = 0;
     return 1;
 }
 
-// sub_1655330  (orig 0x1655330, straight)
+// LocalHostMigrationJob_ScanNetwork_2  (orig 0x1655330, straight)
 void main_f_1655330(void* a0) {
     uint32_t k0 = 1;
     *(uint8_t*)((char*)(a0) + 40) = (uint8_t)k0;
@@ -3167,7 +3167,7 @@ void main_f_165c9b0(void* a0, uint32_t a1) {
     *(uint8_t*)((char*)(a0) + 3) = (uint8_t)(a1);
 }
 
-// sub_165c9d0  (orig 0x165c9d0, straight-line)
+// ProcessUpdateMeshJob_UpdateFailed  (orig 0x165c9d0, straight-line)
 uint32_t main_f_165c9d0(void* a0) { return __builtin_bswap32(*(uint32_t*)((char*)(a0))); }
 
 // sub_165c9e0  (orig 0x165c9e0, straight)
@@ -3265,7 +3265,7 @@ uint32_t main_f_1661340() { return 32; }
 // sub_1661350  (orig 0x1661350, mov_ret)
 uint32_t main_f_1661350() { return 64; }
 
-// sub_1661510  (orig 0x1661510, setter-chain)
+// Pia_Receive  (orig 0x1661510, setter-chain)
 void main_f_1661510(void* a0) { *(uint64_t*)((char*)(a0) + 112) = 0; *(uint64_t*)((char*)(a0) + 120) = 0; __asm__ __volatile__("" ::: "memory");; *(uint32_t*)((char*)(a0) + 128) = 0; }
 
 // sub_1661520  (orig 0x1661520, ret_only)
@@ -3729,7 +3729,7 @@ void main_f_1679ec0(void* a0, uint64_t a1) {
     *(uint32_t*)((char*)(a0) + 608) = (*(uint32_t*)((char*)(a0) + 608)) | (2);
 }
 
-// sub_1679ee0  (orig 0x1679ee0, straight)
+// p1frXqxmeCZWFv0X_2  (orig 0x1679ee0, straight)
 void main_f_1679ee0(void* a0, uint64_t a1) {
     *(uint32_t*)((char*)(a0) + 32) = (uint32_t)(a1);
     *(uint32_t*)((char*)(a0) + 608) = (*(uint32_t*)((char*)(a0) + 608)) | (16);
@@ -3762,13 +3762,13 @@ uint32_t main_f_167b860() { return 50; }
 // sub_167b8d0  (orig 0x167b8d0, ret_only)
 void main_f_167b8d0() {}
 
-// sub_167b940  (orig 0x167b940, getter)
+// LanMatchUpdateSessionSettingJob_UpdateSessionSetting  (orig 0x167b940, getter)
 uint16_t main_f_167b940(void* a0) { return *(uint16_t*)((char*)(a0) + 12); }
 
-// sub_167b950  (orig 0x167b950, getter)
+// LanMatchUpdateSessionSettingJob_UpdateSessionSetting  (orig 0x167b950, getter)
 uint16_t main_f_167b950(void* a0) { return *(uint16_t*)((char*)(a0) + 14); }
 
-// sub_167b960  (orig 0x167b960, getter)
+// LanMatchUpdateSessionSettingJob_UpdateSessionSetting  (orig 0x167b960, getter)
 uint32_t main_f_167b960(void* a0) { return *(uint32_t*)((char*)(a0) + 16); }
 
 // sub_167bb10  (orig 0x167bb10, getter)
@@ -4075,7 +4075,7 @@ void main_f_168be20() {}
 // sub_168bf20  (orig 0x168bf20, ret_only)
 void main_f_168bf20() {}
 
-// sub_168c030  (orig 0x168c030, ptr_add)
+// LocalMatchJoinSessionJob_JoinMatchmakeSession  (orig 0x168c030, ptr_add)
 void* main_f_168c030(void* a0) { return (char*)a0 + 24; }
 
 // sub_168c8d0  (orig 0x168c8d0, ret_only)
@@ -4153,7 +4153,7 @@ uint32_t main_f_1691a70() { return 0; }
 // sub_1691a80  (orig 0x1691a80, mov_ret)
 uint32_t main_f_1691a80() { return 0; }
 
-// sub_16928a0  (orig 0x16928a0, setter)
+// LocalAllowParticipatingJob_WaitBackgroundJobEnd  (orig 0x16928a0, setter)
 void main_f_16928a0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 1132) = a1; }
 
 // sub_16928b0  (orig 0x16928b0, setter)
@@ -4182,10 +4182,10 @@ void main_f_1693c80(void* a0, uint32_t a1) {
     *(uint8_t*)((char*)(a0) + 5941L) = (uint8_t)((((uint32_t)a1)) & (1));
 }
 
-// sub_1693c90  (orig 0x1693c90, straight)
+// LocalEventJob_WaitConnectionStatusUpdated  (orig 0x1693c90, straight)
 uint8_t main_f_1693c90(void* a0) { return *(uint8_t*)((char*)(a0) + 5941L); }
 
-// sub_1694e90  (orig 0x1694e90, compare)
+// LocalHostMigrationJob_WaitForCancel  (orig 0x1694e90, compare)
 bool main_f_1694e90(void* a0) { return (uint32_t)(*(uint32_t*)((char*)(a0) + 1256)) == (uint64_t)(1); }
 
 // sub_1695d90  (orig 0x1695d90, compare-pred)
@@ -4244,7 +4244,7 @@ uint32_t main_f_1697800(void* a0) {
     return 1;
 }
 
-// sub_1697830  (orig 0x1697830, setter-chain)
+// LocalDestroyNetworkJob_WaitForCancel_3  (orig 0x1697830, setter-chain)
 void main_f_1697830(void* a0, uint64_t a1, uint32_t a2) { *(uint64_t*)((char*)(a0)) = a1; *(uint32_t*)((char*)(a0) + 8) = a2; *(uint16_t*)((char*)(a0) + 12) = 0; }
 
 // sub_16978a0  (orig 0x16978a0, ret_only)
@@ -4383,7 +4383,7 @@ uint8_t main_f_16a6bd0(void* a0) { return *(uint8_t*)((char*)(a0) + 190); }
 // sub_16a7890  (orig 0x16a7890, getter)
 uint64_t main_f_16a7890(void* a0) { return *(uint64_t*)((char*)(a0) + 160); }
 
-// sub_16a7a50  (orig 0x16a7a50, getter)
+// LanProcessHostMigrationJob_LanDecideNextHost  (orig 0x16a7a50, getter)
 uint8_t main_f_16a7a50(void* a0) { return *(uint8_t*)((char*)(a0) + 171); }
 
 // sub_16a7b40  (orig 0x16a7b40, setter)
@@ -4440,7 +4440,7 @@ uint32_t main_f_16a7eb0(void* a0) { return *(uint32_t*)((char*)(a0) + 200); }
 // sub_16a7ec0  (orig 0x16a7ec0, getter)
 uint64_t main_f_16a7ec0(void* a0) { return *(uint64_t*)((char*)(a0) + 128); }
 
-// sub_16a8020  (orig 0x16a8020, getter)
+// NexJoinMeshJob_CompleteProcess  (orig 0x16a8020, getter)
 uint8_t main_f_16a8020(void* a0) { return *(uint8_t*)((char*)(a0) + 189); }
 
 // sub_16a80b0  (orig 0x16a80b0, getter)
@@ -4502,10 +4502,10 @@ void main_f_16a83a0(void* a0, uint16_t a1) { *(uint16_t*)((char*)(a0) + 858) = a
 // sub_16a83b0  (orig 0x16a83b0, setter)
 void main_f_16a83b0(void* a0, uint16_t a1) { *(uint16_t*)((char*)(a0) + 860) = a1; }
 
-// sub_16a83c0  (orig 0x16a83c0, getter)
+// ProcessJoinRequestJob_InitialStep_4  (orig 0x16a83c0, getter)
 uint16_t main_f_16a83c0(void* a0) { return *(uint16_t*)((char*)(a0) + 858); }
 
-// sub_16a83d0  (orig 0x16a83d0, getter)
+// ProcessJoinRequestJob_InitialStep_4  (orig 0x16a83d0, getter)
 uint16_t main_f_16a83d0(void* a0) { return *(uint16_t*)((char*)(a0) + 860); }
 
 // sub_16a8a00  (orig 0x16a8a00, ret_only)
@@ -4526,13 +4526,13 @@ uint8_t main_f_16a9a10(void* a0) { return *(uint8_t*)((char*)(a0) + 45); }
 // sub_16aae40  (orig 0x16aae40, ret_only)
 void main_f_16aae40() {}
 
-// sub_16afc70  (orig 0x16afc70, setter)
+// ProcessJoinRequestJob_InitialStep  (orig 0x16afc70, setter)
 void main_f_16afc70(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 72) = a1; }
 
 // sub_16afc80  (orig 0x16afc80, setter)
 void main_f_16afc80(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 80) = a1; }
 
-// sub_16afc90  (orig 0x16afc90, setter)
+// LeaveMeshJob_WaitLeaveResponse  (orig 0x16afc90, setter)
 void main_f_16afc90(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 96) = a1; }
 
 // sub_16afca0  (orig 0x16afca0, ret_only)
@@ -4780,7 +4780,7 @@ void* main_f_16c51b0(void* a0, uint32_t a1) { return ((char *)(char*)(a0) + 1032
 // sub_16c5200  (orig 0x16c5200, ret_only)
 void main_f_16c5200() {}
 
-// sub_16c6880  (orig 0x16c6880, getter)
+// NexNatServerAddressResolveJob_StepComplete_3  (orig 0x16c6880, getter)
 uint8_t main_f_16c6880(void* a0) { return *(uint8_t*)((char*)(a0) + 178); }
 
 // sub_16c7e60  (orig 0x16c7e60, ret_only)
@@ -4848,7 +4848,7 @@ void main_f_16ca720() {}
 // sub_16ca780  (orig 0x16ca780, ret_only)
 void main_f_16ca780() {}
 
-// sub_16cb950  (orig 0x16cb950, setter-chain-zero)
+// NatDetectionJob_StepEnd  (orig 0x16cb950, setter-chain-zero)
 void main_f_16cb950(void* a0) {
     *(uint64_t*)((char*)a0 + 1472) = 0;
     __asm__ __volatile__("" ::: "memory");
@@ -4995,7 +4995,7 @@ void main_f_16d5cf0() {}
 // sub_16d5d00  (orig 0x16d5d00, ret_only)
 void main_f_16d5d00() {}
 
-// sub_16d64e0  (orig 0x16d64e0, setter)
+// InstanceTable_458  (orig 0x16d64e0, setter)
 void main_f_16d64e0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 600) = a1; }
 
 // sub_16d6a30  (orig 0x16d6a30, ret_only)
@@ -5228,19 +5228,19 @@ uint8_t main_f_16ee570(void* a0) { return *(uint8_t*)((char*)(a0) + 720); }
 // sub_16f00d0  (orig 0x16f00d0, ret_only)
 void main_f_16f00d0() {}
 
-// sub_16f1420  (orig 0x16f1420, ptr_add)
+// NexMatchCommunityManagementJob_JoinCommunity  (orig 0x16f1420, ptr_add)
 void* main_f_16f1420(void* a0) { return (char*)a0 + 16; }
 
-// sub_16f1430  (orig 0x16f1430, ptr_add)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x16f1430, ptr_add)
 void* main_f_16f1430(void* a0) { return (char*)a0 + 16; }
 
-// sub_16f1440  (orig 0x16f1440, ptr_add)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x16f1440, ptr_add)
 void* main_f_16f1440(void* a0) { return (char*)a0 + 32; }
 
-// sub_16f14a0  (orig 0x16f14a0, ptr_add)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x16f14a0, ptr_add)
 void* main_f_16f14a0(void* a0) { return (char*)a0 + 48; }
 
-// sub_16f14b0  (orig 0x16f14b0, ptr_add)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x16f14b0, ptr_add)
 void* main_f_16f14b0(void* a0) { return (char*)a0 + 1648; }
 
 // sub_16f3350  (orig 0x16f3350, ret_only)
@@ -5288,19 +5288,19 @@ void main_f_170c420() {}
 // sub_170e800  (orig 0x170e800, ret_only)
 void main_f_170e800() {}
 
-// sub_170e810  (orig 0x170e810, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x170e810, getter)
 uint64_t main_f_170e810(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 
-// sub_170e820  (orig 0x170e820, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x170e820, getter)
 uint8_t main_f_170e820(void* a0) { return *(uint8_t*)((char*)(a0) + 20); }
 
-// sub_170e830  (orig 0x170e830, ptr_add)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x170e830, ptr_add)
 void* main_f_170e830(void* a0) { return (char*)a0 + 20; }
 
-// sub_170e840  (orig 0x170e840, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x170e840, getter)
 uint32_t main_f_170e840(void* a0) { return *(uint32_t*)((char*)(a0) + 420); }
 
-// sub_170e850  (orig 0x170e850, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x170e850, getter)
 uint64_t main_f_170e850(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 
 // sub_170fe30  (orig 0x170fe30, ret_only)
@@ -5442,112 +5442,112 @@ uint8_t main_f_17159a0(void* a0) { return ((*(uint8_t*)((char*)(a0) + 3376)) >> 
 // sub_17159b0  (orig 0x17159b0, ret_only)
 void main_f_17159b0() {}
 
-// sub_17159c0  (orig 0x17159c0, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x17159c0, getter)
 uint64_t main_f_17159c0(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 
-// sub_17159d0  (orig 0x17159d0, ptr_add)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x17159d0, ptr_add)
 void* main_f_17159d0(void* a0) { return (char*)a0 + 24; }
 
-// sub_17159e0  (orig 0x17159e0, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x17159e0, getter)
 uint32_t main_f_17159e0(void* a0) { return *(uint32_t*)((char*)(a0) + 2424); }
 
-// sub_17159f0  (orig 0x17159f0, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x17159f0, getter)
 uint8_t main_f_17159f0(void* a0) { return *(uint8_t*)((char*)(a0) + 2429); }
 
-// sub_1715a00  (orig 0x1715a00, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x1715a00, getter)
 uint8_t main_f_1715a00(void* a0) { return *(uint8_t*)((char*)(a0) + 2430); }
 
-// sub_1715a10  (orig 0x1715a10, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x1715a10, getter)
 uint8_t main_f_1715a10(void* a0) { return *(uint8_t*)((char*)(a0) + 2431); }
 
-// sub_1715a20  (orig 0x1715a20, ptr_add)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x1715a20, ptr_add)
 void* main_f_1715a20(void* a0) { return (char*)a0 + 20; }
 
-// sub_1715a30  (orig 0x1715a30, getter)
+// NexMatchBrowseMatchmakeJob_BrowseMatchmake  (orig 0x1715a30, getter)
 uint32_t main_f_1715a30(void* a0) { return *(uint32_t*)((char*)(a0) + 420); }
 
-// sub_1715a40  (orig 0x1715a40, getter)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715a40, getter)
 uint32_t main_f_1715a40(void* a0) { return *(uint32_t*)((char*)(a0) + 8); }
 
-// sub_1715a50  (orig 0x1715a50, getter)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715a50, getter)
 uint16_t main_f_1715a50(void* a0) { return *(uint16_t*)((char*)(a0) + 12); }
 
-// sub_1715a60  (orig 0x1715a60, getter)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715a60, getter)
 uint16_t main_f_1715a60(void* a0) { return *(uint16_t*)((char*)(a0) + 14); }
 
-// sub_1715a90  (orig 0x1715a90, ptr_add)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715a90, ptr_add)
 void* main_f_1715a90(void* a0) { return (char*)a0 + 1616; }
 
-// sub_1715aa0  (orig 0x1715aa0, straight)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715aa0, straight)
 uint8_t main_f_1715aa0(void* a0) { return (*(uint8_t*)((char*)(a0) + 1808)) >> (7); }
 
-// sub_1715ab0  (orig 0x1715ab0, ptr_add)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715ab0, ptr_add)
 void* main_f_1715ab0(void* a0) { return (char*)a0 + 560; }
 
-// sub_1715c80  (orig 0x1715c80, mov_ret)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715c80, mov_ret)
 uint32_t main_f_1715c80() { return 1; }
 
-// sub_1715c90  (orig 0x1715c90, ptr_add)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715c90, ptr_add)
 void* main_f_1715c90(void* a0) { return (char*)a0 + 1776; }
 
-// sub_1715ca0  (orig 0x1715ca0, ptr_add)
+// NexMatchCommunityManagementJob_UpdateCommunity  (orig 0x1715ca0, ptr_add)
 void* main_f_1715ca0(void* a0) { return (char*)a0 + 1792; }
 
-// sub_1715cb0  (orig 0x1715cb0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715cb0, getter)
 uint16_t main_f_1715cb0(void* a0) { return *(uint16_t*)((char*)(a0) + 12); }
 
-// sub_1715cc0  (orig 0x1715cc0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715cc0, getter)
 uint16_t main_f_1715cc0(void* a0) { return *(uint16_t*)((char*)(a0) + 14); }
 
-// sub_1715cd0  (orig 0x1715cd0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715cd0, getter)
 uint32_t main_f_1715cd0(void* a0) { return *(uint32_t*)((char*)(a0) + 16); }
 
-// sub_1715ce0  (orig 0x1715ce0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715ce0, getter)
 uint8_t main_f_1715ce0(void* a0) { return *(uint8_t*)((char*)(a0) + 20); }
 
-// sub_1715cf0  (orig 0x1715cf0, indexed-getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715cf0, indexed-getter)
 uint8_t main_f_1715cf0(void* a0, uint32_t a1) { return *(uint8_t *)(((char *)a0 + a1 * 1 + 48)); }
 
-// sub_1715d20  (orig 0x1715d20, ptr_add)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d20, ptr_add)
 void* main_f_1715d20(void* a0) { return (char*)a0 + 576; }
 
-// sub_1715d30  (orig 0x1715d30, ptr_add)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d30, ptr_add)
 void* main_f_1715d30(void* a0) { return (char*)a0 + 736; }
 
-// sub_1715d40  (orig 0x1715d40, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d40, getter)
 uint8_t main_f_1715d40(void* a0) { return *(uint8_t*)((char*)(a0) + 572); }
 
-// sub_1715d50  (orig 0x1715d50, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d50, getter)
 uint32_t main_f_1715d50(void* a0) { return *(uint32_t*)((char*)(a0) + 912); }
 
-// sub_1715d60  (orig 0x1715d60, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d60, getter)
 uint8_t main_f_1715d60(void* a0) { return *(uint8_t*)((char*)(a0) + 916); }
 
-// sub_1715d70  (orig 0x1715d70, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d70, getter)
 uint32_t main_f_1715d70(void* a0) { return *(uint32_t*)((char*)(a0) + 920); }
 
-// sub_1715d80  (orig 0x1715d80, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d80, getter)
 uint8_t main_f_1715d80(void* a0) { return *(uint8_t*)((char*)(a0) + 924); }
 
-// sub_1715d90  (orig 0x1715d90, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715d90, getter)
 uint32_t main_f_1715d90(void* a0) { return *(uint32_t*)((char*)(a0) + 928); }
 
-// sub_1715da0  (orig 0x1715da0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715da0, getter)
 uint8_t main_f_1715da0(void* a0) { return *(uint8_t*)((char*)(a0) + 932); }
 
-// sub_1715db0  (orig 0x1715db0, ptr_add)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715db0, ptr_add)
 void* main_f_1715db0(void* a0) { return (char*)a0 + 936; }
 
-// sub_1715dc0  (orig 0x1715dc0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715dc0, getter)
 uint8_t main_f_1715dc0(void* a0) { return *(uint8_t*)((char*)(a0) + 976); }
 
-// sub_1715dd0  (orig 0x1715dd0, getter)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715dd0, getter)
 uint8_t main_f_1715dd0(void* a0) { return *(uint8_t*)((char*)(a0) + 977); }
 
-// sub_1715e00  (orig 0x1715e00, straight)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x1715e00, straight)
 void* main_f_1715e00(void* a0, uint32_t a1) { return ((char *)(char*)(a0) + 1176 + (uintptr_t)(((uint32_t)a1)) * 16); }
 
-// sub_17162c0  (orig 0x17162c0, ptr_add)
+// NexMatchUpdateSessionSettingJob_ModifyAttribute  (orig 0x17162c0, ptr_add)
 void* main_f_17162c0(void* a0) { return (char*)a0 + 896; }
 
 // sub_1718400  (orig 0x1718400, getter)
@@ -5722,7 +5722,7 @@ uint16_t main_f_1723380(void* a0) { return *(uint16_t*)((char*)(a0) + 12); }
 // sub_1723390  (orig 0x1723390, getter)
 uint8_t main_f_1723390(void* a0) { return *(uint8_t*)((char*)(a0) + 14); }
 
-// sub_17233a0  (orig 0x17233a0, straight)
+// p1frXqxmeCZWFv0X_2  (orig 0x17233a0, straight)
 void main_f_17233a0(void* a0, void* a1) {
     *(uint16_t*)((char*)(a0) + 8) = *(uint16_t*)((char*)(a1) + 8);
     *(uint8_t*)((char*)(a0) + 10) = *(uint8_t*)((char*)(a1) + 10);
@@ -5861,13 +5861,13 @@ void main_f_1731430() {}
 // sub_17315b0  (orig 0x17315b0, ret_only)
 void main_f_17315b0() {}
 
-// sub_17315c0  (orig 0x17315c0, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x17315c0, getter)
 uint32_t main_f_17315c0(void* a0) { return *(uint32_t*)((char*)(a0) + 8); }
 
-// sub_17315d0  (orig 0x17315d0, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x17315d0, getter)
 uint32_t main_f_17315d0(void* a0) { return *(uint32_t*)((char*)(a0) + 12); }
 
-// sub_17315e0  (orig 0x17315e0, getter)
+// NexMatchCommunityManagementJob_FindCommunityByOwner  (orig 0x17315e0, getter)
 uint32_t main_f_17315e0(void* a0) { return *(uint32_t*)((char*)(a0) + 16); }
 
 // sub_1731640  (orig 0x1731640, mov_ret)
@@ -5961,13 +5961,13 @@ void main_f_1735dd0() {}
 // sub_17360b0  (orig 0x17360b0, ret_only)
 void main_f_17360b0() {}
 
-// sub_17360c0  (orig 0x17360c0, getter)
+// NexMatchCommunityManagementJob_JoinCommunity  (orig 0x17360c0, getter)
 uint32_t main_f_17360c0(void* a0) { return *(uint32_t*)((char*)(a0) + 8); }
 
-// sub_17360d0  (orig 0x17360d0, getter)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x17360d0, getter)
 uint16_t main_f_17360d0(void* a0) { return *(uint16_t*)((char*)(a0) + 8); }
 
-// sub_17360e0  (orig 0x17360e0, getter)
+// NexMatchCommunityManagementJob_CreateCommunity  (orig 0x17360e0, getter)
 uint16_t main_f_17360e0(void* a0) { return *(uint16_t*)((char*)(a0) + 10); }
 
 // sub_17368a0  (orig 0x17368a0, setter)
@@ -6336,16 +6336,16 @@ void main_f_174b590() {}
 // sub_174b9a0  (orig 0x174b9a0, ret_only)
 void main_f_174b9a0() {}
 
-// sub_174be00  (orig 0x174be00, setter)
+// Pia_SendThreadStream  (orig 0x174be00, setter)
 void main_f_174be00(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 80) = a1; }
 
-// sub_174be10  (orig 0x174be10, setter)
+// Pia_ReceiveThreadStream  (orig 0x174be10, setter)
 void main_f_174be10(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 72) = a1; }
 
 // sub_174dbc0  (orig 0x174dbc0, getter-chain)
 uint32_t main_f_174dbc0(void* a0) { return *(uint32_t*)((char*)((*(uint64_t*)((char*)(a0) + 96))) + 4076); }
 
-// sub_174de50  (orig 0x174de50, getter)
+// LeaveMeshJob_LeaveSuccess_2  (orig 0x174de50, getter)
 uint64_t main_f_174de50(void* a0) { return *(uint64_t*)((char*)(a0) + 144); }
 
 // sub_174de60  (orig 0x174de60, getter)
@@ -6405,16 +6405,16 @@ uint32_t main_f_1755690() { return 4; }
 // sub_17568b0  (orig 0x17568b0, setter-chain)
 void main_f_17568b0(uint64_t a0, void* a1) { *(uint64_t*)((char*)(a1)) = a0; *(uint32_t*)((char*)(a1) + 8) = 0; *(uint64_t*)((char*)(a1) + 16) = 0; }
 
-// sub_1757530  (orig 0x1757530, compare)
+// Hostname_s_was_found_in_DNS_cache  (orig 0x1757530, compare)
 bool main_f_1757530(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0) + 2152)) != (uint64_t)(2); }
 
-// sub_17575d0  (orig 0x17575d0, mov_ret)
+// Trying_s  (orig 0x17575d0, mov_ret)
 uint32_t main_f_17575d0() { return 0; }
 
-// sub_17575e0  (orig 0x17575e0, mov_ret)
+// Trying_s  (orig 0x17575e0, mov_ret)
 uint32_t main_f_17575e0() { return 0; }
 
-// sub_17577e0  (orig 0x17577e0, setter-chain)
+// No_URL_set  (orig 0x17577e0, setter-chain)
 void main_f_17577e0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 16) = a1; *(uint64_t*)((char*)(a0) + 24) = 0; *(uint64_t*)((char*)(a0)) = 0; *(uint64_t*)((char*)(a0) + 8) = 0; }
 
 // sub_17579a0  (orig 0x17579a0, getter)
@@ -6423,13 +6423,13 @@ uint64_t main_f_17579a0(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 // sub_1759430  (orig 0x1759430, ret_only)
 void main_f_1759430() {}
 
-// sub_175a410  (orig 0x175a410, setter)
+// Closing_connection_ld  (orig 0x175a410, setter)
 void main_f_175a410(void* a0) { *(uint64_t*)((char*)(a0) + 16) = 0; }
 
-// sub_175cc20  (orig 0x175cc20, ptr_add)
+// Site_s_d_is_pipeline_blacklisted  (orig 0x175cc20, ptr_add)
 void* main_f_175cc20(void* a0) { return (char*)a0 + 384; }
 
-// sub_175cc30  (orig 0x175cc30, ptr_add)
+// Server_s_is_blacklisted  (orig 0x175cc30, ptr_add)
 void* main_f_175cc30(void* a0) { return (char*)a0 + 416; }
 
 // sub_175cc50  (orig 0x175cc50, compare)
@@ -6453,10 +6453,10 @@ void main_f_17651c0(void* a0) { *(uint8_t*)((char*)(a0) + 2249) = 0; }
 // sub_1765680  (orig 0x1765680, setter)
 void main_f_1765680(void* a0) { *(uint8_t*)((char*)(a0) + 2248) = 0; }
 
-// sub_1766dd0  (orig 0x1766dd0, mov_ret)
+// chunked  (orig 0x1766dd0, mov_ret)
 uint32_t main_f_1766dd0() { return 0; }
 
-// sub_1767d40  (orig 0x1767d40, setter-chain-zero)
+// http_proxy  (orig 0x1767d40, setter-chain-zero)
 void main_f_1767d40(void* a0) {
     *(uint64_t*)((char*)a0 + 2936) = 0;
     __asm__ __volatile__("" ::: "memory");
@@ -6469,13 +6469,13 @@ void main_f_1769a50(void* a0) {
     *(uint64_t*)((char*)(a0) + 20440L) = *(uint64_t*)((char*)(a0) + 648);
 }
 
-// sub_1769c30  (orig 0x1769c30, mov_ret)
+// Pipe_broke_handle_p_url_s  (orig 0x1769c30, mov_ret)
 uint32_t main_f_1769c30() { return 0; }
 
 // sub_1773510  (orig 0x1773510, ret_only)
 void main_f_1773510() {}
 
-// sub_17757e0  (orig 0x17757e0, mov_ret)
+// Digest  (orig 0x17757e0, mov_ret)
 uint32_t main_f_17757e0() { return 1; }
 
 // sub_17771a0  (orig 0x17771a0, mov_ret)
@@ -6493,7 +6493,7 @@ uint32_t main_f_1777440() { return 4; }
 // sub_1777450  (orig 0x1777450, mov_ret)
 uint64_t main_f_1777450() { return 0; }
 
-// sub_1778130  (orig 0x1778130, ret_only)
+// http_proxy  (orig 0x1778130, ret_only)
 void main_f_1778130() {}
 
 // sub_1778140  (orig 0x1778140, ret_only)
@@ -6502,16 +6502,16 @@ void main_f_1778140() {}
 // sub_1778150  (orig 0x1778150, straight)
 uint32_t main_f_1778150(uint32_t a0) { return (((uint32_t)a0)) & (2147483647); }
 
-// sub_1778160  (orig 0x1778160, ret_only)
+// d41d8cd98f00b204e9800998ecf8427e  (orig 0x1778160, ret_only)
 void main_f_1778160() {}
 
 // sub_1778170  (orig 0x1778170, straight)
 uint32_t main_f_1778170(uint32_t a0) { return (((uint32_t)a0)) & (2147483647); }
 
-// sub_1778180  (orig 0x1778180, ret_only)
+// RELOAD  (orig 0x1778180, ret_only)
 void main_f_1778180() {}
 
-// sub_1778190  (orig 0x1778190, ret_only)
+// RELOAD  (orig 0x1778190, ret_only)
 void main_f_1778190() {}
 
 // sub_17781a0  (orig 0x17781a0, ret_only)
@@ -6577,7 +6577,7 @@ void main_f_177a5b0(void* a0, float a1) { *(float*)((char*)(a0) + 188) = a1; }
 // sub_177bed0  (orig 0x177bed0, compare-pred)
 bool main_f_177bed0(void* a0) { return (uint32_t)(*(uint8_t*)(char*)(*(uint64_t*)((char*)a0 + 32))) == (uint32_t)(2); }
 
-// sub_177c0b0  (orig 0x177c0b0, setter-chain)
+// Signature_check_failed_c_c_c_c_must_be_c_c_c_c  (orig 0x177c0b0, setter-chain)
 void main_f_177c0b0(void* a0, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5, uint64_t a6) { *(uint64_t*)((char*)(a0) + 16) = a1; *(uint64_t*)((char*)(a0) + 32) = a2; *(uint64_t*)((char*)(a0) + 96) = a3; *(uint64_t*)((char*)(a0) + 104) = a4; *(uint64_t*)((char*)(a0) + 112) = a5; *(uint64_t*)((char*)(a0) + 120) = a6; }
 
 // sub_177c110  (orig 0x177c110, getter-chain)
@@ -6643,7 +6643,7 @@ void main_f_177ccb0() {}
 // sub_177cd10  (orig 0x177cd10, getter-chain)
 uint64_t main_f_177cd10(void* a0) { return *(uint64_t*)((char*)((*(uint64_t*)((char*)(a0) + 40))) + 136); }
 
-// sub_177cd90  (orig 0x177cd90, straight)
+// Signature_check_failed_c_c_c_c_must_be_c_c_c_c  (orig 0x177cd90, straight)
 void main_f_177cd90(void* a0, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5, uint32_t a6) {
     uint32_t k0 = 1;
     *(uint8_t*)((char*)(a0) + 23) = (uint8_t)((((uint32_t)a6)) & (1));
@@ -6785,7 +6785,7 @@ uint64_t main_f_17816d0() { return 0; }
 // sub_17816e0  (orig 0x17816e0, mov_ret)
 uint64_t main_f_17816e0() { return 0; }
 
-// sub_1781780  (orig 0x1781780, setter-chain-zero)
+// ScFontB  (orig 0x1781780, setter-chain-zero)
 void main_f_1781780(void* a0) {
     struct u64x2 { uint64_t a, b; };
     *(uint32_t*)((char*)a0 + 24) = 0;
@@ -6994,7 +6994,7 @@ void main_f_1789c00() {}
 // sub_1789d00  (orig 0x1789d00, ret_only)
 void main_f_1789d00() {}
 
-// sub_178d530  (orig 0x178d530, ret_only)
+// nvnDeviceGetProcAddress_2  (orig 0x178d530, ret_only)
 void main_f_178d530() {}
 
 // sub_178d730  (orig 0x178d730, ret_only)

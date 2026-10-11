@@ -750,7 +750,7 @@ void main_f_10e20() { main::sub_17f4a0(); }
 // sub_2a170  (orig 0x2a170, tailcall)
 void main_f_2a170() { main::sub_ce0(); }
 
-// sub_59820  (orig 0x59820, tailcall)
+// NonTrackedAlloc_146  (orig 0x59820, tailcall)
 void main_f_59820() { main::sub_61f80(); }
 
 // sub_59830  (orig 0x59830, tailcall)
@@ -1089,10 +1089,10 @@ void main_f_189e70() { main::sub_ce0(); }
 // sub_197840  (orig 0x197840, tailcall)
 void main_f_197840() { main::sub_ce0(); }
 
-// sub_19b290  (orig 0x19b290, tailcall)
+// NpPhysicsInsertionCallback  (orig 0x19b290, tailcall)
 void main_f_19b290() { main::GuMeshFactory(); }
 
-// sub_19c4f0  (orig 0x19c4f0, tailcall)
+// NpPhysicsInsertionCallback  (orig 0x19c4f0, tailcall)
 void main_f_19c4f0() { main::GuMeshFactory_2(); }
 
 // sub_1a0f10  (orig 0x1a0f10, tailcall)
@@ -1206,7 +1206,7 @@ void main_f_2a9300() { main::sub_ce0(); }
 // sub_2bd7e0  (orig 0x2bd7e0, tailcall)
 void main_f_2bd7e0() { main_f_2d9550(); }
 
-// sub_2c1720  (orig 0x2c1720, tailcall)
+// PxcThreadCoherentCache_8  (orig 0x2c1720, tailcall)
 void main_f_2c1720() { main::sub_2c43e0(); }
 
 // sub_2d9550  (orig 0x2d9550, tailcall)
@@ -1545,10 +1545,10 @@ void main_f_400960() { main::sub_3fc0a0(); }
 // sub_4071a0  (orig 0x4071a0, tailcall)
 void main_f_4071a0() { main::sub_4071b0(); }
 
-// sub_418b70  (orig 0x418b70, tailcall)
+// FeatureId_YEBIS_SISDK3_NX_BeginYear_0_BeginMonth_0_Begin  (orig 0x418b70, tailcall)
 void main_f_418b70() { main::GPUPostEffect_cpp_d_PPFX_ERROR_18(); }
 
-// sub_445af0  (orig 0x445af0, tailcall)
+// GPUInterfaceDevice_cpp_d_PPFX_10  (orig 0x445af0, tailcall)
 void main_f_445af0() { main::GPUInterfaceSurface_2(); }
 
 // sub_445df0  (orig 0x445df0, tailcall)
@@ -1764,7 +1764,7 @@ void main_f_5d58f0() { main::sub_5eca40(); }
 // sub_5d5900  (orig 0x5d5900, tailcall)
 void main_f_5d5900() { main::sub_5eca40(); }
 
-// sub_5d5de0  (orig 0x5d5de0, tailcall)
+// JobThread2  (orig 0x5d5de0, tailcall)
 void main_f_5d5de0() { main::sub_5d5df0(); }
 
 // sub_5d8a50  (orig 0x5d8a50, tailcall)
@@ -2307,13 +2307,13 @@ void main_f_7014f0() { main::sub_6fed50(); }
 // sub_701500  (orig 0x701500, tailcall)
 void main_f_701500() { main::sub_6febe0(); }
 
-// sub_70b180  (orig 0x70b180, tailcall)
+// Value_of_type  (orig 0x70b180, tailcall)
 void main_f_70b180() { gflib3::gflnet3_message_lite_5(); }
 
 // sub_70d190  (orig 0x70d190, tailcall)
 void main_f_70d190() { main_f_70d9f0(); }
 
-// sub_70d420  (orig 0x70d420, tailcall)
+// gflnet3_message_lite_3  (orig 0x70d420, tailcall)
 void main_f_70d420() { main_f_70da00(); }
 
 // sub_70d610  (orig 0x70d610, tailcall)

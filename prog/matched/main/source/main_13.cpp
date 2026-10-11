@@ -72,7 +72,7 @@ void main_f_178fdc0(void* a0, uint64_t a1, uint32_t a2) { *(uint64_t*)((char*)(a
 // sub_178fdd0  (orig 0x178fdd0, getter)
 uint64_t main_f_178fdd0(void* a0) { return *(uint64_t*)((char*)(a0) + 16); }
 
-// sub_1790120  (orig 0x1790120, setter)
+// Heap_is_not_set_in_the_argument_of_the_resource_destruct  (orig 0x1790120, setter)
 void main_f_1790120(void* a0) { *(uint8_t*)((char*)(a0)) = 0; }
 
 // sub_1790130  (orig 0x1790130, setter-chain-zero)
@@ -249,7 +249,7 @@ void main_f_17912b0() {}
 // sub_17912c0  (orig 0x17912c0, compare)
 bool main_f_17912c0(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0))) != (uint64_t)(0); }
 
-// sub_17912d0  (orig 0x17912d0, mov_ret)
+// uConstantBufferForVertexShader  (orig 0x17912d0, mov_ret)
 uint32_t main_f_17912d0() { return 1; }
 
 // sub_1791410  (orig 0x1791410, getter)
@@ -316,7 +316,7 @@ bool main_f_1794760(void* a0) { return (uint32_t)(*(uint8_t*)((char*)(*(uint64_t
 // sub_1795520  (orig 0x1795520, setter)
 void main_f_1795520(void* a0) { *(uint16_t*)((char*)(a0) + 56) = 0; }
 
-// sub_1796d40  (orig 0x1796d40, setter-chain-zero)
+// gamma_correction  (orig 0x1796d40, setter-chain-zero)
 void main_f_1796d40(void* a0) {
     struct u64x2 { uint64_t a, b; };
     *(struct u64x2*)((char*)a0 + 16) = (struct u64x2){ 0, 0 };
@@ -382,10 +382,10 @@ void main_f_179a850(void* a0, void* a1) {
     *(uint64_t*)((char*)(a0) + 48) = *(uint64_t*)((char*)(a1) + 32);
 }
 
-// sub_179a9e0  (orig 0x179a9e0, getter)
+// uTexture3  (orig 0x179a9e0, getter)
 uint64_t main_f_179a9e0(void* a0) { return *(uint64_t*)((char*)(a0) + 232); }
 
-// sub_179a9f0  (orig 0x179a9f0, getter)
+// uTexture3  (orig 0x179a9f0, getter)
 uint64_t main_f_179a9f0(void* a0) { return *(uint64_t*)((char*)(a0) + 240); }
 
 // sub_179aa60  (orig 0x179aa60, ret_only)
@@ -605,10 +605,10 @@ void main_f_17c19e0(void* a0) {
 // sub_17c1b90  (orig 0x17c1b90, getter-chain)
 uint8_t main_f_17c1b90(void* a0) { return *(uint8_t*)((char*)((*(uint64_t*)((char*)(a0) + 568))) + 42); }
 
-// sub_17c48e0  (orig 0x17c48e0, ret_only)
+// vfx_system_deleted_the_registered_binary_resource_id_d  (orig 0x17c48e0, ret_only)
 void main_f_17c48e0() {}
 
-// sub_17c9ae0  (orig 0x17c9ae0, setter)
+// Emitter_Initialize_Failed  (orig 0x17c9ae0, setter)
 void main_f_17c9ae0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 1024) = a1; }
 
 // sub_17ccc00  (orig 0x17ccc00, ret_only)
@@ -680,7 +680,7 @@ uint64_t main_f_17d4eb0(void* a0, uint32_t a1) {
     return *(uint64_t*)((char*)(p0) + 104);
 }
 
-// sub_17d57a0  (orig 0x17d57a0, setter-chain-zero)
+// Gap_d  (orig 0x17d57a0, setter-chain-zero)
 void main_f_17d57a0(void* a0) {
     struct u64x2 { uint64_t a, b; };
     *(uint8_t*)(char*)a0 = 0;
@@ -696,7 +696,7 @@ void main_f_17d57a0(void* a0) {
     *(struct u64x2*)((char*)a0 + 32) = (struct u64x2){ 0, 0 };
 }
 
-// sub_17d5c10  (orig 0x17d5c10, setter-chain-zero)
+// Gap_d  (orig 0x17d5c10, setter-chain-zero)
 void main_f_17d5c10(void* a0) {
     struct u64x2 { uint64_t a, b; };
     *(uint8_t*)(char*)a0 = 0;
@@ -712,7 +712,7 @@ void main_f_17d60b0(void* a0) { *(uint8_t*)((char*)(a0)) = 0; }
 // sub_17d6d30  (orig 0x17d6d30, mov_ret)
 uint32_t main_f_17d6d30() { return 1; }
 
-// sub_17de500  (orig 0x17de500, copy2)
+// Emitter_Initialize_Failed  (orig 0x17de500, copy2)
 void main_f_17de500(void* a0, void* a1) { *(uint64_t*)((char*)(a1) + 152) = *(uint64_t*)((char*)(a0) + 2240); }
 
 // sub_17df790  (orig 0x17df790, setter-chain)
@@ -727,13 +727,13 @@ uint32_t main_f_17e53a0() { return 1; }
 // sub_17e5d50  (orig 0x17e5d50, ret_only)
 void main_f_17e5d50() {}
 
-// sub_17e8260  (orig 0x17e8260, setter-chain)
+// TempBuffer_WorkSize_d  (orig 0x17e8260, setter-chain)
 void main_f_17e8260(void* a0) { *(uint32_t*)((char*)(a0)) = 0; *(uint8_t*)((char*)(a0) + 48) = 0; *(uint64_t*)((char*)(a0) + 24) = 0; *(uint64_t*)((char*)(a0) + 32) = 0; *(uint64_t*)((char*)(a0) + 8) = 0; *(uint64_t*)((char*)(a0) + 16) = 0; }
 
 // sub_17e84c0  (orig 0x17e84c0, ret_only)
 void main_f_17e84c0() {}
 
-// sub_17e8d00  (orig 0x17e8d00, setter-chain-zero)
+// TempBuffer_WorkSize_d  (orig 0x17e8d00, setter-chain-zero)
 void main_f_17e8d00(void* a0) {
     struct u64x2 { uint64_t a, b; };
     *(struct u64x2*)((char*)a0 + 80) = (struct u64x2){ 0, 0 };
