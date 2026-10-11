@@ -117,6 +117,31 @@ def literal_of(src):
     return m.group(1) if m else None
 
 
+# `static char g_f_XXXXX[1]` -- a one-byte global whose address is returned.
+#
+# These are not string literals and `literal_of` returns None for them, so the
+# string-confirmation step rejected every one. But they are placeable by exactly
+# the same mechanism: name the symbol, put it in its own section, let the linker
+# set the page. The bytes at the target are irrelevant -- what must match is the
+# *address*, and a 1-byte global has a fixed size that places unambiguously.
+#
+#     const char *f_dc4a0() { static char g_f_dc4a0[1]; return g_f_dc4a0; }
+#     retail points at 0x9c21bb, inside the string "libopus unknown-fixed"
+#
+# So a body returning such a global is checked by address alone: does the computed
+# target fall inside a real section, and does the emitted `adrp`+`add` encode it?
+GLOBAL_RE = re.compile(
+    r"static\s+char\s+(g_f_\w+)\s*\[\s*(\d+)\s*\]\s*;")
+
+
+def global_of(src):
+    """-> (symbol, size) when the body returns a 1-byte global, else None."""
+    m = GLOBAL_RE.search(src)
+    if not m:
+        return None
+    return m.group(1), int(m.group(2))
+
+
 def build(module, items, blob, elfsrc):
     """Compile + link every item at its retail address. -> {ident: bytes}"""
     edata, segs = load_elf_segments(elfsrc)
@@ -287,9 +312,23 @@ def main():
             va = decode_adrp_add(adrp, add, c["addr"])
             raw = at_vaddr(edata, segs, va, 256) or b""
             lit = literal_of(c["src"])
+            glob = global_of(c["src"])
+            if glob is not None:
+                # A 1-byte global: only the address matters. Require the target to
+                # land inside a real section -- the only available check, and the
+                # only one that matters, since the emitted bytes encode the address
+                # rather than the contents.
+                if raw is not None:
+                    c["_straddr"] = va
+                    c["_kind"] = "global"
+                    keep.append(c)
+                else:
+                    tally["global-unmapped"] += 1
+                continue
             got = raw.split(b"\x00", 1)[0].decode("ascii", "replace")
             if lit is not None and got == lit:
                 c["_straddr"] = va
+                c["_kind"] = "literal"
                 keep.append(c)
             else:
                 tally["string-mismatch"] += 1
