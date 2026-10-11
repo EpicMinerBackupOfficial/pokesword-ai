@@ -844,14 +844,20 @@ class StraightLine:
                     used_args.add(n)
                     ptr_args.add(n)
                 if index is not None:
-                    # An indexed access needs the base and the index separately;
-                    # the `addr` value carries both as one expression.
-                    ie = index_expr(index, ext, scale, n)
-                    # Same 5-field shape as the indexed-add form: base, offset,
-                    # index *value*, scale. Here the index is already a rendered
-                    # expression string, so it is carried as an "imm"-free raw
-                    # node -- `("raw", text)` renders verbatim.
-                    state[wreg(dst)] = ("addr_i", n, off, ("raw", ie), 1)
+                    # A load through an indexed address is `ldr Rd, [Rn, Rm, ext]`,
+                    # which Clang emits from a *dereference* and not from an
+                    # address computation -- see the `load_i` render arm. Using
+                    # `addr_i` here produced `add` where the original has `ldr`.
+                    w = access_width(mn, dst)
+                    try:
+                        ie = index_expr(index, ext, scale, n)
+                    except Bail:
+                        ie = index_value(index, ext, scale, n)
+                    if not isinstance(ie, tuple):
+                        ie = ("raw", ie)
+                    state[wreg(dst)] = ("load_i", n, off, ie, w,
+                                        mn in ("ldrsw", "ldursw", "ldrsh",
+                                               "ldursh"))
                     continue
                 w = access_width(mn, dst)
                 # Signed loads. `ldrsh` was missing here as well as from LOADS,
@@ -1669,6 +1675,35 @@ class StraightLine:
             _, n, off, w, signed = val
             ct = S[w] if signed else U[w]
             return ct, "*(%s*)(%s)" % (ct, ptr_add(names[n], off))
+        if kind == "load_i":
+            # A load through an *indexed* address: `ldr x0, [x8, w1, sxtw #3]`.
+            #
+            # This used to be modelled as `addr_i` -- the address -- which emitted
+            # `add x0, x8, w1, sxtw #3`. That is the address, not the load: the
+            # instruction dereferences it. Clang chooses between the two from
+            # whether the C expression reads a value or takes an address:
+            #
+            #     base[i]      ->  ldr x0, [x0, w1, sxtw #3]    <- retail
+            #     &base[i]     ->  add x0, x0, w1, sxtw #3
+            #     (char*)b+i*8 ->  add x0, x0, w1, sxtw #3
+            #
+            # So the same address is `ldr` or `add` purely by how it is spelled,
+            # and the translator was spelling every indexed load as an address.
+            # 546 of 1,707 mismatched bodies carry this form.
+            #
+            # Rendered as a dereference of the indexed address, which is what
+            # makes Clang emit the load.
+            _, n, off, iv, w, signed = val
+            ct = S[w] if signed else U[w]
+            if isinstance(iv, tuple) and iv[0] == "raw":
+                _ei = iv[1]
+            else:
+                _ci, _ei = self._render(iv, names)
+            _addr = "((char *)%s + (uintptr_t)(%s))" % (names[n], _ei)
+            if off:
+                _addr = "((char *)%s + (uintptr_t)(%s) + %d)" % (names[n], _ei,
+                                                                 off)
+            return ct, "*(%s*)(%s)" % (ct, _addr)
         if kind == "addr":
             _, n, off = val
             return "void*", ptr_add(names[n], off)
