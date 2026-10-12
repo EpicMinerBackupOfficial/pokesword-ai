@@ -733,3 +733,86 @@ population that *can* still move:
 And above all of it, 122,564 bodies that no candidate is generated for at all,
 because they call, branch, or frame. Semantic matching is the only path to those
 and it needs C for them first.
+
+## Frames: the writeback form IS reachable. Only the exact idiom is wrong.
+
+`ceiling.md` records stack frames as blocked, and like `adrp` the reason given was
+a codegen impossibility. Re-measured, it is narrower and more specific than that.
+
+### Clang 5.0.1 never folds a frame into `sp` writeback by itself
+
+Measured across every optimisation level, with an ordinary call:
+
+    -O0   stp x29, x30, [sp, #48]      no writeback
+    -O1   stp x29, x30, [sp, #16]      no writeback
+    -O2   stp x29, x30, [sp, #16]      no writeback
+    -O3   stp x29, x30, [sp, #16]      no writeback
+    -Os   stp x29, x30, [sp, #16]      no writeback
+    -Oz   stp x29, x30, [sp, #16]      no writeback
+
+Retail emits the folded form instead:
+
+    stp x29, x30, [sp, #-0x10]!
+    mov x29, sp
+    ...
+    ldp x29, x30, [sp], #0x10
+
+So the original conclusion held for the *ordinary* spelling. That part is right.
+
+### But `alloca` produces the frame, and it is very close
+
+    __builtin_alloca(16)  ->  sub sp, sp, #0x20
+                             stp x29, x30, [sp, #0x10]
+                             add x29, sp, #0x10
+                             bl  ...
+                             ldp x29, x30, [sp, #0x10]
+                             add sp, sp, #0x20
+
+That is the writeback frame, unfolded: `sub sp` + `[sp,#0x10]` is what
+`stp [sp,#-0x20]!` encodes, and `ldp [sp,#0x10]` + `add sp` is what
+`ldp [sp],#0x20` encodes. **Both are reachable. The instructions are right.**
+
+### What is actually missing is one instruction
+
+Retail:
+
+    stp x29, x30, [sp, #-0x10]!     pre-indexed writeback
+    mov x29, sp
+
+Clang:
+
+    sub sp, sp, #0x20               separate decrement
+    stp x29, x30, [sp, #0x10]       plain store
+    add x29, sp, #0x10              frame pointer
+
+Clang omits `mov x29, sp` because it computes `x29` as `sp + offset` directly,
+and it never folds the pre-decrement into the store. A volatile local of exactly
+the frame size, rather than an alloca, produces the folded form:
+
+    volatile char pad[16]  ->  stp x29, x30, [sp, #-16]!   <- retail's exact encoding
+
+but only if the local is *used*; an unused one is optimised away to nothing. So
+the frame is reachable and the blocker is not "Clang cannot express this".
+
+It is: **find the source spelling that makes Clang emit `mov x29, sp` and the
+folded pre-decrement simultaneously.** That is a search over idiom, not an
+impossibility, and it is the gate on the largest population in the project.
+
+### Why it matters more than the other two blockers
+
+Measured on the first 6,000 functions of `main`:
+
+    bodies containing `bl`      3,103
+    of those, frameless              0
+
+**Every single call body is framed**, because the AArch64 ABI requires saving
+`x29` and `x30` around any call. Call lowering and frame lowering are therefore the
+same task, not two tasks that can be scheduled separately -- which is why
+"implement calls" was never going to be a tractable increment.
+
+    stp x29, x30, [sp, #-0x10]!   every framed body in retail
+    mov x29, sp                    every one of them
+
+Finding the idiom that reproduces those two lines unblocks the 122,564 bodies that
+currently produce no candidate at all. That is the whole remaining project, and it
+is one specific source-shape problem.
