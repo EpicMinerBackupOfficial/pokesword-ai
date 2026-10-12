@@ -226,6 +226,43 @@ def sync(a):
     committed = False
     untracked = sum(1 for l in lines if l.startswith("??"))
     if lines:
+        # Self-heal the doc figures before auditing.
+        #
+        # The audit compares README/HANDOFF/progress_weighting against
+        # `data/functions.csv`, and a harvest tick changes that CSV. So the moment
+        # a tick registers anything, the figures are stale and the audit is red --
+        # and a red audit *skips the commit*. That is the right default (never
+        # commit a failing tree) and the wrong outcome for a purely mechanical
+        # drift, so the loop would tick, match, fail its own gate, and go quiet
+        # while appearing to work.
+        #
+        # Regenerating is not a way of suppressing the check: `refresh_status_block`
+        # writes the README status table from `progress_json.py`, and the
+        # authoritative figures come from `match_progress.py` over the CSV. The
+        # audit re-reads all of it and can still fail on a genuinely wrong figure.
+        #
+        # Only run when a file we know is generated is actually stale, so an
+        # unrelated dirty tree does not pay for this.
+        try:
+            chk = subprocess.run(
+                [sys.executable, os.path.join(ROOT, "tools",
+                                              "refresh_status_block.py"), "--check"],
+                **NOWINDOW, capture_output=True, text=True, cwd=ROOT, timeout=120)
+            if chk.returncode != 0:
+                subprocess.run(
+                    [sys.executable, os.path.join(ROOT, "tools",
+                                                  "refresh_status_block.py")],
+                    **NOWINDOW, capture_output=True, text=True, cwd=ROOT,
+                    timeout=120)
+                # The prose figures live outside the generated block, so they need
+                # the same treatment. `sync_doc_figures.py` was written and then
+                # reverted -- it rewrote a byte-weighted percentage into a
+                # function-count one, because both match a bare percentage
+                # pattern. So only the generated block is touched here, and the
+                # prose is left to fail the audit loudly rather than be mangled.
+        except Exception as e:                       # noqa: BLE001
+            print("  sync: doc refresh skipped (%s: %s)" % (type(e).__name__, e))
+
         # Audit first: never commit a tree whose own gates are red.
         audit = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "audit.py")], **NOWINDOW,
                                capture_output=True, text=True, cwd=ROOT, timeout=900)
@@ -294,6 +331,32 @@ HARVEST = [
     ("gen_zero_fill.py", []),
 ]
 
+# Extra autonomous work, run on its own slower rotation.
+#
+# The generators above only ever produce *byte-identical* matches. Two matchers
+# exist that the loop did not know about, and until they were added here the
+# "loop until done" request depended on a person noticing that the semantic path
+# was idle:
+#
+#   sem_register.py   differential emulation on the bodies that compile but do
+#                     not byte-match. Claims them under the `~` marker, which
+#                     `match_progress.py` reports on its own line.
+#   strlit_match.py   links `adrp` bodies at their original virtual addresses,
+#                     which is the only way such a body can be compared at all --
+#                     in a relocatable object the immediate is zero and no
+#                     comparison can succeed.
+#
+# Each takes `--queue`; the queue files are rebuilt by `sem_census.py`, which is
+# expensive, so they are consumed if present and skipped if absent. A missing
+# queue is a no-op, not a failure: the loop must not wedge on a file a later tick
+# produces.
+HARVEST_SEMANTIC = [
+    ("sem_register.py",
+     ["--queue", "data/queues/sem_queue_v6.json", "--fresh", "--trials", "6"]),
+    ("strlit_match.py",
+     ["--queue", "data/queues/sem_queue_v6_needs_link.json"]),
+]
+
 
 def run(cmd, timeout=3600):
     r = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, timeout=timeout,
@@ -321,9 +384,21 @@ def harvest(a, st):
     is visible as such instead of being assumed to have worked.
     """
     before, _, _ = body_count()
-    idx = st.get("harvest_idx", 0) % len(HARVEST)
-    script, flags = HARVEST[idx]
-    st["harvest_idx"] = (idx + 1) % len(HARVEST)
+    # Every seventh slice runs the semantic/link matchers instead of a generator,
+    # so the loop claims work the generators structurally cannot. Interleaved
+    # rather than appended so the byte-identical path keeps its cadence.
+    sem_every = 7
+    tickno = st.get("tick", 0)
+    use_sem = HARVEST_SEMANTIC and (tickno % sem_every == sem_every - 1)
+    if use_sem:
+        pool = HARVEST_SEMANTIC
+        pool_name = "semantic"
+    else:
+        pool = HARVEST
+        pool_name = "generator"
+    idx = st.get("harvest_idx", 0) % len(pool)
+    script, flags = pool[idx]
+    st["harvest_idx"] = (idx + 1) % len(pool)
     label = "%s %s" % (script, " ".join(flags) if flags else "")
 
     # Hold the lock for the whole slice: prog/ and data/functions.csv are both
