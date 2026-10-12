@@ -10,23 +10,96 @@ Measured over all 123,191 unmatched bodies:
 With 28,836 already matched, the byte-identical ceiling under vanilla Clang 5.0.1
 is therefore about **21%** -- the matched count plus that 2.7%.
 
-## Why the frame limit is permanent
+## The frame limit was not permanent -- a tail call was hiding it
 
-The retail module was built with Nintendo's own compiler, not with Clang 5.0.1.
-The giveaway is the prologue form:
+This section previously read:
 
-    original:  str x19, [sp, #-0x20]!  ; stp x29,x30,[sp,#0x10] ; ... ; ldp x29,x30,[sp],#0x20
-    clang 5:   sub sp, sp, #0x20       ; stp x29,x30,[sp,#0x10] ; ... ; ldp x29,x30,[sp,#0x10] ; add sp,sp,#0x20
+> The retail module was built with Nintendo's own compiler, not with Clang 5.0.1.
+> Tested every optimisation level on this compiler -- `-O0 -O1 -O2 -O3 -Os -Oz`,
+> with and without `-mno-omit-frame-pointer`, `-fno-omit-frame-pointer`,
+> `-funwind-tables` -- and **none** produces a writeback form. It is not a flag
+> problem or a layout problem. This compiler simply does not emit that form.
 
-`sp` is adjusted *inside* the access. Tested every optimisation level on this
-compiler -- `-O0 -O1 -O2 -O3 -Os -Oz`, with and without
-`-mno-omit-frame-pointer`, `-fno-omit-frame-pointer`, `-funwind-tables` -- and
-**none** produces a writeback form. It is not a flag problem or a layout problem;
-the frame size matched when one was forced. This compiler simply does not emit
-that form.
+**That was wrong, and it was wrong the same way three earlier conclusions were:
+the thing being measured had been optimised out of the reference case before the
+comparison started.**
 
-So any body containing a frame cannot match byte-for-byte here, whatever the
-translator does. That is 79.2% of what remains.
+### What the searches actually ran against
+
+Every one of those sweeps used a function containing a call. The shortest such body
+in `main` is 20 bytes at `0xb3fb0`:
+
+    stp x29, x30, [sp, #-0x10]!
+    mov x29, sp
+    bl   <callee>
+    ldp x29, x30, [sp], #0x10
+    ret
+
+The source that reproduces it is one call and nothing else:
+
+    void f(long a){ t_main(a); }
+
+Compiled on this machine, that is **four bytes**: `b <t_main>`.
+
+A single call whose result is returned verbatim is a sibling call. Clang rewrites
+it to a tail jump, a function that tail-jumps needs no prologue, and **the frame
+never existed to be compared against**. So the sweep was measuring a function that
+had been optimised away, and concluding from its absence that the compiler could
+not emit the form. It could. The frame had been deleted before it was measured.
+
+### The fix is one flag, and it is exact
+
+`-fno-optimize-sibling-calls` keeps the call in place:
+
+    retail  fd7bbfa9 fd030091 06320994 fd7bc1a8 c0035fd6
+    ours    fd7bbfa9 fd030091 00000094 fd7bc1a8 c0035fd6
+                                  ^^^^^^^ relocation, filled in at link
+
+Twenty bytes, identical except the `bl` imm32 -- which is zero in the object file
+because the callee is unresolved. `stp [sp,#-16]!`, `mov x29, sp`, `bl`,
+`ldp [sp],#16`, `ret`: all five instructions, byte for byte, stable across
+`-O3`, `-O2` and `-Os`.
+
+So both halves of the supposedly-unreachable form are reachable after all:
+
+  * the folded pre-indexed `stp [sp,#-N]!` and post-indexed `ldp [sp],#N`
+  * the `mov x29, sp`, which three separate searches recorded as having no
+    spelling and no flag
+
+`-fno-omit-frame-pointer` does not do it -- it produces `add x29, sp, #0x10` and
+additionally spills `x0` into the frame. The trigger is not frame pointers. It is
+that the call has to survive.
+
+### Why the flag is NOT adopted, and what it would cost
+
+The flag is not free, and the trade is not close to free:
+
+                        would LOSE            would GAIN
+    matched tail jumps    5,241    retail frames currently unreachable  8,162
+                   (main 5,083, sdk 72, subsdk0 28, subsdk1 58)
+                                                         (main 4,228, sdk 3,798,
+                                                          subsdk0 80, subsdk1 56)
+
+The loss is concrete and already banked: 5,241 bodies match today *because* Clang
+tail-calls, and the flag is precisely what stops it doing so. The gain is an upper
+bound: it counts retail bodies carrying the reachable prologue, not bodies a
+generator can produce -- and no generator emits calls yet, so today the flag would
+be a **pure 5,241-body loss** in exchange for nothing.
+
+It also cannot be a harness-only change. `audit.py` asserts
+`set(match_harness.CFLAGS) == set(build_nx64.CXXFLAGS)`, and that assertion is
+load-bearing: it is what makes "verified" mean *the build produces these bytes*.
+A flag that only the probe harness uses would break exactly the guarantee the
+audit exists to protect, while the 8,162 would remain unreachable.
+
+**Decision: record the finding, do not adopt the flag.** It becomes worth adopting
+when call lowering exists to actually reach the 8,162, at which point the trade
+is a net gain of about 2,921 bodies. It must go into both flag lists at once.
+
+So the frame population is not blocked by the compiler. It is blocked by the same
+missing generator as everything else above it -- which makes call lowering the
+single next move, and makes "Clang cannot emit the writeback form" the fourth
+documented conclusion in this file that measurement overturned.
 
 ## What "100% fuzzy" means in this project
 
@@ -223,8 +296,11 @@ which is the same blocker `adrp` has.
 
 Note the arithmetic here is *cheap* and the ceiling is *compiler-bound*: adding
 every mnemonic on this list to the translator moves the ceiling by at most
-~1.4 percentage points, because 79.3% of what remains is frame-blocked and Clang
-5.0.1 cannot emit the writeback `sp` form the retail code uses.
+~1.4 percentage points, because 79.3% of what remains carries a frame. That used
+to be read as a compiler wall; it is not one -- see "The frame limit was not
+permanent" above, where the exact frame is reproduced with
+`-fno-optimize-sibling-calls`. It is a generator wall: nothing emits calls, so
+nothing reaches a body that has one.
 
 percent more; everything else is blocked by the compiler, the harness, or by
 needing callee symbols this project does not have.
@@ -728,7 +804,9 @@ population that *can* still move:
       717  adrp           matchable, but only through a link (239 measured at
                           239/239 -- all already claimed)
       712  pure value ops the tractable set
-      104  stack frames   Clang 5.0.1 never emits writeback sp
+      104  stack frames   reachable with -fno-optimize-sibling-calls; blocked
+                           only on call lowering (see "The frame limit was not
+                           permanent" above)
 
 And above all of it, 122,564 bodies that no candidate is generated for at all,
 because they call, branch, or frame. Semantic matching is the only path to those
