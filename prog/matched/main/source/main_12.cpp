@@ -27,6 +27,18 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_14b75d0  (orig 0x14b75d0, mov_ret)
+uint32_t main_f_14b75d0() { return 1; }
+
+// sub_14b75e0  (orig 0x14b75e0, mov_ret)
+uint32_t main_f_14b75e0() { return 1; }
+
+// sub_14b78c0  (orig 0x14b78c0, ret_only)
+void main_f_14b78c0() {}
+
+// sub_14b81f0  (orig 0x14b81f0, mov_ret)
+uint32_t main_f_14b81f0() { return 6; }
+
 // sub_14b9630  (orig 0x14b9630, straight)
 uint32_t main_f_14b9630(void* a0) { return (*(uint32_t*)((char*)(a0) + 840)) >> (1); }
 
@@ -7008,40 +7020,4 @@ void main_f_178d730() {}
 
 // sub_178df90  (orig 0x178df90, ret_only)
 void main_f_178df90() {}
-
-// sub_178e4c0  (orig 0x178e4c0, setter-chain-zero)
-void main_f_178e4c0(void* a0) {
-    struct u64x2 { uint64_t a, b; };
-    *(struct u64x2*)((char*)a0 + 104) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 88) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 72) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 56) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 40) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 24) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 8) = (struct u64x2){ 0, 0 };
-}
-
-// sub_178e4f0  (orig 0x178e4f0, ret_only)
-void main_f_178e4f0() {}
-
-// sub_178f6e0  (orig 0x178f6e0, setter-chain-zero)
-void main_f_178f6e0(void* a0) {
-    struct u64x2 { uint64_t a, b; };
-    *(struct u64x2*)((char*)a0 + 32) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)((char*)a0 + 16) = (struct u64x2){ 0, 0 };
-    __asm__ __volatile__("" ::: "memory");
-    *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
-}
-
-// sub_178f6f0  (orig 0x178f6f0, ret_only)
-void main_f_178f6f0() {}
 

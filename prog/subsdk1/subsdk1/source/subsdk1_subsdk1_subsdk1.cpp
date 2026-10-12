@@ -2198,7 +2198,7 @@ void sub_b6b30() { /* 0xb6b30 */ }
 void sub_b7710() { /* 0xb7710 */ }
 void sub_b78a0() { /* 0xb78a0 */ }
 void sub_b7ac0_subsdk1_b7ac0() { /* 0xb7ac0 */ }
-void sub_b7ae0() { /* 0xb7ae0 */ }
+// sub_b7ae0: implemented in prog/matched/subsdk1/
 void sub_b7b00() { /* 0xb7b00 */ }
 void sub_b7c70() { /* 0xb7c70 */ }
 // sub_b7c80: implemented in prog/matched/subsdk1/

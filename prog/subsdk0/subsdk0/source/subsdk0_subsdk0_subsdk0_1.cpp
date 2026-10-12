@@ -3162,7 +3162,7 @@ void sub_225070() { /* 0x225070 */ }
 void sub_225080() { /* 0x225080 */ }
 void sub_225090() { /* 0x225090 */ }
 void sub_2250a0() { /* 0x2250a0 */ }
-void sub_2250d0_subsdk0_2250d0() { /* 0x2250d0 */ }
+// sub_2250d0_subsdk0_2250d0: implemented in prog/matched/subsdk0/
 void sub_2250f0() { /* 0x2250f0 */ }
 void sub_225100() { /* 0x225100 */ }
 void sub_225120() { /* 0x225120 */ }

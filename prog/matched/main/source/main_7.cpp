@@ -27,6 +27,18 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_962410  (orig 0x962410, straight)
+void main_f_962410(void* a0, uint8_t a1, uint64_t a2) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (a1) * 4)));
+    *(uint32_t*)((char*)(p0) + 6052L) = (uint32_t)(a2);
+}
+
+// sub_962420  (orig 0x962420, straight)
+uint32_t main_f_962420(void* a0, uint8_t a1) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (a1) * 4)));
+    return *(uint32_t*)((char*)(p0) + 6052L);
+}
+
 // sub_962430  (orig 0x962430, straight)
 void main_f_962430(void* a0, uint8_t a1, uint64_t a2, uint64_t a3) {
     void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (a1) * 8)));
@@ -7188,13 +7200,4 @@ void main_f_bc0330(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*
 
 // sub_bc0a00  (orig 0xbc0a00, copy2)
 void main_f_bc0a00(void* a0) { (*(uint8_t *)((char *)(*(void **)((char*)(a0) + 696)) + 2004)) = 0; }
-
-// sub_bc5730  (orig 0xbc5730, straight)
-void main_f_bc5730(void* a0) {
-    *(uint32_t*)((char*)(a0) + 704) = 5;
-    *(uint32_t*)((char*)(a0) + 708) = ((*(uint32_t*)((char*)(a0) + 800) == 2) ? 1 : 0);
-}
-
-// sub_bc7670  (orig 0xbc7670, ret_only)
-void main_f_bc7670() {}
 

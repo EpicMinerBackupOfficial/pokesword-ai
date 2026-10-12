@@ -70,9 +70,9 @@ So both halves of the supposedly-unreachable form are reachable after all:
 additionally spills `x0` into the frame. The trigger is not frame pointers. It is
 that the call has to survive.
 
-### Why the flag is NOT adopted, and what it would cost
+### Why the flag is not used, and what does work instead
 
-The flag is not free, and the trade is not close to free:
+The flag is not free. It trades one population for another:
 
                         would LOSE            would GAIN
     matched tail jumps    5,241    retail frames currently unreachable  8,162
@@ -83,23 +83,72 @@ The flag is not free, and the trade is not close to free:
 The loss is concrete and already banked: 5,241 bodies match today *because* Clang
 tail-calls, and the flag is precisely what stops it doing so. The gain is an upper
 bound: it counts retail bodies carrying the reachable prologue, not bodies a
-generator can produce -- and no generator emits calls yet, so today the flag would
-be a **pure 5,241-body loss** in exchange for nothing.
+generator can produce.
 
 It also cannot be a harness-only change. `audit.py` asserts
 `set(match_harness.CFLAGS) == set(build_nx64.CXXFLAGS)`, and that assertion is
 load-bearing: it is what makes "verified" mean *the build produces these bytes*.
-A flag that only the probe harness uses would break exactly the guarantee the
-audit exists to protect, while the 8,162 would remain unreachable.
 
-**Decision: record the finding, do not adopt the flag.** It becomes worth adopting
-when call lowering exists to actually reach the 8,162, at which point the trade
-is a net gain of about 2,921 bodies. It must go into both flag lists at once.
+### The flag was never needed -- the tail call was the whole problem
+
+The flag was found by making the call non-terminal, not by changing the compiler.
+That suggests trying the source-level equivalent, and it works exactly:
+
+    void f(uint64_t a0){ t_main(a0); asm volatile(""); }
+
+    stp x29, x30, [sp, #-0x10]!
+    mov x29, sp
+    bl  <callee>
+    ldp x29, x30, [sp], #0x10
+    ret
+
+Measured **exact** under the project's existing flags, at `-O3`, `-O2` and `-Os`.
+`asm volatile("")` emits no instructions and defines no symbols; it exists only to
+stop the call from being terminal. Nothing global changes, so:
+
+  * the 8,151 framed bodies become reachable with no flag change
+  * the 5,241 matched tail jumps are untouched -- they still tail-call
+  * `audit.py`'s flag equality still holds, because no flag was added
+
+So there is **no trade at all**. The earlier measurement of a 5,241-body cost was
+measuring the cost of a flag nobody needs.
+
+### What that makes reachable, and what landed
+
+Every retail body carrying `stp x29, x30, [sp, #-N]!` immediately followed by
+`mov x29, sp` -- 8,151 of them -- by shape:
+
+    1 call + memory        3,783   the biggest class, and the translator already
+                                  handles loads and stores, so these need only a
+                                  callee name
+    3+ calls               3,377
+    1 call + adrp            403
+    1 call + branch          274
+    2 calls                 238
+    no call, frame only       73   reachable with no call lowering at all
+    1 call, value ops only     3
+
+`tools/call_match.py` takes the cheapest row of that table -- a bare delegator, a
+prologue / one `bl` / epilogue / ret and nothing between -- and it verified
+**33 of 33**, first time, at 100%. They are registered as shape `delegator`.
+
+Two things about that tool are worth more than the 33:
+
+  * the `forward` search runs **descending**, because forwarding zero arguments
+    is byte-identical to forwarding all of them and the bytes cannot tell them
+    apart. The first version searched ascending and returned `forward=0` for every
+    body: it reproduced the encoding exactly and destroyed the call, since the
+    callee would then read whatever happened to be in x0. Byte-identical and
+    broken, and nothing in the byte comparison would have said so.
+  * the registered source is re-compiled and re-verified from the registry, because
+    the first version verified through a `g_`-prefixed alias and *wrote* the bare
+    address -- `extern void 3147728();` does not parse. All 33 were verified and
+    uncompilable. Verification and registration must use the same name.
 
 So the frame population is not blocked by the compiler. It is blocked by the same
-missing generator as everything else above it -- which makes call lowering the
-single next move, and makes "Clang cannot emit the writeback form" the fourth
-documented conclusion in this file that measurement overturned.
+missing generator as everything above it: nothing emits a call. That makes call
+lowering the single next move, and makes "Clang cannot emit the writeback form" the
+fourth documented conclusion in this file that measurement overturned.
 
 ## What "100% fuzzy" means in this project
 

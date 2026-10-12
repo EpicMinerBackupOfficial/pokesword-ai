@@ -27,6 +27,24 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_ebff40  (orig 0xebff40, mov_ret)
+uint32_t main_f_ebff40() { return 55; }
+
+// sub_ec00f0  (orig 0xec00f0, straight)
+typedef struct { unsigned char b[32]; } __S_f_ec00f0;
+__S_f_ec00f0 main_f_ec00f0() {
+    __S_f_ec00f0 r;
+    uint32_t k0 = 25714;
+    uint64_t k1 = 1868785010;
+    *(uint16_t *)((char *)&r + 4) = (uint16_t)k0;
+    *(uint16_t *)((char *)&r + 30) = 0;
+    *(uint64_t *)((char *)&r + 22) = 0;
+    *(uint64_t *)((char *)&r + 14) = 0;
+    *(uint64_t *)((char *)&r + 6) = 0;
+    *(uint32_t *)((char *)&r + 0) = (uint32_t)k1;
+    return r;
+}
+
 // sub_ec06c0  (orig 0xec06c0, mov_ret)
 uint32_t main_f_ec06c0() { return 35; }
 
@@ -7121,10 +7139,4 @@ void main_f_10b1230(void* a0, void* a1) {
     __asm__ __volatile__("" ::: "memory");
     *(uint64_t*)(char*)a1 = (uint64_t)(t0);
 }
-
-// sub_10b3330  (orig 0x10b3330, ret_only)
-void main_f_10b3330() {}
-
-// sub_10b3340  (orig 0x10b3340, ret_only)
-void main_f_10b3340() {}
 

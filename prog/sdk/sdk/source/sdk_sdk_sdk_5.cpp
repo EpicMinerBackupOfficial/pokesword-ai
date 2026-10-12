@@ -2146,7 +2146,7 @@ void sub_40e3c0() { /* 0x40e3c0 */ }
 // sub_40e3e0_sdk_40e3e0: implemented in prog/matched/sdk/
 void sub_40e3f0() { /* 0x40e3f0 */ }
 // sub_40e400: implemented in prog/matched/sdk/
-void sub_40e410() { /* 0x40e410 */ }
+// sub_40e410: implemented in prog/matched/sdk/
 void sub_40e430() { /* 0x40e430 */ }
 void sub_40e460() { /* 0x40e460 */ }
 void sub_40e470() { /* 0x40e470 */ }

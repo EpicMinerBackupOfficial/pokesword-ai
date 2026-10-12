@@ -1713,7 +1713,7 @@ void sub_b3af0() { /* 0xb3af0 */ }
 void sub_b3c60() { /* 0xb3c60 */ }
 void sub_b3e20() { /* 0xb3e20 */ }
 // sub_b3fa0: implemented in prog/matched/main/
-void sub_b3fb0() { /* 0xb3fb0 */ }
+// sub_b3fb0: implemented in prog/matched/main/
 void sub_b3fd0() { /* 0xb3fd0 */ }
 void sub_b3fe0() { /* 0xb3fe0 */ }
 void sub_b4000() { /* 0xb4000 */ }

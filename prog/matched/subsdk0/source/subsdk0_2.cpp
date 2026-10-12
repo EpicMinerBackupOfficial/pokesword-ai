@@ -1,4 +1,4 @@
-/* subsdk0 -- 978 functions verified to match the original.
+/* subsdk0 -- 981 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -589,6 +589,14 @@ uint32_t subsdk0_f_70ff0() { return 8208; }
 
 // sub_76ae0  (orig 0x76ae0, mov_ret)
 uint32_t subsdk0_f_76ae0() { return -1; }
+
+// sub_76d80  (orig 0x76d80, delegator)
+extern void callee_365480();
+void subsdk0_f_76d80(unsigned long a0) { ((void(*)(unsigned long))callee_365480)(a0); asm volatile(""); }
+
+// sub_76f30  (orig 0x76f30, delegator)
+extern void callee_368390();
+void subsdk0_f_76f30(unsigned long a0) { ((void(*)(unsigned long))callee_368390)(a0); asm volatile(""); }
 
 // sub_78e40  (orig 0x78e40, mov_ret)
 uint32_t subsdk0_f_78e40() { return -1010; }
@@ -2238,6 +2246,10 @@ uint64_t subsdk0_f_224f40() { return -1; }
 
 // sub_224f50  (orig 0x224f50, ret_only)
 void subsdk0_f_224f50() {}
+
+// sub_2250d0  (orig 0x2250d0, delegator)
+extern void callee_371180();
+void subsdk0_f_2250d0(unsigned long a0) { ((void(*)(unsigned long))callee_371180)(a0); asm volatile(""); }
 
 // sub_225630  (orig 0x225630, mov_ret)
 uint32_t subsdk0_f_225630() { return 0; }

@@ -3492,7 +3492,7 @@ void sub_171160() { /* 0x171160 */ }
 void sub_171170() { /* 0x171170 */ }
 void sub_171180() { /* 0x171180 */ }
 void sub_171190() { /* 0x171190 */ }
-void sub_1711a0() { /* 0x1711a0 */ }
+// sub_1711a0: implemented in prog/matched/sdk/
 void sub_1711c0() { /* 0x1711c0 */ }
 void sub_1711d0() { /* 0x1711d0 */ }
 void sub_1711e0() { /* 0x1711e0 */ }
@@ -3516,7 +3516,7 @@ void sub_171300() { /* 0x171300 */ }
 void sub_171320() { /* 0x171320 */ }
 void sub_171330() { /* 0x171330 */ }
 void sub_171340() { /* 0x171340 */ }
-void sub_171350() { /* 0x171350 */ }
+// sub_171350: implemented in prog/matched/sdk/
 void sub_171370() { /* 0x171370 */ }
 void sub_171380() { /* 0x171380 */ }
 void sub_1713a0() { /* 0x1713a0 */ }

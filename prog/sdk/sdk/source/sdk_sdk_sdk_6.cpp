@@ -707,7 +707,7 @@ void sub_49f240() { /* 0x49f240 */ }
 void sub_49f250() { /* 0x49f250 */ }
 void sub_49f260_sdk_49f260() { /* 0x49f260 */ }
 void sub_49f268() { /* 0x49f268 */ }
-void sub_49f288() { /* 0x49f288 */ }
+// sub_49f288: implemented in prog/matched/sdk/
 void sub_49f2a0() { /* 0x49f2a0 */ }
 // sub_49f338: implemented in prog/matched/sdk/
 void sub_49f350() { /* 0x49f350 */ }

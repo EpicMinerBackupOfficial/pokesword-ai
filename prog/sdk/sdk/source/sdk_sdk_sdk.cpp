@@ -1768,7 +1768,7 @@ void sub_395a0() { /* 0x395a0 */ }
 void sub_39650() { /* 0x39650 */ }
 void sub_39670() { /* 0x39670 */ }
 void sub_396e0() { /* 0x396e0 */ }
-void sub_396f0() { /* 0x396f0 */ }
+// sub_396f0: implemented in prog/matched/sdk/
 void sub_39710() { /* 0x39710 */ }
 void sub_397b0() { /* 0x397b0 */ }
 void sub_39860() { /* 0x39860 */ }

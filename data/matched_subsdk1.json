@@ -19445,6 +19445,21 @@
    "size": 24,
    "src": "uint8_t f_4cda20(void* a0, uint32_t a1, uint32_t a2) {\n    void* p0 = (void*)((uintptr_t)(((*(uint64_t*)((char*)(a0) + 16)) + (((((uint32_t)a1)) << 7))) + (((uint32_t)a2))));\n    return *(uint8_t*)((char*)(p0) + 1244);\n}\n",
    "verdict": "semantic"
+  },
+  {
+   "addr": 752352,
+   "arg_inferred": 1,
+   "callee": "sub_9b610",
+   "callee_synthetic": false,
+   "ident": "f_b7ae0",
+   "module": "subsdk1",
+   "name": "sub_b7ae0",
+   "new_insns": 5,
+   "orig_insns": 5,
+   "shape": "delegator",
+   "sig": "m",
+   "size": 20,
+   "src": "extern void sub_9b610();\nvoid f_b7ae0(unsigned long a0) { ((void(*)(unsigned long))sub_9b610)(a0); asm volatile(\"\"); }\n"
   }
  ],
  "module": "subsdk1",

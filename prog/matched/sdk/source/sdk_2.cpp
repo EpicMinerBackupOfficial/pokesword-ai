@@ -479,6 +479,10 @@ uint32_t sdk_f_37530() { return 0; }
 // sub_39640  (orig 0x39640, getter)
 uint64_t sdk_f_39640(void* a0) { return *(uint64_t*)((char*)(a0) + 40); }
 
+// sub_396f0  (orig 0x396f0, delegator)
+extern void callee_510a70();
+void sdk_f_396f0(unsigned long a0) { ((void(*)(unsigned long))callee_510a70)(a0); asm volatile(""); }
+
 // sub_3a960  (orig 0x3a960, getter)
 uint64_t sdk_f_3a960(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 
@@ -3668,6 +3672,14 @@ uint32_t sdk_f_16bb30() { return 8208; }
 // sub_16bb80  (orig 0x16bb80, mov_ret)
 uint32_t sdk_f_16bb80() { return 8208; }
 
+// sub_1711a0  (orig 0x1711a0, delegator)
+extern void callee_50fda0();
+void sdk_f_1711a0(unsigned long a0) { ((void(*)(unsigned long))callee_50fda0)(a0); asm volatile(""); }
+
+// sub_171350  (orig 0x171350, delegator)
+extern void callee_518280();
+void sdk_f_171350(unsigned long a0) { ((void(*)(unsigned long))callee_518280)(a0); asm volatile(""); }
+
 // sub_171620  (orig 0x171620, ret_only)
 void sdk_f_171620() {}
 
@@ -6517,6 +6529,14 @@ uint8_t sdk_f_2e16b0(void* a0) { return *(uint8_t*)((char*)(a0) + 45); }
 // sub_2e16c0  (orig 0x2e16c0, getter)
 uint8_t sdk_f_2e16c0(void* a0) { return *(uint8_t*)((char*)(a0) + 46); }
 
+// sub_2e1b60  (orig 0x2e1b60, delegator)
+extern void callee_520b70();
+void sdk_f_2e1b60(unsigned long a0) { ((void(*)(unsigned long))callee_520b70)(a0); asm volatile(""); }
+
+// sub_2e1b80  (orig 0x2e1b80, delegator)
+extern void callee_520b80();
+void sdk_f_2e1b80(unsigned long a0) { ((void(*)(unsigned long))callee_520b80)(a0); asm volatile(""); }
+
 // sub_2e1cb0  (orig 0x2e1cb0, getter)
 uint8_t sdk_f_2e1cb0(void* a0) { return *(uint8_t*)((char*)(a0) + 38); }
 
@@ -6666,6 +6686,50 @@ uint8_t sdk_f_2e1fb0(void* a0) { return *(uint8_t*)((char*)(a0) + 85); }
 
 // sub_2e1fc0  (orig 0x2e1fc0, getter)
 uint8_t sdk_f_2e1fc0(void* a0) { return *(uint8_t*)((char*)(a0) + 86); }
+
+// sub_2e2280  (orig 0x2e2280, delegator)
+extern void callee_520bc0();
+void sdk_f_2e2280(unsigned long a0) { ((void(*)(unsigned long))callee_520bc0)(a0); asm volatile(""); }
+
+// sub_2e22a0  (orig 0x2e22a0, delegator)
+extern void callee_520bd0();
+void sdk_f_2e22a0(unsigned long a0) { ((void(*)(unsigned long))callee_520bd0)(a0); asm volatile(""); }
+
+// sub_2e22c0  (orig 0x2e22c0, delegator)
+extern void callee_520be0();
+void sdk_f_2e22c0(unsigned long a0) { ((void(*)(unsigned long))callee_520be0)(a0); asm volatile(""); }
+
+// sub_2e22e0  (orig 0x2e22e0, delegator)
+extern void callee_520bf0();
+void sdk_f_2e22e0(unsigned long a0) { ((void(*)(unsigned long))callee_520bf0)(a0); asm volatile(""); }
+
+// sub_2e2300  (orig 0x2e2300, delegator)
+extern void callee_520c00();
+void sdk_f_2e2300(unsigned long a0) { ((void(*)(unsigned long))callee_520c00)(a0); asm volatile(""); }
+
+// sub_2e2320  (orig 0x2e2320, delegator)
+extern void callee_520c10();
+void sdk_f_2e2320(unsigned long a0) { ((void(*)(unsigned long))callee_520c10)(a0); asm volatile(""); }
+
+// sub_2e2340  (orig 0x2e2340, delegator)
+extern void callee_520c20();
+void sdk_f_2e2340(unsigned long a0) { ((void(*)(unsigned long))callee_520c20)(a0); asm volatile(""); }
+
+// sub_2e2360  (orig 0x2e2360, delegator)
+extern void callee_520c30();
+void sdk_f_2e2360(unsigned long a0) { ((void(*)(unsigned long))callee_520c30)(a0); asm volatile(""); }
+
+// sub_2e2380  (orig 0x2e2380, delegator)
+extern void callee_520c40();
+void sdk_f_2e2380(unsigned long a0) { ((void(*)(unsigned long))callee_520c40)(a0); asm volatile(""); }
+
+// sub_2e23a0  (orig 0x2e23a0, delegator)
+extern void callee_520c50();
+void sdk_f_2e23a0(unsigned long a0) { ((void(*)(unsigned long))callee_520c50)(a0); asm volatile(""); }
+
+// sub_2e23c0  (orig 0x2e23c0, delegator)
+extern void callee_520b80();
+void sdk_f_2e23c0(unsigned long a0) { ((void(*)(unsigned long))callee_520b80)(a0); asm volatile(""); }
 
 // sub_2e23e0  (orig 0x2e23e0, ret_only)
 void sdk_f_2e23e0() {}
@@ -7081,52 +7145,4 @@ void sdk_f_30d570() {}
 
 // sub_30d590  (orig 0x30d590, mov_ret)
 uint32_t sdk_f_30d590() { return 1; }
-
-// sub_30d8f0  (orig 0x30d8f0, straight)
-uint32_t sdk_f_30d8f0(void* a0) { return ((((*(uint32_t*)((char*)(a0))) + (31)) >> (3)) & (536870908)) + (28); }
-
-// sub_312d00  (orig 0x312d00, ptr_add)
-void* sdk_f_312d00(void* a0) { return (char*)a0 + 8; }
-
-// sub_3133d0  (orig 0x3133d0, ptr_add)
-void* sdk_f_3133d0(void* a0) { return (char*)a0 + 56; }
-
-// sub_313990  (orig 0x313990, ret_only)
-void sdk_f_313990() {}
-
-// sub_313c30  (orig 0x313c30, ptr_add)
-void* sdk_f_313c30(void* a0) { return (char*)a0 + 8; }
-
-// sub_313cb0  (orig 0x313cb0, ret_only)
-void sdk_f_313cb0() {}
-
-// sub_313cc0  (orig 0x313cc0, ret_only)
-void sdk_f_313cc0() {}
-
-// sub_313cd0  (orig 0x313cd0, ret_only)
-void sdk_f_313cd0() {}
-
-// sub_314660  (orig 0x314660, ptr_add)
-void* sdk_f_314660(void* a0) { return (char*)a0 + 32; }
-
-// sub_3147c0  (orig 0x3147c0, ptr_add)
-void* sdk_f_3147c0(void* a0) { return (char*)a0 + 8; }
-
-// sub_3147d0  (orig 0x3147d0, straight)
-void* sdk_f_3147d0(void* a0) { return (char*)(a0) - 24; }
-
-// sub_314900  (orig 0x314900, ptr_add)
-void* sdk_f_314900(void* a0) { return (char*)a0 + 32; }
-
-// sub_315100  (orig 0x315100, ptr_add)
-void* sdk_f_315100(void* a0) { return (char*)a0 + 8; }
-
-// sub_315110  (orig 0x315110, straight)
-void* sdk_f_315110(void* a0) { return (char*)(a0) - 24; }
-
-// sub_315430  (orig 0x315430, ptr_add)
-void* sdk_f_315430(void* a0) { return (char*)a0 + 32; }
-
-// sub_3154f0  (orig 0x3154f0, ptr_add)
-void* sdk_f_3154f0(void* a0) { return (char*)a0 + 8; }
 

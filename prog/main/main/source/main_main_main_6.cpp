@@ -1807,7 +1807,7 @@ void sub_7cb3d0() { /* 0x7cb3d0 */ }
 void sub_7cb3f0() { /* 0x7cb3f0 */ }
 void sub_7cb410() { /* 0x7cb410 */ }
 void sub_7cb420() { /* 0x7cb420 */ }
-void sub_7cb490() { /* 0x7cb490 */ }
+// sub_7cb490: implemented in prog/matched/main/
 void sub_7cb4b0() { /* 0x7cb4b0 */ }
 void sub_7cb540() { /* 0x7cb540 */ }
 void sub_7cb660() { /* 0x7cb660 */ }

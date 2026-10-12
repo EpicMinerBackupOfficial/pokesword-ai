@@ -27,6 +27,15 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_bc5730  (orig 0xbc5730, straight)
+void main_f_bc5730(void* a0) {
+    *(uint32_t*)((char*)(a0) + 704) = 5;
+    *(uint32_t*)((char*)(a0) + 708) = ((*(uint32_t*)((char*)(a0) + 800) == 2) ? 1 : 0);
+}
+
+// sub_bc7670  (orig 0xbc7670, ret_only)
+void main_f_bc7670() {}
+
 // sub_bc76c0  (orig 0xbc76c0, ret_only)
 void main_f_bc76c0() {}
 
@@ -6590,22 +6599,4 @@ void main_f_ebccb0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*
 
 // sub_ebccc0  (orig 0xebccc0, copy2)
 void main_f_ebccc0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_ebff40  (orig 0xebff40, mov_ret)
-uint32_t main_f_ebff40() { return 55; }
-
-// sub_ec00f0  (orig 0xec00f0, straight)
-typedef struct { unsigned char b[32]; } __S_f_ec00f0;
-__S_f_ec00f0 main_f_ec00f0() {
-    __S_f_ec00f0 r;
-    uint32_t k0 = 25714;
-    uint64_t k1 = 1868785010;
-    *(uint16_t *)((char *)&r + 4) = (uint16_t)k0;
-    *(uint16_t *)((char *)&r + 30) = 0;
-    *(uint64_t *)((char *)&r + 22) = 0;
-    *(uint64_t *)((char *)&r + 14) = 0;
-    *(uint64_t *)((char *)&r + 6) = 0;
-    *(uint32_t *)((char *)&r + 0) = (uint32_t)k1;
-    return r;
-}
 

@@ -1,4 +1,4 @@
-/* sdk -- 1558 functions verified to match the original.
+/* sdk -- 1583 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,54 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_30d8f0  (orig 0x30d8f0, straight)
+uint32_t sdk_f_30d8f0(void* a0) { return ((((*(uint32_t*)((char*)(a0))) + (31)) >> (3)) & (536870908)) + (28); }
+
+// sub_312d00  (orig 0x312d00, ptr_add)
+void* sdk_f_312d00(void* a0) { return (char*)a0 + 8; }
+
+// sub_3133d0  (orig 0x3133d0, ptr_add)
+void* sdk_f_3133d0(void* a0) { return (char*)a0 + 56; }
+
+// sub_313990  (orig 0x313990, ret_only)
+void sdk_f_313990() {}
+
+// sub_313c30  (orig 0x313c30, ptr_add)
+void* sdk_f_313c30(void* a0) { return (char*)a0 + 8; }
+
+// sub_313cb0  (orig 0x313cb0, ret_only)
+void sdk_f_313cb0() {}
+
+// sub_313cc0  (orig 0x313cc0, ret_only)
+void sdk_f_313cc0() {}
+
+// sub_313cd0  (orig 0x313cd0, ret_only)
+void sdk_f_313cd0() {}
+
+// sub_314660  (orig 0x314660, ptr_add)
+void* sdk_f_314660(void* a0) { return (char*)a0 + 32; }
+
+// sub_3147c0  (orig 0x3147c0, ptr_add)
+void* sdk_f_3147c0(void* a0) { return (char*)a0 + 8; }
+
+// sub_3147d0  (orig 0x3147d0, straight)
+void* sdk_f_3147d0(void* a0) { return (char*)(a0) - 24; }
+
+// sub_314900  (orig 0x314900, ptr_add)
+void* sdk_f_314900(void* a0) { return (char*)a0 + 32; }
+
+// sub_315100  (orig 0x315100, ptr_add)
+void* sdk_f_315100(void* a0) { return (char*)a0 + 8; }
+
+// sub_315110  (orig 0x315110, straight)
+void* sdk_f_315110(void* a0) { return (char*)(a0) - 24; }
+
+// sub_315430  (orig 0x315430, ptr_add)
+void* sdk_f_315430(void* a0) { return (char*)a0 + 32; }
+
+// sub_3154f0  (orig 0x3154f0, ptr_add)
+void* sdk_f_3154f0(void* a0) { return (char*)a0 + 8; }
 
 // sub_315500  (orig 0x315500, straight)
 void* sdk_f_315500(void* a0) { return (char*)(a0) - 24; }
@@ -56,6 +104,18 @@ void sdk_f_31a1c0() {}
 
 // sub_31a8f0  (orig 0x31a8f0, ret_only)
 void sdk_f_31a8f0() {}
+
+// sub_31a900  (orig 0x31a900, delegator)
+extern void callee_523550();
+void sdk_f_31a900(unsigned long a0) { ((void(*)(unsigned long))callee_523550)(a0); asm volatile(""); }
+
+// sub_31a9c0  (orig 0x31a9c0, delegator)
+extern void callee_5235d0();
+void sdk_f_31a9c0(unsigned long a0) { ((void(*)(unsigned long))callee_5235d0)(a0); asm volatile(""); }
+
+// sub_31ab70  (orig 0x31ab70, delegator)
+extern void callee_523650();
+void sdk_f_31ab70(unsigned long a0) { ((void(*)(unsigned long))callee_523650)(a0); asm volatile(""); }
 
 // sub_31abb0  (orig 0x31abb0, ret_only)
 void sdk_f_31abb0() {}
@@ -725,6 +785,14 @@ void* sdk_f_376150(void* a0) { return (char*)a0 + 8; }
 // sub_376160  (orig 0x376160, straight)
 void* sdk_f_376160(void* a0) { return (char*)(a0) - 8; }
 
+// sub_3784a0  (orig 0x3784a0, delegator)
+extern void callee_527650();
+void sdk_f_3784a0(unsigned long a0) { ((void(*)(unsigned long))callee_527650)(a0); asm volatile(""); }
+
+// sub_3784c0  (orig 0x3784c0, delegator)
+extern void callee_527650();
+void sdk_f_3784c0(unsigned long a0) { ((void(*)(unsigned long))callee_527650)(a0); asm volatile(""); }
+
 // sub_3784e0  (orig 0x3784e0, setter)
 void sdk_f_3784e0(void* a0) { *(uint64_t*)((char*)(a0)) = 0; }
 
@@ -924,6 +992,10 @@ void sdk_f_383df0(void* a0) {
     *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
 }
 
+// sub_383eb0  (orig 0x383eb0, delegator)
+extern void callee_5283b0();
+void sdk_f_383eb0(unsigned long a0) { ((void(*)(unsigned long))callee_5283b0)(a0); asm volatile(""); }
+
 // sub_385550  (orig 0x385550, getter)
 uint64_t sdk_f_385550(void* a0) { return *(uint64_t*)((char*)(a0)); }
 
@@ -995,6 +1067,10 @@ void* sdk_f_388f80(void* a0) { return (char*)a0 + 8; }
 
 // sub_388f90  (orig 0x388f90, straight)
 void* sdk_f_388f90(void* a0) { return (char*)(a0) - 24; }
+
+// sub_38b100  (orig 0x38b100, delegator)
+extern void callee_528770();
+void sdk_f_38b100(unsigned long a0) { ((void(*)(unsigned long))callee_528770)(a0); asm volatile(""); }
 
 // sub_38b710  (orig 0x38b710, ptr_add)
 void* sdk_f_38b710(void* a0) { return (char*)a0 + 16; }
@@ -2838,6 +2914,10 @@ void sdk_f_40e3e0() {}
 
 // sub_40e400  (orig 0x40e400, mov_ret)
 uint32_t sdk_f_40e400() { return 1; }
+
+// sub_40e410  (orig 0x40e410, delegator)
+extern void callee_52a170();
+void sdk_f_40e410(unsigned long a0) { ((void(*)(unsigned long))callee_52a170)(a0); asm volatile(""); }
 
 // sub_40e5f0  (orig 0x40e5f0, setter)
 void sdk_f_40e5f0(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 8) = a1; }
@@ -5070,6 +5150,10 @@ bool sdk_f_49e8e8(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0))) == (u
 
 // bad_variant_access  (orig 0x49f0a0, strlit-ret)
 const char *sdk_f_49f0a0() { static char g_f_49f0a0[1]; __asm__ volatile("" ::: "memory"); return g_f_49f0a0; }
+
+// sub_49f288  (orig 0x49f288, delegator)
+extern void callee_51fab0();
+void sdk_f_49f288(unsigned long a0) { ((void(*)(unsigned long))callee_51fab0)(a0); asm volatile(""); }
 
 // sub_49f338  (orig 0x49f338, mov_ret)
 uint32_t sdk_f_49f338() { return 4096; }

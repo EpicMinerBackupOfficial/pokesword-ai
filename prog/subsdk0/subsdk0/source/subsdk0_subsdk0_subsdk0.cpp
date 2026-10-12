@@ -1378,7 +1378,7 @@ void sub_76d40() { /* 0x76d40 */ }
 void sub_76d50_subsdk0_76d50() { /* 0x76d50 */ }
 void sub_76d60() { /* 0x76d60 */ }
 void sub_76d70() { /* 0x76d70 */ }
-void sub_76d80() { /* 0x76d80 */ }
+// sub_76d80: implemented in prog/matched/subsdk0/
 void sub_76da0() { /* 0x76da0 */ }
 void sub_76db0() { /* 0x76db0 */ }
 void sub_76dc0() { /* 0x76dc0 */ }
@@ -1402,7 +1402,7 @@ void sub_76ee0() { /* 0x76ee0 */ }
 void sub_76f00() { /* 0x76f00 */ }
 void sub_76f10() { /* 0x76f10 */ }
 void sub_76f20() { /* 0x76f20 */ }
-void sub_76f30() { /* 0x76f30 */ }
+// sub_76f30: implemented in prog/matched/subsdk0/
 void sub_76f50() { /* 0x76f50 */ }
 void sub_76f60() { /* 0x76f60 */ }
 void sub_76f80() { /* 0x76f80 */ }

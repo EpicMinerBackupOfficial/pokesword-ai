@@ -3012,6 +3012,10 @@ void main_f_b2050() {}
 // sub_b3fa0  (orig 0xb3fa0, ptr_add)
 void* main_f_b3fa0(void* a0) { return (char*)a0 + 32; }
 
+// sub_b3fb0  (orig 0xb3fb0, delegator)
+extern void sub_3007d0();
+void main_f_b3fb0(unsigned long a0) { ((void(*)(unsigned long))sub_3007d0)(a0); asm volatile(""); }
+
 // sub_b4070  (orig 0xb4070, ptr_add)
 void* main_f_b4070(void* a0) { return (char*)a0 + 96; }
 
@@ -9114,7 +9118,4 @@ uint32_t main_f_4fdcd0(void* a0) { return *(uint32_t*)((char*)(a0) + 280); }
 
 // sub_4fe030  (orig 0x4fe030, mov_ret)
 uint32_t main_f_4fe030() { return 0; }
-
-// sub_4fe040  (orig 0x4fe040, mov_ret)
-uint32_t main_f_4fe040() { return 0; }
 

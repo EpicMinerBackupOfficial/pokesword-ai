@@ -27,6 +27,12 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_1282370  (orig 0x1282370, copy2)
+void main_f_1282370(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1282390  (orig 0x1282390, ret_only)
+void main_f_1282390() {}
+
 // sub_12823a0  (orig 0x12823a0, copy2)
 void main_f_12823a0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
@@ -1566,6 +1572,14 @@ void main_f_1309a80(void* a0) {
 
 // sub_1309aa0  (orig 0x1309aa0, setter-chain)
 void main_f_1309aa0(void* a0) { *(uint64_t*)((char*)(a0) + 336) = 0; *(uint8_t*)((char*)(a0) + 320) = 0; }
+
+// sub_130a6d0  (orig 0x130a6d0, delegator)
+extern void sub_67c490();
+void main_f_130a6d0(unsigned long a0) { ((void(*)(unsigned long))sub_67c490)(a0); asm volatile(""); }
+
+// sub_130abb0  (orig 0x130abb0, delegator)
+extern void sub_67c490();
+void main_f_130abb0(unsigned long a0) { ((void(*)(unsigned long))sub_67c490)(a0); asm volatile(""); }
 
 // sub_130abd0  (orig 0x130abd0, straight)
 uint32_t main_f_130abd0(uint32_t a0) { return ((((uint32_t)a0)) >> (8)) & (255); }
@@ -6611,16 +6625,4 @@ uint32_t main_f_14b7190() { return 7; }
 
 // sub_14b74a0  (orig 0x14b74a0, mov_ret)
 uint32_t main_f_14b74a0() { return 6; }
-
-// sub_14b75d0  (orig 0x14b75d0, mov_ret)
-uint32_t main_f_14b75d0() { return 1; }
-
-// sub_14b75e0  (orig 0x14b75e0, mov_ret)
-uint32_t main_f_14b75e0() { return 1; }
-
-// sub_14b78c0  (orig 0x14b78c0, ret_only)
-void main_f_14b78c0() {}
-
-// sub_14b81f0  (orig 0x14b81f0, mov_ret)
-uint32_t main_f_14b81f0() { return 6; }
 

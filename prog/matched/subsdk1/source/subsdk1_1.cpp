@@ -1,4 +1,4 @@
-/* subsdk1 -- 1508 functions verified to match the original.
+/* subsdk1 -- 1509 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -1524,6 +1524,10 @@ uint32_t subsdk1_f_ad290(void* a0, uint32_t a1) {
     uint64_t t2 = *(uint64_t*)((char*)(t1) + (uintptr_t)(a1) * 8);
     return *(uint32_t*)((char*)(t2) + 4);
 }
+
+// sub_b7ae0  (orig 0xb7ae0, delegator)
+extern void sub_9b610();
+void subsdk1_f_b7ae0(unsigned long a0) { ((void(*)(unsigned long))sub_9b610)(a0); asm volatile(""); }
 
 // sub_b7c80  (orig 0xb7c80, straight)
 void subsdk1_f_b7c80(void* a0) {

@@ -2213,7 +2213,7 @@
 0x00000000000b7710,sub_b7710,388,_ZN7subsdk19sub_b7710Ev!
 0x00000000000b78a0,sub_b78a0,540,_ZN7subsdk19sub_b78a0Ev!
 0x00000000000b7ac0,sub_b7ac0,28,_ZN7subsdk123sub_b7ac0_subsdk1_b7ac0Ev!
-0x00000000000b7ae0,sub_b7ae0,20,_ZN7subsdk19sub_b7ae0Ev!
+0x00000000000b7ae0,sub_b7ae0,20,_Z15subsdk1_f_b7ae0m
 0x00000000000b7b00,sub_b7b00,368,_ZN7subsdk19sub_b7b00Ev!
 0x00000000000b7c70,sub_b7c70,16,_ZN7subsdk19sub_b7c70Ev!
 0x00000000000b7c80,sub_b7c80,12,_Z15subsdk1_f_b7c80Pv

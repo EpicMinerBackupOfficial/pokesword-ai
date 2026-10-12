@@ -1,4 +1,4 @@
-/* main -- 169 functions verified to match the original.
+/* main -- 173 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,42 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_178e4c0  (orig 0x178e4c0, setter-chain-zero)
+void main_f_178e4c0(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 104) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 88) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 72) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 56) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 40) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 24) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 8) = (struct u64x2){ 0, 0 };
+}
+
+// sub_178e4f0  (orig 0x178e4f0, ret_only)
+void main_f_178e4f0() {}
+
+// sub_178f6e0  (orig 0x178f6e0, setter-chain-zero)
+void main_f_178f6e0(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 32) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 16) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
+}
+
+// sub_178f6f0  (orig 0x178f6f0, ret_only)
+void main_f_178f6f0() {}
 
 // sub_178f8d0  (orig 0x178f8d0, setter)
 void main_f_178f8d0(void* a0) { *(uint8_t*)((char*)(a0) + 44) = 0; }
