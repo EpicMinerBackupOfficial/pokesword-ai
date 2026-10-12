@@ -557,6 +557,20 @@ def one_tick(a, st):
         print("per module: %s" % per)
     if a.work == "auto":
         print(harvest(a, st))
+
+    # Record the figure for the loop's backoff. Read *after* the harvest, so a
+    # slice that registered bodies counts as a gain.
+    #
+    # Without this the backoff sees `last_matched` as absent forever and treats
+    # every tick as idle -- including the productive ones. A backoff that cannot
+    # see success is a backoff that eventually stops working entirely, and it
+    # would do so silently, which is worse than the lag it was meant to fix.
+    try:
+        _n, _, _ = body_count()
+        st["last_matched"] = _n
+    except Exception:                              # noqa: BLE001
+        pass
+
     print(sync(a))
 
 
@@ -612,6 +626,11 @@ def main():
                          "gate), committing only if everything is clean. "
                          "harvest: the older report-only shape sweep.")
     ap.add_argument("--interval", type=int, default=60)
+    ap.add_argument("--max-interval", type=int, default=1800,
+                    help="ceiling for the idle backoff, in seconds. Once the "
+                         "generators are exhausted a tick registers nothing, "
+                         "so the loop backs off rather than compiling 20,000 "
+                         "candidates a minute for no gain.")
     ap.add_argument("--sleep", action="store_true",
                     help="sleep interval seconds first (for chained relaunch)")
     ap.add_argument("--loop", action="store_true",
@@ -634,12 +653,14 @@ def main():
 
     st = load_state()
     errors = 0
+    idle = 0
     while True:
         # A tick must never be able to end the loop. Every step in here shells
         # out to another tool, so any one of them failing -- a missing file, a
         # transient lock, a tool that raises -- used to propagate and kill the
         # process, which is exactly how a "keep-alive" stops keeping anything
         # alive. Report and carry on; the count is re-read next tick anyway.
+        before = st.get("last_matched")
         try:
             one_tick(a, st)
             errors = 0
@@ -659,8 +680,33 @@ def main():
         if not a.loop:
             return 0
         sys.stdout.flush()
+
+        # Back off when nothing is being gained.
+        #
+        # Every tick spawns clang over ~20,000 candidates and, once the
+        # generators are exhausted, registers nothing. Running that every 60
+        # seconds is the worst of both: the machine stays busy, the session stays
+        # laggy, and the percentage does not move. Observed as the user reporting
+        # "the PC is lagging like crazy" and "the loop doesn't work" at the same
+        # time -- which looked like two problems and is one.
+        #
+        # So a tick that adds nothing backs the interval off, exponentially, up
+        # to a ceiling; any gain resets it. Exhausted work then costs a few probes
+        # an hour instead of a full compile sweep a minute.
+        if st.get("last_matched") and before is not None \
+                and st["last_matched"] > before:
+            idle = 0
+            sleep_s = a.interval
+        else:
+            idle += 1
+            sleep_s = min(a.max_interval,
+                          a.interval * (2 ** min(idle - 1, 4)))
+            if idle in (3, 6) or idle % 6 == 0:
+                print("=== no gain in %d ticks; backing off to %ds "
+                      "(generators likely exhausted) ==="
+                      % (idle, sleep_s))
         try:
-            time.sleep(a.interval)
+            time.sleep(sleep_s)
         except KeyboardInterrupt:
             raise
 

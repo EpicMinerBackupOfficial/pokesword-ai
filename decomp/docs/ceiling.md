@@ -676,3 +676,60 @@ Both produced a confident "0 of 43", and both were the tool's fault:
 The first was caught only because `main@0x14560`'s answer was known independently
 from a real link. **A checker that has only ever returned zero is not evidence that
 nothing matches** -- it is evidence that the checker has never worked.
+
+## "The PC is lagging" and "the loop doesn't work" were one bug
+
+Reported together, and treated as two problems. They are one.
+
+Every tick spawns clang across roughly 20,000 candidates. Once the generators
+are exhausted each of those slices registers **nothing**:
+
+    harvest: gen_store_chain.py --shape const-field-set no gain this slice (29498 -> 29498)
+    sync: pushed ab75190a (attempt 1)
+
+So the loop was compiling twenty thousand candidates a minute, achieving nothing,
+holding the machine busy, and reporting a percentage that did not move. That reads
+from the outside as "lagging" and "not working", because it is both.
+
+A loop that is working and a loop that is spinning look identical from the
+progress figure alone. The distinguishing evidence was in the log the whole time,
+in a line I had been reading past:
+
+    no gain this slice
+
+Three consecutive statements of it, each dismissed as the expected steady state.
+It is not the expected steady state -- it means the sweep is exhausted, and
+continuing at full rate spends the user's CPU on nothing.
+
+## The fix: back off when nothing is gained
+
+A tick that adds nothing now doubles the interval, up to `--max-interval`
+(default 1800s). Any gain resets it immediately, so the moment real work starts
+again the loop returns to full rate. Exhausted work costs a few probes an hour
+instead of a compile sweep a minute.
+
+The obvious way to get this wrong is to key the backoff on something that is never
+written. `last_matched` did not exist, and `body_count()` is called once per tick
+already -- so the first version of this saw an absent key on every tick, treated
+every tick as idle, including the productive ones, and would have backed the loop
+off to its ceiling permanently while reporting progress. A backoff that cannot see
+success stops working, and does so silently.
+
+That is the same shape as everything else in this document: a control that reads a
+signal which is never emitted is not a control, and nothing about it fails loudly.
+
+## What this means for the remaining work
+
+The generators are done. Six shapes, swept repeatedly, at 0% gain. The measured
+population that *can* still move:
+
+    1,707  genuine mismatches
+      174  FP/vector      ldr q0 and friends; no vector value model
+      717  adrp           matchable, but only through a link (239 measured at
+                          239/239 -- all already claimed)
+      712  pure value ops the tractable set
+      104  stack frames   Clang 5.0.1 never emits writeback sp
+
+And above all of it, 122,564 bodies that no candidate is generated for at all,
+because they call, branch, or frame. Semantic matching is the only path to those
+and it needs C for them first.
