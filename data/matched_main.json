@@ -297054,6 +297054,30 @@
    "size": 56,
    "src": "void f_17ac590(void* a0, void* a1) {\n    *(uint64_t*)((char*)(a1) + 136) = *(uint64_t*)((char*)(a0) + 120);\n    *(uint64_t*)((char*)(a1) + 168) = *(uint64_t*)((char*)(a0) + 152);\n    *(uint64_t*)((char*)(a1) + 152) = *(uint64_t*)((char*)(a0) + 136);\n    *(uint64_t*)((char*)(a1) + 128) = *(uint64_t*)((char*)(a0) + 112);\n    *(uint64_t*)((char*)(a1) + 160) = *(uint64_t*)((char*)(a0) + 144);\n    *(uint64_t*)((char*)(a1) + 144) = *(uint64_t*)((char*)(a0) + 128);\n    *(uint8_t*)((char*)(a1) + 395) = 0;\n}\n",
    "verdict": "semantic"
+  },
+  {
+   "module": "main",
+   "addr": 6248304,
+   "size": 16,
+   "name": "sub_5f5770",
+   "shape": "straight-line",
+   "ident": "f_5f5770",
+   "sig": "Pv",
+   "src": "uint64_t f_5f5770(void* a0) { return ((*(uint64_t*)((char*)(a0) + 88)) + (((*(uint64_t*)((char*)(a0) + 88)) << 3))) << (3); }\n",
+   "orig_insns": 4,
+   "new_insns": 4
+  },
+  {
+   "module": "main",
+   "addr": 6271920,
+   "size": 20,
+   "name": "sub_5fb3b0",
+   "shape": "straight-line",
+   "ident": "f_5fb3b0",
+   "sig": "Pvj",
+   "src": "uint64_t f_5fb3b0(void* a0, uint32_t a1) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 408));\n    return (*(uint64_t*)((char*)(p0) + 120)) + (((((int64_t)(((int32_t)(((uint32_t)a1)))))) << 5));\n}\n",
+   "orig_insns": 5,
+   "new_insns": 5
   }
  ],
  "module": "main",

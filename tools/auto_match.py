@@ -1149,9 +1149,31 @@ def gen_const_field_set(ins, end, ident):
     addr = ptr_expr(wreg(outer), exprs, outer_off)
     if addr is None:
         return None
-    field = ptr_expr(ptr_reg, {ptr_reg: addr}, inner_off)
-    if field is None:
-        return None
+    # The inner address is relative to the pointer *loaded* by `i0`, not to the
+    # object `outer` points at. Mapping `ptr_reg` to `addr` collapses two
+    # dereferences into one and produces a different program:
+    #
+    #     retail  ldr x8, [x0] ; mov w9, #1 ; str w9, [x8, #0x630] ; ret
+    #     ours    mov w8, #1 ; str w8, [x0, #0x630] ; ret
+    #
+    # The `ldr` disappears: the store lands in the object instead of through a
+    # pointer read out of it.
+    #
+    # Built by hand rather than through `ptr_expr`, because `ptr_expr` casts its
+    # base to `char*` and *drops any expression that is already a dereference*:
+    # it returned None for every candidate, which showed up as the shape
+    # collecting zero candidates rather than as an error.
+    #
+    # `addr` already ends in a `char *` cast, so the loaded pointer is
+    # `*(void **)(char*)addr` and the field is that plus the inner offset.
+    if inner_off == 0:
+        field = "(*(void **)(%s))" % addr
+    elif 0 < inner_off < 4096:
+        field = "((char *)(*(void **)(%s)) + %d)" % (addr, inner_off)
+    elif -4096 < inner_off < 0:
+        field = "((char *)(*(void **)(%s)) - %d)" % (addr, -inner_off)
+    else:
+        field = "((char *)(*(void **)(%s)) + %dL)" % (addr, inner_off)
 
     # Plain assignment, no scheduling barrier.
     #
