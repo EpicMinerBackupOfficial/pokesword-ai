@@ -27,6 +27,19 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_bc76c0  (orig 0xbc76c0, ret_only)
+void main_f_bc76c0() {}
+
+// sub_bc76d0  (orig 0xbc76d0, struct-copy)
+void main_f_bc76d0(void* a0, void* a1) {
+    struct u64x2 { uint64_t a, b; };
+    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
+    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
+    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = s0.a;
+}
+
 // sub_bc76f0  (orig 0xbc76f0, struct-copy)
 void main_f_bc76f0(void* a0, void* a1) {
     struct u64x2 { uint64_t a, b; };
@@ -6595,10 +6608,4 @@ __S_f_ec00f0 main_f_ec00f0() {
     *(uint32_t *)((char *)&r + 0) = (uint32_t)k1;
     return r;
 }
-
-// sub_ec06c0  (orig 0xec06c0, mov_ret)
-uint32_t main_f_ec06c0() { return 35; }
-
-// sub_ec1c30  (orig 0xec1c30, ret_only)
-void main_f_ec1c30() {}
 

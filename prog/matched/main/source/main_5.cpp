@@ -2828,6 +2828,9 @@ void main_f_5f22d0(void* a0) { *(uint8_t*)((char*)(a0) + 2208) = 0; }
 // sub_5f5760  (orig 0x5f5760, getter)
 uint64_t main_f_5f5760(void* a0) { return *(uint64_t*)((char*)(a0) + 216); }
 
+// sub_5f5770  (orig 0x5f5770, straight-line)
+uint64_t main_f_5f5770(void* a0) { return ((*(uint64_t*)((char*)(a0) + 88)) + (((*(uint64_t*)((char*)(a0) + 88)) << 3))) << (3); }
+
 // sub_5f71b0  (orig 0x5f71b0, ret_only)
 void main_f_5f71b0() {}
 
@@ -2865,6 +2868,12 @@ void main_f_5f9d30() {}
 
 // sub_5f9d40  (orig 0x5f9d40, ret_only)
 void main_f_5f9d40() {}
+
+// sub_5fb3b0  (orig 0x5fb3b0, straight-line)
+uint64_t main_f_5fb3b0(void* a0, uint32_t a1) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 408));
+    return (*(uint64_t*)((char*)(p0) + 120)) + (((((int64_t)(((int32_t)(((uint32_t)a1)))))) << 5));
+}
 
 // OutLineRenderPath  (orig 0x5fcff0, straight)
 void main_f_5fcff0(void* a0, uint64_t a1) {
@@ -6992,10 +7001,4 @@ void main_f_7e9f20(void* a0, uint64_t a1) {
 
 // sub_7e9f40  (orig 0x7e9f40, getter)
 uint16_t main_f_7e9f40(void* a0) { return *(uint16_t*)((char*)(a0) + 8); }
-
-// sub_7e9f50  (orig 0x7e9f50, getter)
-uint32_t main_f_7e9f50(void* a0) { return *(uint32_t*)((char*)(a0) + 12); }
-
-// sub_7e9f60  (orig 0x7e9f60, getter)
-uint64_t main_f_7e9f60(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 

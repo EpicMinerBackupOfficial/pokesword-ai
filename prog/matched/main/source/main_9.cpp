@@ -27,6 +27,12 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_ec06c0  (orig 0xec06c0, mov_ret)
+uint32_t main_f_ec06c0() { return 35; }
+
+// sub_ec1c30  (orig 0xec1c30, ret_only)
+void main_f_ec1c30() {}
+
 // sub_ec6340  (orig 0xec6340, ret_only)
 void main_f_ec6340() {}
 
@@ -7121,10 +7127,4 @@ void main_f_10b3330() {}
 
 // sub_10b3340  (orig 0x10b3340, ret_only)
 void main_f_10b3340() {}
-
-// sub_10b3350  (orig 0x10b3350, ret_only)
-void main_f_10b3350() {}
-
-// sub_10b4960  (orig 0x10b4960, ret_only)
-void main_f_10b4960() {}
 
