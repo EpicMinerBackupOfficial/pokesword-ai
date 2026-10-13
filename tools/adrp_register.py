@@ -104,7 +104,7 @@ def pool(mod, md, blob, limit):
                     int(bls[0].op_str.lstrip("#"), 16),
                     list(work) + [CR._ret_insn(md)], len(ins),
                     sorted({int(p, 16) for p in pages})))
-        if len(out) >= limit:
+        if limit and len(out) >= limit:
             break
     return out
 
@@ -134,6 +134,10 @@ def main():
                     help="bodies linked per link invocation")
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--quiet", action="store_true", help="suppress the per-body diff")
+    ap.add_argument("--diff-nth", type=int, default=None,
+                    help="print the diff only for this variant index; one link "
+                         "pass per variant means the diff otherwise prints once "
+                         "per variant rather than once per body")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -146,11 +150,22 @@ def main():
     try:
         for mod in mods:
             blob = MH.text_blob(mod)
-            items = pool(mod, md, blob, a.limit)
+            # The limit is applied AFTER translation, not before.
+            #
+            # Slicing the pool first picked bodies that translate into nothing:
+            # `--limit 1` on `main` selected a body with zero candidate variants
+            # and printed four lines of nothing. The number the caller cares about
+            # is bodies *tested*, so that is what the limit counts.
+            items = pool(mod, md, blob, 0)
             print("  %-9s %5d adrp body(s)" % (mod, len(items)))
             if not items:
                 continue
             cands = translate_all(items)
+            if a.limit and items:
+                keep = sorted({c[3] for c in cands})[:a.limit]
+                kset = set(keep)
+                cands = [c for c in cands if c[3] in kset]
+                items = [i for i in items if i[3] in kset]
             print("  %-9s %5d candidate variant(s) from %d that translate"
                   % (mod, len(cands), len({c[3] for c in cands})))
             sys.stdout.flush()
@@ -298,7 +313,14 @@ def main():
                             break
                     if not hit:
                         tally["linked but differs"] += 1
-                        if not a.quiet:
+                        best2, code3, bestlen = None, b"", -1
+                        for c3 in lst:
+                            t3 = _at(linked, "%s_v%d" % (c3[3], c3[11]),
+                                     c3[6], size)
+                            if len(t3) > bestlen:
+                                best2, code3, bestlen = c3, t3, len(t3)
+                        if not a.quiet and best2 is not None and (
+                                a.diff_nth is None or best2[11] == a.diff_nth):
                             # Report the LONGEST emission, not lst[0]: that is
                             # `nargs=0`, where Clang deletes the setup for
                             # arguments it is not forwarding and so removes the
@@ -306,12 +328,6 @@ def main():
                             # with everything stripped out and say nothing about
                             # the prototypes that do forward. The widest variant
                             # is the one carrying the setup under test.
-                            best2, code3, bestlen = None, b"", -1
-                            for c3 in lst:
-                                t3 = _at(linked, "%s_v%d" % (c3[3], c3[11]),
-                                         c3[6], size)
-                                if len(t3) > bestlen:
-                                    best2, code3, bestlen = c3, t3, len(t3)
                             want3 = blobm[addr:addr + size]
                             print("  --- %s@%#x nargs=%s ret=%s ---"
                                   % (name, addr, best2[8], best2[9]))
