@@ -926,12 +926,32 @@ class StraightLine:
                     raise Bail("%s operand %r is not a literal page" % (mn, ops[1]))
                 page = int(m.group(1), 16)
                 dst = wreg(ops[0])
-                if dst not in synth_of:
-                    key = SYNTH_BASE + len(synth)
-                    synth.append((key, "&adrp_%x" % page))
-                    synth_of[dst] = key
-                    adrp_pages.add(page)
-                state[dst] = ("addr", synth_of[dst], 0)
+                # NOT recorded in `synth_of`.
+                #
+                # `synth_of` means "this register currently holds the load it was
+                # produced from", and `resolve_base` consults it *first*:
+                #
+                #     if r in synth_of: return synth_of[r], False
+                #
+                # Registering the adrp-anchored register there therefore poisons
+                # every later access through it: once the register is overwritten
+                # by a load, `state` holds that load but `synth_of` still holds the
+                # `adrp` anchor, and the next access resolves back to the anchor.
+                # A two-level chain collapses to one dereference of the page:
+                #
+                #     adrp x9,#0x2498000 ; ldr x9,[x9,#0xb40] ; ldr x0,[x9]
+                #     ->  *(uint64_t *)((char *)p0)          offset gone
+                #     instead of
+                #     ->  *(uint64_t *)(*(uint64_t *)((char *)p0 + 0xb40))
+                #
+                # which is one instruction short of retail on every body with a
+                # dereferenced pointer chain. The `addr` branch of `resolve_base`
+                # already returns the anchor, so nothing is lost by staying out of
+                # `synth_of`.
+                key = SYNTH_BASE + len(synth)
+                synth.append((key, "&adrp_%x" % page))
+                adrp_pages.add(page)
+                state[dst] = ("addr", key, 0)
                 continue
 
             if mn == "bl" and len(ops) == 1:
