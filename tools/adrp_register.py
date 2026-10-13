@@ -289,6 +289,9 @@ def main():
                             want3 = blobm[addr:addr + size]
                             print("  --- %s@%#x nargs=%s ret=%s ---"
                                   % (name, addr, best2[8], best2[9]))
+                            print("    --- generated source ---")
+                            for ln in best2[5].rstrip().splitlines():
+                                print("      S %s" % ln)
                             print("    retail (%d bytes): %s"
                                   % (len(want3), want3.hex()))
                             print("    ours   (%d bytes): %s"
