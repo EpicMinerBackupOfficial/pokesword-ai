@@ -19460,6 +19460,42 @@
    "sig": "m",
    "size": 20,
    "src": "extern void sub_9b610();\nvoid f_b7ae0(unsigned long a0) { ((void(*)(unsigned long))sub_9b610)(a0); asm volatile(\"\"); }\n"
+  },
+  {
+   "module": "subsdk1",
+   "addr": 15520,
+   "size": 12,
+   "name": "sub_3ca0",
+   "shape": "straight-line",
+   "ident": "f_3ca0",
+   "sig": "Pv",
+   "src": "void f_3ca0(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 32));\n    *(uint64_t*)((char*)(p0)) = *(uint64_t*)((char*)(a0) + 24);\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "subsdk1",
+   "addr": 61968,
+   "size": 12,
+   "name": "sub_f210",
+   "shape": "straight-line",
+   "ident": "f_f210",
+   "sig": "Pvmi",
+   "src": "uint64_t f_f210(void* a0, uint64_t unused1, int32_t a2) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 872));\n    return *(uint64_t*)(((char *)p0 + (uintptr_t)((uintptr_t)a2 * 8)));\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "subsdk1",
+   "addr": 698192,
+   "size": 24,
+   "name": "sub_aa750",
+   "shape": "straight-line",
+   "ident": "f_aa750",
+   "sig": "Pv",
+   "src": "uint32_t f_aa750(void* a0) { return (((*(uint32_t*)((char*)(a0))) | (((*(uint32_t*)((char*)(a0) + 4)) << 4))) | (((*(uint32_t*)((char*)(a0) + 8)) << 8))) | (((*(uint32_t*)((char*)(a0) + 12)) << 12)); }\n",
+   "orig_insns": 6,
+   "new_insns": 6
   }
  ],
  "module": "subsdk1",

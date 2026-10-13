@@ -1,4 +1,4 @@
-/* main -- 173 functions verified to match the original.
+/* main -- 199 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,158 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_17875f0  (orig 0x17875f0, ret_only)
+void main_f_17875f0() {}
+
+// sub_1787600  (orig 0x1787600, ret_only)
+void main_f_1787600() {}
+
+// sub_1787640  (orig 0x1787640, straight)
+void main_f_1787640(void* a0) {
+    uint32_t k0 = 1;
+    *(uint16_t*)((char*)(a0)) = (uint16_t)k0;
+    *(uint64_t*)((char*)(a0) + 4) = 361417177221300224;
+    *(uint32_t*)((char*)(a0) + 16) = 65536;
+    *(uint64_t*)((char*)(a0) + 32) = 4294967296;
+    *(uint64_t*)((char*)(a0) + 48) = 0;
+}
+
+// sub_1787670  (orig 0x1787670, straight)
+void main_f_1787670(void* a0) {
+    uint32_t k0 = 1;
+    *(uint8_t*)((char*)(a0)) = (uint8_t)k0;
+    *(uint64_t*)((char*)(a0) + 4) = 0;
+    *(uint16_t*)((char*)(a0) + 2) = 0;
+    *(uint32_t*)((char*)(a0) + 12) = 1;
+    *(uint64_t*)((char*)(a0) + 24) = 0;
+}
+
+// sub_1787690  (orig 0x1787690, straight)
+void main_f_1787690(void* a0) {
+    uint32_t k0 = 1;
+    *(uint8_t*)((char*)(a0)) = (uint8_t)k0;
+    *(uint16_t*)((char*)(a0) + 2) = 0;
+    *(uint64_t*)((char*)(a0) + 8) = 4294967296;
+    *(uint64_t*)((char*)(a0) + 24) = 0;
+}
+
+// sub_17876b0  (orig 0x17876b0, setter-chain)
+void main_f_17876b0(void* a0) { *(uint16_t*)((char*)(a0)) = 0; *(uint32_t*)((char*)(a0) + 4) = 0; }
+
+// sub_1787a90  (orig 0x1787a90, setter-chain-zero)
+void main_f_1787a90(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 56) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 40) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 24) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 8) = (struct u64x2){ 0, 0 };
+}
+
+// sub_1787ab0  (orig 0x1787ab0, ret_only)
+void main_f_1787ab0() {}
+
+// sub_1787ca0  (orig 0x1787ca0, getter)
+uint64_t main_f_1787ca0(void* a0) { return *(uint64_t*)((char*)(a0) + 8); }
+
+// sub_1787d40  (orig 0x1787d40, setter-chain-zero)
+void main_f_1787d40(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 216) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 200) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 184) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 168) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 152) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 136) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 120) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 104) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 88) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 72) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 56) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 40) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 24) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 8) = (struct u64x2){ 0, 0 };
+}
+
+// sub_1787d80  (orig 0x1787d80, ret_only)
+void main_f_1787d80() {}
+
+// sub_1787f40  (orig 0x1787f40, setter)
+void main_f_1787f40(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 208) = a1; }
+
+// sub_1787f50  (orig 0x1787f50, setter)
+void main_f_1787f50(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 216) = a1; }
+
+// sub_1787f60  (orig 0x1787f60, ret_only)
+void main_f_1787f60() {}
+
+// sub_1789910  (orig 0x1789910, setter-chain-zero)
+void main_f_1789910(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 48) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 32) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)((char*)a0 + 16) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
+}
+
+// sub_1789930  (orig 0x1789930, ret_only)
+void main_f_1789930() {}
+
+// sub_1789ac0  (orig 0x1789ac0, straight)
+void main_f_1789ac0(void* a0) {
+    uint32_t k0 = 2;
+    *(uint8_t*)((char*)(a0)) = (uint8_t)k0;
+}
+
+// sub_1789ad0  (orig 0x1789ad0, straight)
+void main_f_1789ad0(void* a0) {
+    uint32_t k0 = 1;
+    *(uint8_t*)((char*)(a0)) = (uint8_t)k0;
+}
+
+// sub_1789bc0  (orig 0x1789bc0, mov_ret)
+uint32_t main_f_1789bc0() { return 4096; }
+
+// sub_1789bd0  (orig 0x1789bd0, mov_ret)
+uint32_t main_f_1789bd0() { return 4096; }
+
+// sub_1789c00  (orig 0x1789c00, ret_only)
+void main_f_1789c00() {}
+
+// sub_1789d00  (orig 0x1789d00, ret_only)
+void main_f_1789d00() {}
+
+// nvnDeviceGetProcAddress_2  (orig 0x178d530, ret_only)
+void main_f_178d530() {}
+
+// sub_178d730  (orig 0x178d730, ret_only)
+void main_f_178d730() {}
+
+// sub_178df90  (orig 0x178df90, ret_only)
+void main_f_178df90() {}
 
 // sub_178e4c0  (orig 0x178e4c0, setter-chain-zero)
 void main_f_178e4c0(void* a0) {
@@ -582,6 +734,16 @@ void main_f_17b7780() {}
 
 // sub_17b8250  (orig 0x17b8250, ret_only)
 void main_f_17b8250() {}
+
+// sub_17b8970  (orig 0x17b8970, straight-line)
+typedef struct { unsigned char b[24]; } __S_f_17b8970;
+__S_f_17b8970 main_f_17b8970(void* a0) {
+    __S_f_17b8970 r;
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 16));
+    *(uint16_t *)((char *)&r + 0) = (uint16_t)(*(uint32_t*)((char*)(p0) + 36));
+    *(uint16_t *)((char *)&r + 2) = (uint16_t)(*(uint32_t*)((char*)(p0) + 40));
+    return r;
+}
 
 // sub_17b8990  (orig 0x17b8990, getter-chain)
 uint32_t main_f_17b8990(void* a0) { return *(uint32_t*)((char*)((*(uint64_t*)((char*)(a0) + 16))) + 28); }

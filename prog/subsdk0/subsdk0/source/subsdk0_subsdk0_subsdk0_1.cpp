@@ -71,7 +71,7 @@ void sub_1507e0() { /* 0x1507e0 */ }
 void sub_150920() { /* 0x150920 */ }
 void sub_150a30() { /* 0x150a30 */ }
 void positionUs() { /* 0x150aa0 */ }
-void sub_150c10() { /* 0x150c10 */ }
+// sub_150c10: implemented in prog/matched/subsdk0/
 void sub_150c20() { /* 0x150c20 */ }
 void sub_150cb0() { /* 0x150cb0 */ }
 void NuPlayerRenderer_13() { /* 0x150d40 */ }
@@ -1306,7 +1306,7 @@ void sub_196ea0() { /* 0x196ea0 */ }
 void sub_196f70() { /* 0x196f70 */ }
 void sub_1970a0() { /* 0x1970a0 */ }
 void sub_1971a0() { /* 0x1971a0 */ }
-void sub_1972b0() { /* 0x1972b0 */ }
+// sub_1972b0: implemented in prog/matched/subsdk0/
 void sub_1972d0() { /* 0x1972d0 */ }
 void sub_1973d0() { /* 0x1973d0 */ }
 void sub_197460() { /* 0x197460 */ }
@@ -3482,7 +3482,7 @@ void sub_235a00() { /* 0x235a00 */ }
 void sub_235a50() { /* 0x235a50 */ }
 void sub_236450() { /* 0x236450 */ }
 void sub_2364e0() { /* 0x2364e0 */ }
-void sub_236e90() { /* 0x236e90 */ }
+// sub_236e90: implemented in prog/matched/subsdk0/
 // sub_236ea0_subsdk0_236ea0: implemented in prog/matched/subsdk0/
 void sub_236eb0() { /* 0x236eb0 */ }
 void sub_236f20() { /* 0x236f20 */ }

@@ -117,7 +117,7 @@
 0x0000000000003c40,sub_3c40,36,_ZN7subsdk18sub_3c40Ev!
 0x0000000000003c70,sub_3c70,16,_Z14subsdk1_f_3c70Pv
 0x0000000000003c80,sub_3c80,32,_ZN7subsdk18sub_3c80Ev!
-0x0000000000003ca0,sub_3ca0,12,_ZN7subsdk18sub_3ca0Ev!
+0x0000000000003ca0,sub_3ca0,12,_Z14subsdk1_f_3ca0Pv
 0x0000000000003cb0,sub_3cb0,32,_ZN7subsdk18sub_3cb0Ev!
 0x0000000000003cd0,Profile_option_s_value_d_too_small_clamped_to_d,180,_ZN7subsdk147Profile_option_s_value_d_too_small_clamped_to_dEv!
 0x0000000000003d90,s_s_val_s,36,_ZN7subsdk19s_s_val_sEv!
@@ -177,7 +177,7 @@
 0x000000000000f080,sub_f080,152,_ZN7subsdk18sub_f080Ev!
 0x000000000000f120,sub_f120,16,_Z14subsdk1_f_f120Pv
 0x000000000000f130,sub_f130,212,_ZN7subsdk18sub_f130Ev!
-0x000000000000f210,sub_f210,12,_ZN7subsdk18sub_f210Ev!
+0x000000000000f210,sub_f210,12,_Z14subsdk1_f_f210Pvmi
 0x000000000000f220,sub_f220,68,_ZN7subsdk18sub_f220Ev!
 0x000000000000f270,sub_f270,84,_ZN7subsdk18sub_f270Ev!
 0x000000000000f2d0,sub_f2d0,144,_ZN7subsdk18sub_f2d0Ev!
@@ -2133,7 +2133,7 @@
 0x00000000000aa340,sub_aa340,364,_ZN7subsdk19sub_aa340Ev!
 0x00000000000aa4b0,sub_aa4b0,396,_ZN7subsdk19sub_aa4b0Ev!
 0x00000000000aa640,sub_aa640,272,_ZN7subsdk19sub_aa640Ev!
-0x00000000000aa750,sub_aa750,24,_ZN7subsdk19sub_aa750Ev!
+0x00000000000aa750,sub_aa750,24,_Z15subsdk1_f_aa750Pv
 0x00000000000aa770,sub_aa770,192,_ZN7subsdk19sub_aa770Ev!
 0x00000000000aa830,sub_aa830,200,_ZN7subsdk19sub_aa830Ev!
 0x00000000000aa900,sub_aa900,672,_ZN7subsdk19sub_aa900Ev!

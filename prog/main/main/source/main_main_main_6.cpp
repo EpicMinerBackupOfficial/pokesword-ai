@@ -3656,7 +3656,7 @@ void sub_8139e0() { /* 0x8139e0 */ }
 // sub_813a30: implemented in prog/matched/main/
 void sub_813a40() { /* 0x813a40 */ }
 // sub_813b20: implemented in prog/matched/main/
-void sub_813b30() { /* 0x813b30 */ }
+// sub_813b30: implemented in prog/matched/main/
 void sub_813b40() { /* 0x813b40 */ }
 // sub_813d50: implemented in prog/matched/main/
 void sub_813d60() { /* 0x813d60 */ }

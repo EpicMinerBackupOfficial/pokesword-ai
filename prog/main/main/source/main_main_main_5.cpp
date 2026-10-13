@@ -183,7 +183,7 @@ void sub_65eda0() { /* 0x65eda0 */ }
 // sub_65edc0: implemented in prog/matched/main/
 // sub_65edd0: implemented in prog/matched/main/
 // sub_65ede0: implemented in prog/matched/main/
-void sub_65edf0() { /* 0x65edf0 */ }
+// sub_65edf0: implemented in prog/matched/main/
 void sub_65ee10() { /* 0x65ee10 */ }
 // sub_65ee30: implemented in prog/matched/main/
 void sub_65ee40() { /* 0x65ee40 */ }

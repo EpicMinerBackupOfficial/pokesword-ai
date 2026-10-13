@@ -112,7 +112,7 @@ void sub_3c00() { /* 0x3c00 */ }
 void sub_3c40() { /* 0x3c40 */ }
 // sub_3c70: implemented in prog/matched/subsdk1/
 void sub_3c80() { /* 0x3c80 */ }
-void sub_3ca0() { /* 0x3ca0 */ }
+// sub_3ca0: implemented in prog/matched/subsdk1/
 void sub_3cb0() { /* 0x3cb0 */ }
 void Profile_option_s_value_d_too_small_clamped_to_d() { /* 0x3cd0 */ }
 void s_s_val_s() { /* 0x3d90 */ }
@@ -168,7 +168,7 @@ void sub_e210() { /* 0xe210 */ }
 void sub_f080() { /* 0xf080 */ }
 // sub_f120: implemented in prog/matched/subsdk1/
 void sub_f130() { /* 0xf130 */ }
-void sub_f210() { /* 0xf210 */ }
+// sub_f210: implemented in prog/matched/subsdk1/
 void sub_f220() { /* 0xf220 */ }
 void sub_f270() { /* 0xf270 */ }
 void sub_f2d0() { /* 0xf2d0 */ }
@@ -2118,7 +2118,7 @@ void sub_aa130() { /* 0xaa130 */ }
 void sub_aa340() { /* 0xaa340 */ }
 void sub_aa4b0() { /* 0xaa4b0 */ }
 void sub_aa640() { /* 0xaa640 */ }
-void sub_aa750() { /* 0xaa750 */ }
+// sub_aa750: implemented in prog/matched/subsdk1/
 void sub_aa770() { /* 0xaa770 */ }
 void sub_aa830() { /* 0xaa830 */ }
 void sub_aa900() { /* 0xaa900 */ }

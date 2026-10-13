@@ -67,7 +67,7 @@ void sub_1770() { /* 0x1770 */ }
 // sub_17d0_subsdk0_17d0: implemented in prog/matched/subsdk0/
 // sub_17e0: implemented in prog/matched/subsdk0/
 void sub_17f0() { /* 0x17f0 */ }
-void sub_1800() { /* 0x1800 */ }
+// sub_1800: implemented in prog/matched/subsdk0/
 void sub_1810_subsdk0_1810() { /* 0x1810 */ }
 void sub_1820() { /* 0x1820 */ }
 void sub_1830() { /* 0x1830 */ }

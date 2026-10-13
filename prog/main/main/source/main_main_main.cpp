@@ -2334,7 +2334,7 @@ void sub_e3750() { /* 0xe3750 */ }
 void sub_e3820() { /* 0xe3820 */ }
 void sub_e3860() { /* 0xe3860 */ }
 void sub_e3910() { /* 0xe3910 */ }
-void sub_e3930() { /* 0xe3930 */ }
+// sub_e3930: implemented in prog/matched/main/
 // PxArticulationJoint: implemented in prog/matched/main/
 void PxArticulationJoint_2() { /* 0xe3960 */ }
 // sub_e39c0: implemented in prog/matched/main/

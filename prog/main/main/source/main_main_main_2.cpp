@@ -645,8 +645,8 @@ void sub_318fa0() { /* 0x318fa0 */ }
 void sub_318fe0() { /* 0x318fe0 */ }
 void sub_3190a0() { /* 0x3190a0 */ }
 void sub_319130() { /* 0x319130 */ }
-void sub_319150() { /* 0x319150 */ }
-void sub_319170() { /* 0x319170 */ }
+// sub_319150: implemented in prog/matched/main/
+// sub_319170: implemented in prog/matched/main/
 void sub_319190() { /* 0x319190 */ }
 void sub_319260() { /* 0x319260 */ }
 void sub_3192e0() { /* 0x3192e0 */ }

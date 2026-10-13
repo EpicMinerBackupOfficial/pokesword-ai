@@ -45,6 +45,18 @@ LOADS = ("ldr", "ldrb", "ldrh", "ldrsw", "ldurb", "ldursw", "ldur",
          "ldrsh", "ldursh")
 STORES = ("str", "strb", "strh", "sturb", "sturh", "stur")
 
+# Pair forms: two registers, one memory operand. Kept out of LOADS/STORES because
+# those are guarded on a two-operand shape and a pair has three.
+#
+#   ldp   Rd1, Rd2, [Rn, #off]     load two adjacent elements
+#   ldpsw Rd1, Rd2, [Rn, #off]     the same, sign-extended into 64-bit
+#   stp   Rs1, Rs2, [Rn, #off]     store two adjacent elements
+#
+# `ldp` needs no new value kind: two `load` values at `off` and `off + width`
+# reproduce it exactly, verified by compiling rather than assumed.
+PAIR_LOADS = ("ldp", "ldpsw", "ldupsw")
+PAIR_STORES = ("stp",)
+
 # The extend an `add xD, xN, wM, <ext>` writes, and the C type the index register
 # must then be declared with.
 #
@@ -508,6 +520,8 @@ class StraightLine:
             # could have done with it -- which is why adding the bitwise handlers
             # changed nothing at all until this list was widened.
             if (i.mnemonic not in LOADS and i.mnemonic not in STORES
+                    and i.mnemonic not in PAIR_LOADS
+                    and i.mnemonic not in PAIR_STORES
                     and i.mnemonic not in ("add", "mov", "sub")
                     and i.mnemonic not in BITWISE_MNEMONICS
                     and i.mnemonic not in FLAG_MNEMONICS
@@ -828,6 +842,52 @@ class StraightLine:
                     _y = ("expr", "-" if _neg else "+", _y,
                           ("imm", 1, _rw(_y)), _rw(_y))
                 state[wreg(dst)] = ("sel", ops[3], _x, _y, flags, _rw(_x))
+                continue
+
+            # `ldp Rd1, Rd2, [Rn, #off]` -- a pair load.
+            #
+            # This is the single largest blocker on bodies that contain a call.
+            # Measured over 514 `1 call + memory` bodies in `sdk`, the post-call
+            # halves translate at 497/514 (97%) and the pre-call halves at 25/514
+            # (5%); of the 489 pre-call failures, 468 were exactly
+            # "unsupported mnemonic 'ldp'". One mnemonic.
+            #
+            # It fell through because `ldp` has *three* operands while the LOADS
+            # branch below is guarded on `len(ops) == 2`. So the fix is not a new
+            # value kind -- the `load` kind already renders `*(T*)(base + off)` at
+            # any offset -- it is two `load` values, at `off` and `off + width`.
+            #
+            # That renders as two adjacent scalar dereferences, and Clang 5.0.1
+            # folds those back into `ldp`. Measured rather than assumed:
+            #
+            #   *(uint64_t*)p + *(uint64_t*)((char*)p + 8)
+            #       ->  ldp x8, x9, [x0]
+            #   *(uint32_t*)p + *(uint32_t*)((char*)p + 4)
+            #       ->  ldp w8, w9, [x0]
+            #
+            # so no typedef and no struct type is needed in the shared preamble.
+            if mn in PAIR_LOADS and len(ops) == 3:
+                d1, d2, mem = ops
+                base, index, ext, scale, off = parse_mem_idx(mem)
+                if base is None:
+                    base, off = mem_reg_offset(mem, state)
+                    index = ext = scale = None
+                if base is None:
+                    raise Bail("pair load operand %r is not a [base] form" % (mem,))
+                if index is not None:
+                    raise Bail("indexed pair load %r is not modelled" % (mem,))
+                n, real = resolve_base(base)
+                if real:
+                    used_args.add(n)
+                    ptr_args.add(n)
+                w = access_width(mn, d1)
+                signed = mn in ("ldpsw", "ldupsw")
+                # AAPCS64 pair loads always use consecutive registers, so the second
+                # element sits at the next element of the same width. Taking `w`
+                # from `access_width` is what makes a 32-bit pair step by 4 and not
+                # 8; hardcoding 8 would mis-model every `ldp w` body.
+                state[wreg(d1)] = ("load", n, off, w, signed)
+                state[wreg(d2)] = ("load", n, off + w, w, signed)
                 continue
 
             if mn in LOADS and len(ops) == 2:

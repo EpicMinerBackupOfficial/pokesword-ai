@@ -12212,6 +12212,78 @@
    "sig": "m",
    "size": 20,
    "src": "extern void callee_371180();\nvoid f_2250d0(unsigned long a0) { ((void(*)(unsigned long))callee_371180)(a0); asm volatile(\"\"); }\n"
+  },
+  {
+   "module": "subsdk0",
+   "addr": 6144,
+   "size": 16,
+   "name": "sub_1800",
+   "shape": "straight-line",
+   "ident": "f_1800",
+   "sig": "Pv",
+   "src": "int64_t f_1800(void* a0) { return ((int64_t)(((int32_t)((((int32_t)(*(uint32_t*)((char*)(a0) + 24)))) / (((int32_t)(*(uint32_t*)((char*)(a0) + 28)))))))); }\n",
+   "orig_insns": 4,
+   "new_insns": 4
+  },
+  {
+   "module": "subsdk0",
+   "addr": 1379344,
+   "size": 16,
+   "name": "sub_150c10",
+   "shape": "straight-line",
+   "ident": "f_150c10",
+   "sig": "Pv",
+   "src": "void f_150c10(void* a0) {\n    *(uint32_t*)((char*)(a0) + 296) = *(uint32_t*)((char*)(a0) + 132);\n    *(uint32_t*)((char*)(a0) + 292) = *(uint32_t*)((char*)(a0) + 136);\n}\n",
+   "orig_insns": 4,
+   "new_insns": 4
+  },
+  {
+   "module": "subsdk0",
+   "addr": 1667760,
+   "size": 32,
+   "name": "sub_1972b0",
+   "shape": "straight-line",
+   "ident": "f_1972b0",
+   "sig": "mPvjj",
+   "src": "void f_1972b0(uint64_t unused0, void* a1, uint32_t a2, uint32_t a3) {\n    *(uint32_t*)((char*)(a1) + 252) = (*(uint32_t*)((char*)(a1) + 252)) + (((uint32_t)a2));\n    *(uint32_t*)((char*)(a1) + 260) = (uint32_t)(a2);\n    *(uint32_t*)((char*)(a1) + 264) = (uint32_t)(a3);\n    *(uint32_t*)((char*)(a1) + 256) = (*(uint32_t*)((char*)(a1) + 256)) + (((uint32_t)a3));\n}\n",
+   "orig_insns": 8,
+   "new_insns": 8
+  },
+  {
+   "module": "subsdk0",
+   "addr": 2322064,
+   "size": 16,
+   "name": "sub_236e90",
+   "shape": "straight-line",
+   "ident": "f_236e90",
+   "sig": "Pv",
+   "src": "uint64_t f_236e90(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0)));\n    return (*(uint64_t*)((char*)(a0) + 8)) - (*(uint64_t*)((char*)(p0) + 16));\n}\n",
+   "orig_insns": 4,
+   "new_insns": 4
+  },
+  {
+   "module": "subsdk0",
+   "addr": 2544528,
+   "size": 24,
+   "name": "sub_26d390",
+   "shape": "straight-line",
+   "ident": "f_26d390",
+   "sig": "PvS_",
+   "src": "uint32_t f_26d390(void* a0, void* a1) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 664));\n    *(uint32_t*)((char*)(a1)) = (*(uint32_t*)((char*)(p0) + 4)) - (*(uint32_t*)((char*)(p0) + 8));\n    return 0;\n}\n",
+   "orig_insns": 6,
+   "new_insns": 6
+  },
+  {
+   "module": "subsdk0",
+   "addr": 3376448,
+   "size": 32,
+   "name": "sub_338540",
+   "shape": "straight-line",
+   "ident": "f_338540",
+   "sig": "Pv",
+   "src": "uint32_t f_338540(void* a0) { return ((*(uint32_t*)((char*)(a0) + 116)) + (((((*(uint32_t*)((char*)(a0) + 104)) - (*(uint32_t*)((char*)(a0) + 96))) - (*(uint32_t*)((char*)(a0) + 120))) << 3))) - (32); }\n",
+   "orig_insns": 8,
+   "new_insns": 8
   }
  ],
  "module": "subsdk0",
