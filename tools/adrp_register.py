@@ -64,7 +64,19 @@ GLOBAL_SEC = ".adrpg%d"
 # `const` so it is not interposed and needs no GOT; in its own section so the
 # address is not a compile-time constant and cannot be folded away; `used` so the
 # reference is not the only thing keeping it alive.
-GLOBAL_DECL = ('const char %s[1] __attribute__((used, section("%s"))) = {0};')
+#
+# The size is a whole PAGE, and it has to be. At `[1]` the object was one byte, so
+# every access at `page + 0xfc0` read out of bounds -- and out of bounds is
+# undefined, which Clang acted on rather than merely tolerating:
+#
+#     ours  stp ; mov ; bl ; mov w0, wzr ; ldp ; ret
+#
+# The `adrp` and the load simply vanished, because reading past a 1-byte object
+# is something the optimiser is entitled to answer however it likes. One page
+# covers every offset an `adrp` can address, so the access is in bounds and has
+# to be performed. Each page gets its own section, so the extra bytes cannot
+# collide with another page's.
+GLOBAL_DECL = ('char %s[0x1000] __attribute__((used, section("%s"))) = {0};')
 
 
 def reg_set(mod):

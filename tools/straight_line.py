@@ -657,7 +657,24 @@ class StraightLine:
                     # Already a pointer: either an argument plus displacement, or
                     # a synthetic pointer. Reuse its id rather than inventing a
                     # second local for the same address.
-                    return v[1], False
+                    #
+                    # "The same address" only holds at offset ZERO. Returning
+                    # `v[1]` unconditionally discarded `v[2]`, so the displacement
+                    # an `add` had just accumulated was thrown away on the way to
+                    # the access:
+                    #
+                    #     adrp x8, #0x1b15000 ; add x8, x8, #0xfc0
+                    #     ldr w0, [x8, w0, sxtw #2]
+                    #
+                    # resolved to the page alone, and the emitted code carried
+                    # `add x8, x8, #0` where retail has `#0xfc0` -- a load from
+                    # the wrong address in every body of this shape. The offset is
+                    # part of the address, so a non-zero one gets its own local.
+                    if v[2] == 0:
+                        return v[1], False
+                    key = SYNTH_BASE + len(synth)
+                    synth.append((key, ptr_add(nm(v[1]), v[2])))
+                    return key, False
                 # Only an unsigned 64-bit load can be a pointer. A signed one is
                 # a value, and guessing here would silently mis-type the access.
                 if v[0] == "load" and v[3] == 8 and not v[4]:
