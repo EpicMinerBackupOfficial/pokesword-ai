@@ -313,12 +313,30 @@ def main():
                             break
                     if not hit:
                         tally["linked but differs"] += 1
-                        best2, code3, bestlen = None, b"", -1
+                        # The CLOSEST variant, not the longest and not an
+                        # arbitrary index.
+                        #
+                        # Length is the right proxy here because these bodies
+                        # differ mostly by instructions that are present or absent,
+                        # not by encodings: a variant that emits the right number
+                        # of instructions is the one whose diff is worth reading.
+                        # The longest is usually right in the other direction --
+                        # it is the variant whose extra argument setup survives,
+                        # which can be more instructions than retail has.
+                        #
+                        # This matters concretely: retail reads `w0` AFTER the
+                        # call, so the index must be the call's RETURN value. A
+                        # void-declared callee leaves x0 alone and the index falls
+                        # back to the incoming parameter, which forces a spill the
+                        # original does not have. The non-void variant is the one
+                        # that models it, and it is not the longest.
+                        best2, code3, bestdelta = None, b"", None
                         for c3 in lst:
                             t3 = _at(linked, "%s_v%d" % (c3[3], c3[11]),
                                      c3[6], size)
-                            if len(t3) > bestlen:
-                                best2, code3, bestlen = c3, t3, len(t3)
+                            d3 = abs(len(t3) - size)
+                            if bestdelta is None or d3 < bestdelta:
+                                best2, code3, bestdelta = c3, t3, d3
                         if not a.quiet and best2 is not None and (
                                 a.diff_nth is None or best2[11] == a.diff_nth):
                             # Report the LONGEST emission, not lst[0]: that is
