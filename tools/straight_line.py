@@ -228,6 +228,9 @@ EXTEND_STANDALONE = {
 DIV_MNEMONICS = ("sdiv", "udiv")
 
 SYNTH_BASE = 1000
+
+# `adrp xD, #0x27ee000` -- capstone prints the page with a `#`, in hex.
+_PAGE_OP = re.compile(r"#(-?0x[0-9a-fA-F]+)")
 # Hidden struct-return pointer id. Distinct from every synthetic pointer.
 SRET_ID = 999
 
@@ -555,7 +558,7 @@ class StraightLine:
             if (i.mnemonic not in LOADS and i.mnemonic not in STORES
                     and i.mnemonic not in PAIR_LOADS
                     and i.mnemonic not in PAIR_STORES
-                    and i.mnemonic not in ("add", "mov", "sub", "bl")
+                    and i.mnemonic not in ("add", "mov", "sub", "bl", "adrp", "adr")
                     and i.mnemonic not in BITWISE_MNEMONICS
                     and i.mnemonic not in FLAG_MNEMONICS
                     and i.mnemonic not in COND_MNEMONICS
@@ -594,6 +597,11 @@ class StraightLine:
         # exactly what the original's register holds.
         synth = []             # (id, initialiser expression), in allocation order
         synth_of = {}          # register -> id, so one load feeds one local
+        # Pages referenced by an `adrp` in this body. The caller needs the list to
+        # emit one `extern const char adrp_<page>[];` per entry in the batch head;
+        # without the declaration the source does not compile, and a batch is
+        # poisoned by the first failure in it.
+        adrp_pages = set()
 
         def resolve_base(base):
             """(id, is_real_arg) for a memory base register, or raise Bail."""
@@ -884,6 +892,46 @@ class StraightLine:
                     _y = ("expr", "-" if _neg else "+", _y,
                           ("imm", 1, _rw(_y)), _rw(_y))
                 state[wreg(dst)] = ("sel", ops[3], _x, _y, flags, _rw(_x))
+                continue
+
+            if mn in ("adrp", "adr") and len(ops) == 2:
+                # `adrp xD, #page` is an *address*, not an integer.
+                #
+                # Modelling it as an immediate is what the first attempt did, and
+                # it is wrong in a way that looks like a different missing feature:
+                # the page address then lands in a register where the load path
+                # requires a pointer, and the body declines with
+                #
+                #     memory base 'x8' holds a imm, not a pointer        (66 bodies)
+                #     memory base 'x0' holds a local, not a pointer      (34 bodies)
+                #
+                # which is the *same* error as not handling adrp at all. Measured:
+                # substituting `adrp` with `mov` of the same constant translated
+                # 139 of 277 and declined 138 -- and 107 of those 138 declined for
+                # this reason. So the real prize is about 246, not 139.
+                #
+                # The value is anchored to a declared global rather than to a
+                # literal, because a literal cannot be relocated and an `adrp` is
+                # a relocation. The caller must declare, in the batch head:
+                #
+                #     extern const char adrp_<page>[];
+                #
+                # `const` is not optional. Under `-fPIC` a non-const global of
+                # default visibility is reached through the GOT -- `adrp` then
+                # `ldr` -- and no source produces `adrp`/`add` instead. That is the
+                # same constraint `strlit_match.py` records, and the reason it
+                # measured 239/239.
+                m = _PAGE_OP.search(ops[1])
+                if not m:
+                    raise Bail("%s operand %r is not a literal page" % (mn, ops[1]))
+                page = int(m.group(1), 16)
+                dst = wreg(ops[0])
+                if dst not in synth_of:
+                    key = SYNTH_BASE + len(synth)
+                    synth.append((key, "&adrp_%x" % page))
+                    synth_of[dst] = key
+                    adrp_pages.add(page)
+                state[dst] = ("addr", synth_of[dst], 0)
                 continue
 
             if mn == "bl" and len(ops) == 1:
