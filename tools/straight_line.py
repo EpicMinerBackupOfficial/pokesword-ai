@@ -57,6 +57,19 @@ STORES = ("str", "strb", "strh", "sturb", "sturh", "stur")
 PAIR_LOADS = ("ldp", "ldpsw", "ldupsw")
 PAIR_STORES = ("stp",)
 
+# `bl` is accepted only when the caller supplies a prototype for its target.
+#
+# The callee's signature is not derivable from the call site: AAPCS64 puts the
+# arguments in x0..x7 and says nothing about how many there are, nor whether the
+# result is void, 32-bit or 64-bit. Guessing would produce a `bl` with the wrong
+# argument registers live across it, which does not match. So the caller supplies
+# `{target_address: {"name": str, "nargs": int, "ret": str}}` and the search over
+# those three choices lives in the registration driver, where it can be measured.
+#
+#   ret == "void"   the call is emitted as a statement
+#   otherwise       the call becomes the value in x0, which keeps it positioned
+#                   correctly inside whatever expression the rest of the body builds
+
 # The extend an `add xD, xN, wM, <ext>` writes, and the C type the index register
 # must then be declared with.
 #
@@ -408,6 +421,11 @@ def _rw(v):
         return v[2]
     if k == "raw_call":
         return v[3]
+    if k == "call_n":
+        # The declared return type of the callee. Like `raw_call`, the result is
+        # whatever the caller said the function returns -- which is the whole
+        # reason the prototype is supplied rather than inferred.
+        return v[3]
     if k == "cast":
         return v[1]
     if k == "un":
@@ -430,6 +448,21 @@ def ptr_add(base, off):
     if -4096 < off < 0:
         return "%s - %d" % (b, -off)
     return "%s + %dL" % (b, off)
+
+
+def call_arg(rendered):
+    """Spell one already-rendered call argument as a `uintptr_t` expression.
+
+    Module-level because both the `call_n` render arm and the void-call statement
+    path need it, and the two must agree: the same argument has to be spelled the
+    same way whether it is nested in a return expression or emitted as a
+    statement, or the same body produces two different programs depending on
+    whether the callee returns void.
+    """
+    ct, expr = rendered
+    if ct == "uintptr_t":
+        return expr
+    return "((uintptr_t)(%s))" % expr
 
 
 def nm(n):
@@ -506,7 +539,7 @@ class StraightLine:
     def __init__(self, insns):
         self.insns = insns
 
-    def translate(self, ident):
+    def translate(self, ident, calls=None):
         insns = self.insns
         if not insns or insns[-1].mnemonic != "ret":
             raise Bail("body does not end in ret")
@@ -522,7 +555,7 @@ class StraightLine:
             if (i.mnemonic not in LOADS and i.mnemonic not in STORES
                     and i.mnemonic not in PAIR_LOADS
                     and i.mnemonic not in PAIR_STORES
-                    and i.mnemonic not in ("add", "mov", "sub")
+                    and i.mnemonic not in ("add", "mov", "sub", "bl")
                     and i.mnemonic not in BITWISE_MNEMONICS
                     and i.mnemonic not in FLAG_MNEMONICS
                     and i.mnemonic not in COND_MNEMONICS
@@ -532,6 +565,7 @@ class StraightLine:
                 raise Bail("unsupported mnemonic %r" % (i.mnemonic,))
 
         state = {}
+        saw_call = False
         ptr_args = set()      # argument registers used as a pointer
         # ...and the same set computed from the whole body up front. `_value_arg`
         # cannot see pointer-ness when it runs, so the arithmetic paths consult
@@ -539,6 +573,14 @@ class StraightLine:
         base_args = base_args_of(insns)
         used_args = set()      # every argument register the body reads
         stmts = []             # (width, base_reg, offset, value) deferred
+        # Calls to a void-returning callee. Collected separately because `pre`
+        # does not exist yet during the walk -- it is built during emit -- and
+        # emitted ahead of the deferred stores. That ordering is an approximation
+        # and is only safe because the arguments are pure expressions over values
+        # already computed: nothing has to happen between evaluating them and the
+        # call. A body where a store *must* land between two calls is rejected by
+        # the byte comparison rather than matched wrongly.
+        call_stmts = []
 
         # A memory base may be a *loaded pointer*, not only an incoming argument.
         #
@@ -842,6 +884,47 @@ class StraightLine:
                     _y = ("expr", "-" if _neg else "+", _y,
                           ("imm", 1, _rw(_y)), _rw(_y))
                 state[wreg(dst)] = ("sel", ops[3], _x, _y, flags, _rw(_x))
+                continue
+
+            if mn == "bl" and len(ops) == 1:
+                # A call. See PAIR_LOADS' sibling note above for why the
+                # prototype is supplied rather than inferred.
+                #
+                # The arguments are simply the current values of x0..x{n-1}, and
+                # `state` already tracks exactly that -- every earlier instruction
+                # has written its result into `state[wreg(dst)]`. So no separate
+                # liveness pass is needed: the value that would have been passed
+                # is the value the translator has been building all along.
+                _t = int(ops[0].lstrip("#"), 16)
+                _info = (calls or {}).get(_t)
+                if _info is None:
+                    raise Bail("call target %#x has no supplied prototype" % _t)
+                _args = []
+                for _i in range(int(_info["nargs"])):
+                    _r = "x%d" % _i
+                    _v = state.get(_r)
+                    if _v is None:
+                        _v = self._value_arg(_r, used_args, idx_args, ptr_args)
+                    if _v is None:
+                        raise Bail("call argument %s is not a known value" % _r)
+                    _args.append(_v)
+                _ret = _info.get("ret") or "uint64_t"
+                saw_call = True
+                if _ret == "void":
+                    # No value comes back, so the call has to be a statement.
+                    # `pre` is emitted before the deferred store block, which is
+                    # consistent with how stores are already ordered relative to
+                    # each other, and a store that depended on this call's effect
+                    # would fail to match rather than match wrongly.
+                    call_stmts.append((_info["name"], tuple(_args)))
+                else:
+                    state["x0"] = ("call_n", _info["name"], tuple(_args), _ret)
+                # x1..x7 are caller-saved. Anything the body reads from them after
+                # the call is a mis-translation waiting to happen, and the byte
+                # comparison would catch it -- but it is cheaper to decline than to
+                # compile a candidate that cannot match.
+                for _i in range(1, 8):
+                    state.pop("x%d" % _i, None)
                 continue
 
             # `ldp Rd1, Rd2, [Rn, #off]` -- a pair load.
@@ -1512,7 +1595,8 @@ class StraightLine:
                         # place that already knows it.
                         # Positive evidence that `src` is a value, not a base.
                         _VALUE_KINDS = ("imm", "load", "expr", "argval",
-                                        "cset", "sel", "cast", "raw_call")
+                                        "cset", "sel", "cast", "raw_call",
+                                         "call_n")
                         _srcv = state.get(wreg(src))
                         if _srcv is not None and _srcv[0] in _VALUE_KINDS:
                             # Integer arithmetic with a scaled second operand.
@@ -1690,7 +1774,8 @@ class StraightLine:
 
             raise Bail("unhandled instruction %r %r" % (mn, i.op_str))
 
-        return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args)
+        return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
+                               call_stmts, saw_call)
 
     @staticmethod
     def _value_arg(reg, used_args, idx_args, ptr_args=None):
@@ -1911,6 +1996,40 @@ class StraightLine:
             # naming it does not add a symbol and cannot collide in a batch TU.
             _cu, _eu = self._render(val[2], names)
             return val[3], "%s(%s)" % (val[1], _eu)
+        if kind == "call_n":
+            # A call to a named function, with the arguments it was given.
+            #
+            # Arguments are cast to `uintptr_t` because the callee's real
+            # prototype is in another module and is not known here, so the
+            # declaration this has to compile against is
+            #
+            #     extern RET callee(uintptr_t, uintptr_t, ...);
+            #
+            # and C++ will not implicitly convert `void*` to `uintptr_t`, let
+            # alone to `unsigned long`. Without the cast the source does not
+            # compile at all -- `invalid conversion from 'void*' to
+            # 'unsigned long'` -- for every prototype tried, which is
+            # indistinguishable from "no prototype matches".
+            #
+            # The cast is free at the machine level: on AArch64 a pointer and a
+            # 64-bit integer share a representation and Clang emits nothing for
+            # it. That is checked by the byte comparison rather than trusted --
+            # if it ever cost an instruction, bodies here would simply stop
+            # matching.
+            _ae = ", ".join(call_arg(self._render(a, names)) for a in val[2])
+            # The call goes through a cast of the callee's own address rather than
+            # through a prototype that commits to an arity.
+            #
+            # Two bodies in the same generated translation unit routinely call the
+            # same callee with different argument counts -- sdk@0x3e130 and
+            # sdk@0x3e160 both call 0x5113b0 -- and two `extern` lines disagreeing
+            # about arity is a redefinition, which kills the whole unit, not just
+            # the two bodies. A cast states the arity at the call site instead,
+            # which is the one place it is actually known, and the single
+            # declaration the cast needs (`extern void callee();`) is identical
+            # wherever it appears so it redeclares cleanly.
+            _pt = ", ".join("uintptr_t" for _ in val[2]) or "void"
+            return val[3], "((%s (*)(%s))&%s)(%s)" % (val[3], _pt, val[1], _ae)
         if kind == "cast":
             # Reachable at top level, not only nested inside `expr`: the widening
             # product of a `smaddl`/`umull` can be stored to a register on its own
@@ -1933,7 +2052,15 @@ class StraightLine:
             return val[2], "((%s)%s)" % (val[2], names[val[1]])
         raise Bail("unknown value kind %r" % (kind,))
 
-    def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=()):
+    def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
+              call_stmts=(), saw_call=False):
+        """Render the walked body as a function.
+
+        `call_stmts` arrives as (callee name, raw argument value tuples) because
+        the argument expressions cannot be rendered during the walk -- `names` is
+        allocated here, in the synthetic-pointer loop below. A default of `()`
+        keeps every existing caller working; only `translate()` passes anything.
+        """
         # Parameter list: one entry per argument register from x0 up to the
         # highest the body reads. Gaps are real unused parameters -- a body that
         # reads x2 but not x0/x1 belongs to a function whose first two arguments
@@ -2181,8 +2308,49 @@ class StraightLine:
             return "\n".join(lines) + "\n", sig
 
         all_txt = pre + body_txt
+        # Call statements were collected as (name, raw value tuples) because
+        # `names` does not exist during the instruction walk -- synthetic pointer
+        # locals are allocated at emit time. Rendering them here, after `pre` has
+        # been built, is the first point where every argument name is known.
+        if call_stmts:
+            _call_txt = []
+            for _nm, _vals in call_stmts:
+                _call_txt.append("%s(%s);" % (
+                    _nm, ", ".join(call_arg(self._render(v, names)) for v in _vals)))
+            # After `pre`, not before it. The synthetic pointer locals live in
+            # `pre` and the call's arguments are expressions over them, so putting
+            # the call first yields `callee(p0);` followed by `void* p0 = ...;` --
+            # `error: use of undeclared identifier 'p0'` at compile time, for every
+            # prototype tried, which reads exactly like "no prototype matches".
+            all_txt = pre + _call_txt + body_txt
+        else:
+            all_txt = pre + body_txt
+
+        # A body that calls needs retail's frame, and Clang only produces it when
+        # the call is not terminal. `asm volatile("")` after the call is what makes
+        # it non-terminal, and it reproduces the frame byte for byte:
+        #
+        #     stp x29, x30, [sp, #-0x10]! ; mov x29, sp ; bl ; ldp x29,x30,[sp],#16 ; ret
+        #
+        # Placement is the whole subtlety. Written as a plain trailing statement it
+        # lands *before* `return <expr>` -- and `<expr>` contains the call, because
+        # the call is the value in x0. So an asm in that position precedes the call
+        # and the call stays terminal; Clang tail-calls it to a 4-byte `b` and the
+        # frame disappears. The return value is therefore bound to a local *first*,
+        # which puts the asm after the evaluation of the expression that holds the
+        # call:
+        #
+        #     T r0 = <expr containing the call>;   <- call happens here
+        #     asm volatile("");
+        #     return r0;
+        #
+        # Measured: this is what turns 4 bytes of `b` into the exact 20-byte frame,
+        # at -O3, -O2 and -Os, with no compiler flag.
+        FRAME_ASM = 'asm volatile("");'
 
         if ret_val is None:
+            if saw_call:
+                all_txt.append(FRAME_ASM)
             if not all_txt:
                 return "void %s() {}\n" % ident, "v"
             return "void %s(%s) {\n    %s\n}\n" % (
@@ -2204,8 +2372,25 @@ class StraightLine:
         # so this changes no symbol.
         if rct in ("int8_t", "int16_t"):
             rct = "int32_t"
-        if not all_txt:
+        if not all_txt and not saw_call:
             return "%s %s(%s) { return %s; }\n" % (
                 rct, ident, plist, rexpr), sig
+        if saw_call:
+            # The binding is what orders the frame asm after the call. See the
+            # FRAME_ASM note above.
+            #
+            # `all_txt` is kept, and that is not incidental. The first version of
+            # this branch interpolated only the binding, the asm and the return,
+            # which silently dropped every synthetic pointer local and every
+            # deferred store the body had produced. The result was a source
+            # referencing `p1` with no declaration -- `error: use of undeclared
+            # identifier 'p1'` at compile time, for every prototype tried, which
+            # looks exactly like "no prototype matches" and is not.
+            _lines = list(all_txt)
+            _lines.append("%s r0 = %s;" % (rct, rexpr))
+            _lines.append(FRAME_ASM)
+            _lines.append("return r0;")
+            return "%s %s(%s) {\n    %s\n}\n" % (
+                rct, ident, plist, "\n    ".join(_lines)), sig
         return "%s %s(%s) {\n    %s\n    return %s;\n}\n" % (
             rct, ident, plist, "\n    ".join(all_txt), rexpr), sig
