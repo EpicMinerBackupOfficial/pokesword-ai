@@ -99,11 +99,27 @@ def main():
     print("=== loop ===")
     st = {}
     p = os.path.join(ROOT, "work", "keepalive_state.json")
+    state_age = None
     if os.path.exists(p):
         st = json.load(io.open(p, encoding="utf-8"))
+        state_age = time.time() - os.path.getmtime(p)
     print("  tick          : %s" % st.get("tick", "?"))
     print("  last_matched  : %s" % st.get("last_matched", "?"))
     print("  my processes  : %d" % my_processes())
+    if state_age is not None:
+        print("  state age     : %ds" % int(state_age))
+
+    # The watchdog stamp is a second, independent clock. Tier 1 restarting the
+    # chain is not evidence the chain is working -- the watchdog stamped for
+    # 21.8 hours while tier 2 and tier 3 were both dead -- so its stamp is
+    # reported, never treated as proof of life on its own.
+    wd = os.path.join(ROOT, "work", "ping_watchdog.json")
+    if os.path.exists(wd):
+        try:
+            print("  watchdog age  : %ds"
+                  % int(time.time() - os.path.getmtime(wd)))
+        except OSError:
+            pass
 
     try:
         r = subprocess.run([sys.executable,
@@ -115,7 +131,33 @@ def main():
     except Exception as e:                           # noqa: BLE001
         print("  progress      : unreadable (%s)" % e)
 
-    verdict = "loop is running"
+    # PROGRESS, not liveness.
+    #
+    # This used to be the literal string "loop is running", printed
+    # unconditionally, which is why a loop dead for 22 hours was reported healthy
+    # on every beat: every process existed, and existence was the only thing ever
+    # checked. A blocked Python process and a working one are indistinguishable by
+    # pid.
+    #
+    # What distinguishes them is that a working one rewrites its state file every
+    # tick. The interval is 60s and a tick takes roughly 60-90s end to end
+    # (compile, link, verify), so 5 minutes is comfortably past "still working on
+    # one tick" and well inside "wedged". The threshold is fixed rather than
+    # relative to the previous reading: a check that only fails on the *second*
+    # bad sample is a check that misses the first.
+    #
+    # Note the asymmetry -- STALLED is reported even when every process is alive,
+    # because that is exactly the case that used to pass.
+    STALL_SECONDS = 300
+    if state_age is None:
+        verdict = "loop has NO STATE FILE -- not running"
+    elif state_age > STALL_SECONDS:
+        verdict = ("loop is STALLED -- no tick for %ds (threshold %ds); "
+                   "processes may well all be alive"
+                   % (int(state_age), STALL_SECONDS))
+    else:
+        verdict = "loop is ticking (%ds since last state write)" % int(state_age)
+
     if faults is not None and faults > 3000:
         verdict += " -- but the MACHINE is paging, not the loop"
     print()
