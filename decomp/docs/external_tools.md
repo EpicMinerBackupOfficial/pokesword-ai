@@ -3,14 +3,31 @@
 Three external options were evaluated against the actual work, rather than by
 their descriptions. Recorded so the question does not get re-derived.
 
-## REA (`morluto/rea`) -- installed, registered, and blocked by target format
+## REA (`morluto/rea`) -- installed, registered, opens the target, cannot analyse it
 
 REA is an MCP server wrapping Ghidra, Hopper and IDA. Version 6.4.0 installed
 cleanly and the MCP server starts (`node .../rea.mjs --mcp`). 170 tools are
 offered to the agent.
 
-It cannot analyse these binaries on this host, and the reason is not
-configuration:
+**Correction (measured, supersedes an earlier note here).** This section previously
+said REA "cannot analyse these binaries on this host". That conflated two different
+things, and the distinction matters because it is easy to re-derive the wrong
+answer from the wrong field.
+
+`binary_session` returns `tool_availability`, an array of 170 entries each carrying
+a `reason` and a **`remediation`**. The remediation for the ELF operations reads
+"Call open_binary with a supported local target." Following it:
+
+    open_binary  data/main.elf
+      ->  format=elf  kind=executable  architecture=arm64
+          sha256=b7e98932e007572239c3076b84a52399ea9118a5c656cc3a21c01f77de8b22a9
+
+**REA opens the ROM-derived AArch64 ELF and independently confirms it.** The earlier
+"pwntools artifact profile supports Linux x64 only" is an *analysis* restriction, not
+an opening restriction -- opening is host-independent and succeeded. So REA is usable
+here as an independent digest and format witness, which is worth having.
+
+Analysis remains blocked, and the provider table says precisely why:
 
     ghidra:  not_configured            needs GHIDRA_INSTALL_DIR
     ghidra:  target_format_unsupported "Windows Ghidra P0 accepts PE targets only."
@@ -19,8 +36,9 @@ configuration:
 
 The retail modules are **ELF / aarch64**. The Windows Ghidra build accepts PE
 targets only, so installing Ghidra would not help: the rejection is the target
-format, not the missing install. Hopper is macOS-only. IDA would need a separate
-licence and an upstream MCP registration.
+format, not the missing install. Hopper is macOS-only. IDA is the only provider
+blocked on configuration rather than on capability, and it needs a separate licence
+plus an upstream MCP registration.
 
 This closes the Ghidra question with evidence rather than inference. Ghidra would
 emit C that Clang 5.0.1 must then recompile, and every gap this project has hit is
@@ -31,6 +49,38 @@ decided by Clang's addressing and linkage choices, not by whoever read the bytes
   * an indexed load is `ldr` or `add` purely by how the C is spelled
 
 None of those is a question about reading the binary correctly.
+
+## The ROM-derived ELF has no data symbols -- the `adrp` pages cannot be named
+
+Read directly from `data/main.elf` (40 MB, 8 sections, gitignored; rebuild with
+`tools/nso_to_elf.py`), by parsing the section and symbol tables:
+
+    .text    0x000000  25,084,512
+    .rodata  0x17ed000 12,057,832
+    .data    0x236d000  1,362,704
+    .bss     0x24b9ff8  3,423,048
+    .symtab            104,008 entries, 104,008 named, 104,007 with a size
+    .strtab            1,256,048
+
+Every one of those 104,008 symbols is `STT_FUNC` (kind 2); the file also holds one
+`STT_FILE` and three `STT_SECTION`. 8,252 of the names are not `sub_*` -- they are
+recovered RTTI/string residue such as `gflib3_signal_template_hpp_394_15_name_T`
+and `static_const_char_boost_detail_core_typeid__void_const_v`.
+
+**Not one symbol has a data address.** Filtering to symbols at or above `.rodata`
+yields exactly two, both synthesised by the ELF writer:
+
+    _rodata_start  0x17ed000  12,057,832
+    _data_start    0x236d000   1,362,704
+
+So `.rodata` and `.data` are 13.4 MB of anonymous bytes. The 105 distinct `adrp`
+pages the bodies reference have no names, no sizes and no section-level
+attribution finer than "rodata" or "data". This is a property of the shipped
+modules, not of the tooling, and it holds for every provider REA could bind. Any
+plan that assumes the data pages can be given real symbols -- from REA, from the
+NSO, or from the ELF -- is assuming something that is not there. They have to be
+synthesised, which is what `adrp_register.py` does, and why its declaration form is
+load-bearing (see `register_offset.md`).
 
 ## project-arceus (`nicoruedaa/project-arceus`) -- different game
 
