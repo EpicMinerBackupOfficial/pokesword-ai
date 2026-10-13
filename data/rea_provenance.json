@@ -1,0 +1,115 @@
+{
+ "images": [
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "data/main.elf",
+   "sha256_agree": true,
+   "sha256_local": "b7e98932e007572239c3076b84a52399ea9118a5c656cc3a21c01f77de8b22a9",
+   "sha256_rea": "b7e98932e007572239c3076b84a52399ea9118a5c656cc3a21c01f77de8b22a9",
+   "size": 42266232
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "data/rtld.elf",
+   "sha256_agree": true,
+   "sha256_local": "e1c8b6b3f4477fa84e99ca040d51b9dda211711574b7231387ba419c5003a52c",
+   "sha256_rea": "e1c8b6b3f4477fa84e99ca040d51b9dda211711574b7231387ba419c5003a52c",
+   "size": 18696
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "data/sdk.elf",
+   "sha256_agree": true,
+   "sha256_local": "8812301264a7006a6fb8bf3fead9f55a8717d21e041747c404e9df48b82fab93",
+   "sha256_rea": "8812301264a7006a6fb8bf3fead9f55a8717d21e041747c404e9df48b82fab93",
+   "size": 13605376
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "data/subsdk0.elf",
+   "sha256_agree": true,
+   "sha256_local": "f555ffa5ee08cf766d743c04510cf32d35468040ddb195eabb923c3756af10c4",
+   "sha256_rea": "f555ffa5ee08cf766d743c04510cf32d35468040ddb195eabb923c3756af10c4",
+   "size": 6646760
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "data/subsdk1.elf",
+   "sha256_agree": true,
+   "sha256_local": "4cecfa889766bc8b0a025bf1812ef1dc552d70c3fca0e93b75f3c4d59d5e8d81",
+   "sha256_rea": "4cecfa889766bc8b0a025bf1812ef1dc552d70c3fca0e93b75f3c4d59d5e8d81",
+   "size": 9259976
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/main.elf",
+   "sha256_agree": true,
+   "sha256_local": "6a141534938bc4b52de4aed861f41eead505dfd2d9fc73aa6988863716c013cc",
+   "sha256_rea": "6a141534938bc4b52de4aed861f41eead505dfd2d9fc73aa6988863716c013cc",
+   "size": 16567528
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/prog.elf",
+   "sha256_agree": true,
+   "sha256_local": "e807167502a06a76430b85497cff80481e6cca9e755a5062a1748535b8419064",
+   "sha256_rea": "e807167502a06a76430b85497cff80481e6cca9e755a5062a1748535b8419064",
+   "size": 24158952
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/rtld.elf",
+   "sha256_agree": true,
+   "sha256_local": "ccc9a5adaa72332a62371952044ded6ba213b0350589fbabfe3ac42a37c87f7d",
+   "sha256_rea": "ccc9a5adaa72332a62371952044ded6ba213b0350589fbabfe3ac42a37c87f7d",
+   "size": 6496
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/sdk.elf",
+   "sha256_agree": true,
+   "sha256_local": "70e249e46fafe554b4746f8d1e0fd2b7bc6c98ca77ee62942276fc2d9cc1fd38",
+   "sha256_rea": "70e249e46fafe554b4746f8d1e0fd2b7bc6c98ca77ee62942276fc2d9cc1fd38",
+   "size": 4148944
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/subsdk0.elf",
+   "sha256_agree": true,
+   "sha256_local": "baa633cdbb88f19023f683ff1a01c310596d9e628633513fae1e87a33cd38543",
+   "sha256_rea": "baa633cdbb88f19023f683ff1a01c310596d9e628633513fae1e87a33cd38543",
+   "size": 1628216
+  },
+  {
+   "architecture": "arm64",
+   "format": "elf",
+   "kind": "executable",
+   "path": "build/subsdk1.elf",
+   "sha256_agree": true,
+   "sha256_local": "80cac89b66fbb03d0f4f484688a791bab323f4eb8cfb5d2f6848284ea6690c70",
+   "sha256_rea": "80cac89b66fbb03d0f4f484688a791bab323f4eb8cfb5d2f6848284ea6690c70",
+   "size": 1930304
+  }
+ ],
+ "source": "rea-agents open_binary"
+}
