@@ -345,16 +345,25 @@ HARVEST = [
 #                     which is the only way such a body can be compared at all --
 #                     in a relocatable object the immediate is zero and no
 #                     comparison can succeed.
+#   call_match.py     bare delegators: prologue / one `bl` / epilogue, nothing
+#                     between. The frame comes from `asm volatile("")` after the
+#                     call, which is what stops Clang tail-calling it to a 4-byte
+#                     `b` and deleting the frame before it can be compared.
+#   call_register.py  the same call lowering over the whole `1 call + memory`
+#                     class -- the largest one left. Both skip bodies already in
+#                     the registry, so re-running continues rather than repeats.
 #
-# Each takes `--queue`; the queue files are rebuilt by `sem_census.py`, which is
-# expensive, so they are consumed if present and skipped if absent. A missing
-# queue is a no-op, not a failure: the loop must not wedge on a file a later tick
-# produces.
+# The last two were missing here for the whole time they were being written, which
+# is the shape this loop has been in repeatedly: the work existed, the loop did
+# not know about it, and "loop until done" returned zero gain because the queue
+# was empty rather than because the population was.
 HARVEST_SEMANTIC = [
     ("sem_register.py",
      ["--queue", "data/queues/sem_queue_v6.json", "--fresh", "--trials", "6"]),
     ("strlit_match.py",
      ["--queue", "data/queues/sem_queue_v6_needs_link.json"]),
+    ("call_match.py", ["--limit", "400", "--write"]),
+    ("call_register.py", ["--limit", "500", "--batch", "60", "--write"]),
 ]
 
 
