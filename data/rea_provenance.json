@@ -56,9 +56,9 @@
    "kind": "executable",
    "path": "build/main.elf",
    "sha256_agree": true,
-   "sha256_local": "6a141534938bc4b52de4aed861f41eead505dfd2d9fc73aa6988863716c013cc",
-   "sha256_rea": "6a141534938bc4b52de4aed861f41eead505dfd2d9fc73aa6988863716c013cc",
-   "size": 16567528
+   "sha256_local": "f4d02a554a5087aa4fc13bea93e6fd5338f18f52c35aadf7f5f281ecad5f4527",
+   "sha256_rea": "f4d02a554a5087aa4fc13bea93e6fd5338f18f52c35aadf7f5f281ecad5f4527",
+   "size": 16585800
   },
   {
    "architecture": "arm64",
@@ -66,9 +66,9 @@
    "kind": "executable",
    "path": "build/prog.elf",
    "sha256_agree": true,
-   "sha256_local": "e807167502a06a76430b85497cff80481e6cca9e755a5062a1748535b8419064",
-   "sha256_rea": "e807167502a06a76430b85497cff80481e6cca9e755a5062a1748535b8419064",
-   "size": 24158952
+   "sha256_local": "65cd18ff1cf39305d009fa11075455ccd2ab6e3b63b47bb3c568f219aca5e1ed",
+   "sha256_rea": "65cd18ff1cf39305d009fa11075455ccd2ab6e3b63b47bb3c568f219aca5e1ed",
+   "size": 24345800
   },
   {
    "architecture": "arm64",
@@ -86,9 +86,9 @@
    "kind": "executable",
    "path": "build/sdk.elf",
    "sha256_agree": true,
-   "sha256_local": "70e249e46fafe554b4746f8d1e0fd2b7bc6c98ca77ee62942276fc2d9cc1fd38",
-   "sha256_rea": "70e249e46fafe554b4746f8d1e0fd2b7bc6c98ca77ee62942276fc2d9cc1fd38",
-   "size": 4148944
+   "sha256_local": "d1fe71243fc30ed466426dcef3f674401fc843f57868dae2f4a1a8c77c5580db",
+   "sha256_rea": "d1fe71243fc30ed466426dcef3f674401fc843f57868dae2f4a1a8c77c5580db",
+   "size": 4313360
   },
   {
    "architecture": "arm64",
@@ -96,9 +96,9 @@
    "kind": "executable",
    "path": "build/subsdk0.elf",
    "sha256_agree": true,
-   "sha256_local": "baa633cdbb88f19023f683ff1a01c310596d9e628633513fae1e87a33cd38543",
-   "sha256_rea": "baa633cdbb88f19023f683ff1a01c310596d9e628633513fae1e87a33cd38543",
-   "size": 1628216
+   "sha256_local": "4b9f39a008b4439436477cd19233babd542add36e2bda65a1dad3b9bb2b1d2ec",
+   "sha256_rea": "4b9f39a008b4439436477cd19233babd542add36e2bda65a1dad3b9bb2b1d2ec",
+   "size": 1632096
   },
   {
    "architecture": "arm64",
@@ -106,9 +106,9 @@
    "kind": "executable",
    "path": "build/subsdk1.elf",
    "sha256_agree": true,
-   "sha256_local": "80cac89b66fbb03d0f4f484688a791bab323f4eb8cfb5d2f6848284ea6690c70",
-   "sha256_rea": "80cac89b66fbb03d0f4f484688a791bab323f4eb8cfb5d2f6848284ea6690c70",
-   "size": 1930304
+   "sha256_local": "725b6e22cd95dc4b9535a3db84d528882a7437e9f1fa0237e4fe72828694988e",
+   "sha256_rea": "725b6e22cd95dc4b9535a3db84d528882a7437e9f1fa0237e4fe72828694988e",
+   "size": 1930616
   }
  ],
  "source": "rea-agents open_binary"
