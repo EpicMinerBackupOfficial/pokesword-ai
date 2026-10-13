@@ -1434,7 +1434,7 @@ void L_rank_00() { /* 0x8e70d0 */ }
 void sub_8e7460() { /* 0x8e7460 */ }
 void sub_8e7620() { /* 0x8e7620 */ }
 void btltower_rule_00_uikit() { /* 0x8e7a70 */ }
-void sub_8e7c50() { /* 0x8e7c50 */ }
+// sub_8e7c50: implemented in prog/matched/main/
 void sub_8e7c70() { /* 0x8e7c70 */ }
 void sub_8e7dd0() { /* 0x8e7dd0 */ }
 void sub_8e7f30() { /* 0x8e7f30 */ }
@@ -1756,7 +1756,7 @@ void sub_8ff9a0() { /* 0x8ff9a0 */ }
 void sub_8ffb40() { /* 0x8ffb40 */ }
 void sub_8ffc80() { /* 0x8ffc80 */ }
 void sub_8ffd70() { /* 0x8ffd70 */ }
-void sub_8ffe50() { /* 0x8ffe50 */ }
+// sub_8ffe50: implemented in prog/matched/main/
 // sub_8ffe70: implemented in prog/matched/main/
 // sub_8ffe80: implemented in prog/matched/main/
 // sub_8ffe90: implemented in prog/matched/main/
@@ -1791,7 +1791,7 @@ void sub_9010e0() { /* 0x9010e0 */ }
 // sub_901100: implemented in prog/matched/main/
 // sub_901110: implemented in prog/matched/main/
 // sub_901120: implemented in prog/matched/main/
-void sub_901130() { /* 0x901130 */ }
+// sub_901130: implemented in prog/matched/main/
 // sub_901160: implemented in prog/matched/main/
 // sub_901170: implemented in prog/matched/main/
 // sub_901190: implemented in prog/matched/main/

@@ -823,7 +823,7 @@ void sub_784c10() { /* 0x784c10 */ }
 void sub_784d90() { /* 0x784d90 */ }
 void sub_784e40() { /* 0x784e40 */ }
 // sub_784f30: implemented in prog/matched/main/
-void sub_784f40() { /* 0x784f40 */ }
+// sub_784f40: implemented in prog/matched/main/
 void sub_784f60() { /* 0x784f60 */ }
 void sub_785110() { /* 0x785110 */ }
 void sub_785320() { /* 0x785320 */ }

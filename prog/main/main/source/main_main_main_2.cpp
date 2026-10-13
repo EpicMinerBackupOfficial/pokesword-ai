@@ -168,7 +168,7 @@ void sub_2fff80() { /* 0x2fff80 */ }
 void sub_2fffa0() { /* 0x2fffa0 */ }
 void sub_2fffd0() { /* 0x2fffd0 */ }
 void sub_2fffe0() { /* 0x2fffe0 */ }
-void sub_2ffff0() { /* 0x2ffff0 */ }
+// sub_2ffff0: implemented in prog/matched/main/
 void PsMutex_10() { /* 0x300010 */ }
 void sub_300330() { /* 0x300330 */ }
 void sub_300370() { /* 0x300370 */ }
@@ -3154,7 +3154,7 @@ void sub_3c9ef0() { /* 0x3c9ef0 */ }
 void sub_3c9f20() { /* 0x3c9f20 */ }
 void sub_3c9fe0() { /* 0x3c9fe0 */ }
 void sub_3c9ff0() { /* 0x3c9ff0 */ }
-void sub_3ca000() { /* 0x3ca000 */ }
+// sub_3ca000: implemented in prog/matched/main/
 // sub_3ca020: implemented in prog/matched/main/
 // sub_3ca030: implemented in prog/matched/main/
 // sub_3ca040: implemented in prog/matched/main/

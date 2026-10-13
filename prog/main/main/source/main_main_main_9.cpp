@@ -3138,7 +3138,7 @@ void L_rankup_00() { /* 0xada3d0 */ }
 void sub_ada4d0() { /* 0xada4d0 */ }
 void sub_ada4f0() { /* 0xada4f0 */ }
 void sub_ada510() { /* 0xada510 */ }
-void sub_ada530() { /* 0xada530 */ }
+// sub_ada530: implemented in prog/matched/main/
 void btlspot_rankup_00_lyt() { /* 0xada550 */ }
 // sub_ada660: implemented in prog/matched/main/
 void sub_ada680() { /* 0xada680 */ }

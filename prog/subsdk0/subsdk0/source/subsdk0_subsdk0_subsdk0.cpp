@@ -1546,12 +1546,12 @@ void sub_89090() { /* 0x89090 */ }
 void sub_891c0_subsdk0_891c0() { /* 0x891c0 */ }
 void sub_89450() { /* 0x89450 */ }
 void sub_8a550() { /* 0x8a550 */ }
-void sub_8a590() { /* 0x8a590 */ }
+// sub_8a590: implemented in prog/matched/subsdk0/
 void sub_8a5b0() { /* 0x8a5b0 */ }
-void sub_8a5e0() { /* 0x8a5e0 */ }
+// sub_8a5e0: implemented in prog/matched/subsdk0/
 // sub_8a610: implemented in prog/matched/subsdk0/
 // sub_8a620_subsdk0_8a620: implemented in prog/matched/subsdk0/
-void sub_8a650() { /* 0x8a650 */ }
+// sub_8a650: implemented in prog/matched/subsdk0/
 void SoftMPEG4() { /* 0x8a680 */ }
 void sub_8a7e0_subsdk0_8a7e0() { /* 0x8a7e0 */ }
 void sub_8a800() { /* 0x8a800 */ }
@@ -3434,7 +3434,7 @@ void AwesomePlayer_Looper() { /* 0x129e60 */ }
 void sub_129fd0() { /* 0x129fd0 */ }
 void sub_12a090() { /* 0x12a090 */ }
 // sub_12a0c0: implemented in prog/matched/subsdk0/
-void sub_12a0d0() { /* 0x12a0d0 */ }
+// sub_12a0d0: implemented in prog/matched/subsdk0/
 void sub_12a0f0() { /* 0x12a0f0 */ }
 // sub_12a100: implemented in prog/matched/subsdk0/
 void sub_12a110() { /* 0x12a110 */ }
@@ -3449,7 +3449,7 @@ void sub_12a190() { /* 0x12a190 */ }
 void sub_12a1a0() { /* 0x12a1a0 */ }
 void sub_12a1b0() { /* 0x12a1b0 */ }
 void sub_12a220() { /* 0x12a220 */ }
-void sub_12a290() { /* 0x12a290 */ }
+// sub_12a290: implemented in prog/matched/subsdk0/
 void sub_12a2b0() { /* 0x12a2b0 */ }
 // sub_12a2c0: implemented in prog/matched/subsdk0/
 void sub_12a2d0() { /* 0x12a2d0 */ }
@@ -3984,7 +3984,7 @@ void NuPlayerDriver_Looper() { /* 0x14b1e0 */ }
 void sub_14b390() { /* 0x14b390 */ }
 void sub_14b450() { /* 0x14b450 */ }
 // sub_14b480: implemented in prog/matched/subsdk0/
-void sub_14b490() { /* 0x14b490 */ }
+// sub_14b490: implemented in prog/matched/subsdk0/
 void sub_14b4b0() { /* 0x14b4b0 */ }
 void sub_14b560() { /* 0x14b560 */ }
 void sub_14b610() { /* 0x14b610 */ }

@@ -8182,6 +8182,24 @@ uint64_t sdk_f_9cde0(void* a0) {
     return r0;
 }
 
+// sub_9ce00  (orig 0x9ce00, call)
+extern void callee_5140f0();
+uint64_t sdk_f_9ce00(void* a0) {
+    uint64_t f_9ce00__r0 = ((uint64_t (*)(uintptr_t))&callee_5140f0)(((uintptr_t)((char*)(a0) + 96)));
+    uint64_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
+
+// sub_9ce20  (orig 0x9ce20, call)
+extern void callee_514100();
+uint64_t sdk_f_9ce20(void* a0) {
+    uint64_t f_9ce20__r0 = ((uint64_t (*)(uintptr_t))&callee_514100)(((uintptr_t)((char*)(a0) + 96)));
+    uint64_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
+
 // sub_9ce70  (orig 0x9ce70, call)
 extern void callee_514120();
 uint64_t sdk_f_9ce70(void* a0, void* a1, void* a2, void* a3) {
@@ -8224,6 +8242,24 @@ uint64_t sdk_f_9d910(void* a0, void* a1, void* a2, void* a3) {
 extern void callee_5140e0();
 uint64_t sdk_f_9d950(void* a0) {
     uint64_t r0 = (((uint64_t (*)(uintptr_t))&callee_5140e0)(((uintptr_t)((char*)(a0) + 112)))) & (4294967295);
+    asm volatile("");
+    return r0;
+}
+
+// sub_9d970  (orig 0x9d970, call)
+extern void callee_5140f0();
+uint64_t sdk_f_9d970(void* a0) {
+    uint64_t f_9d970__r0 = ((uint64_t (*)(uintptr_t))&callee_5140f0)(((uintptr_t)((char*)(a0) + 112)));
+    uint64_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
+
+// sub_9d9f0  (orig 0x9d9f0, call)
+extern void callee_514100();
+uint64_t sdk_f_9d9f0(void* a0) {
+    uint64_t f_9d9f0__r0 = ((uint64_t (*)(uintptr_t))&callee_514100)(((uintptr_t)((char*)(a0) + 112)));
+    uint64_t r0 = 0;
     asm volatile("");
     return r0;
 }
@@ -8598,6 +8634,15 @@ void sdk_f_a8f50(void* a0, uint64_t a1, uint64_t a2, uint64_t a3, uint32_t a4) {
     *(uint64_t*)((char*)(a0) + 8) = a2;
     *(uint32_t*)((char*)(a0) + 16) = (uint32_t)(a3);
     *(uint8_t*)((char*)(a0) + 20) = (uint8_t)((((uint32_t)a4)) & (1));
+}
+
+// sub_a9030  (orig 0xa9030, call)
+extern void callee_514a20();
+uint32_t sdk_f_a9030(uint64_t unused0, uint32_t a1, uint64_t a2, uint64_t a3) {
+    uint64_t f_a9030__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&callee_514a20)(((uintptr_t)(((uint32_t)a1))), ((uintptr_t)(((uint64_t)a2))), ((uintptr_t)(((uint64_t)a3))));
+    uint32_t r0 = 1;
+    asm volatile("");
+    return r0;
 }
 
 // sub_a92f0  (orig 0xa92f0, setter-chain)
@@ -10877,19 +10922,4 @@ void sdk_f_179b50() {}
 
 // sub_179ea0  (orig 0x179ea0, ret_only)
 void sdk_f_179ea0() {}
-
-// sub_17a220  (orig 0x17a220, ret_only)
-void sdk_f_17a220() {}
-
-// sub_17df70  (orig 0x17df70, ptr_add)
-void* sdk_f_17df70(void* a0) { return (char*)a0 + 16; }
-
-// sub_17df80  (orig 0x17df80, mov_ret)
-uint64_t sdk_f_17df80() { return 0; }
-
-// sub_17dfc0  (orig 0x17dfc0, ptr_add)
-void* sdk_f_17dfc0(void* a0) { return (char*)a0 + 8; }
-
-// sub_17dfd0  (orig 0x17dfd0, straight)
-void* sdk_f_17dfd0(void* a0) { return (char*)(a0) - 8; }
 

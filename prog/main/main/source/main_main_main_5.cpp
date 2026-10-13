@@ -116,7 +116,7 @@ void sub_65c040() { /* 0x65c040 */ }
 void sub_65c240() { /* 0x65c240 */ }
 void sub_65c2b0() { /* 0x65c2b0 */ }
 void sub_65c490() { /* 0x65c490 */ }
-void sub_65c590() { /* 0x65c590 */ }
+// sub_65c590: implemented in prog/matched/main/
 void sub_65c700() { /* 0x65c700 */ }
 void sub_65c7c0() { /* 0x65c7c0 */ }
 void sub_65c880() { /* 0x65c880 */ }
@@ -275,7 +275,7 @@ void sub_663d40() { /* 0x663d40 */ }
 void sub_663de0() { /* 0x663de0 */ }
 void sub_664140() { /* 0x664140 */ }
 void sub_6641e0() { /* 0x6641e0 */ }
-void sub_664300() { /* 0x664300 */ }
+// sub_664300: implemented in prog/matched/main/
 void sub_664320() { /* 0x664320 */ }
 void sub_664430() { /* 0x664430 */ }
 void sub_664540() { /* 0x664540 */ }
@@ -283,7 +283,7 @@ void sub_6645e0() { /* 0x6645e0 */ }
 void MovieVideoInputReadThread() { /* 0x6646e0 */ }
 void sub_664940() { /* 0x664940 */ }
 void sub_6649e0() { /* 0x6649e0 */ }
-void sub_664b00() { /* 0x664b00 */ }
+// sub_664b00: implemented in prog/matched/main/
 void sub_664b20() { /* 0x664b20 */ }
 void sub_664c30() { /* 0x664c30 */ }
 void sub_664d40() { /* 0x664d40 */ }
@@ -317,7 +317,7 @@ void sub_667220() { /* 0x667220 */ }
 void sub_6673a0() { /* 0x6673a0 */ }
 void sub_667480() { /* 0x667480 */ }
 void sub_6674e0() { /* 0x6674e0 */ }
-void sub_6675e0() { /* 0x6675e0 */ }
+// sub_6675e0: implemented in prog/matched/main/
 void sub_667600() { /* 0x667600 */ }
 void sub_667630() { /* 0x667630 */ }
 void height_3() { /* 0x6676c0 */ }

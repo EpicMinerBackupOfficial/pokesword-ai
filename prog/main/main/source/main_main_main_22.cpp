@@ -75,8 +75,8 @@ void sub_15ebfc0() { /* 0x15ebfc0 */ }
 void sub_15ec010() { /* 0x15ec010 */ }
 void unnamed_70() { /* 0x15ec060 */ }
 void f_0_0_0() { /* 0x15ec580 */ }
-void sub_15ec600() { /* 0x15ec600 */ }
-void sub_15ec620() { /* 0x15ec620 */ }
+// sub_15ec600: implemented in prog/matched/main/
+// sub_15ec620: implemented in prog/matched/main/
 void sub_15ec640() { /* 0x15ec640 */ }
 // sub_15ec6b0: implemented in prog/matched/main/
 // sub_15ec6c0: implemented in prog/matched/main/
@@ -288,7 +288,7 @@ void sub_1606320() { /* 0x1606320 */ }
 void sub_16063c0() { /* 0x16063c0 */ }
 // sub_1606400: implemented in prog/matched/main/
 void LiteBuffer() { /* 0x1606420 */ }
-void sub_16069d0() { /* 0x16069d0 */ }
+// sub_16069d0: implemented in prog/matched/main/
 void sub_16069f0() { /* 0x16069f0 */ }
 void sub_1606a00() { /* 0x1606a00 */ }
 void sub_1606b50() { /* 0x1606b50 */ }

@@ -215,7 +215,7 @@ void sub_17e4c10() { /* 0x17e4c10 */ }
 void sub_17e4e50() { /* 0x17e4e50 */ }
 void sub_17e5310() { /* 0x17e5310 */ }
 // sub_17e5360: implemented in prog/matched/main/
-void sub_17e5370() { /* 0x17e5370 */ }
+// sub_17e5370: implemented in prog/matched/main/
 // sub_17e53a0: implemented in prog/matched/main/
 void sub_17e53b0() { /* 0x17e53b0 */ }
 void sub_17e5ac0() { /* 0x17e5ac0 */ }

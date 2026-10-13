@@ -3690,7 +3690,7 @@ void sub_120d7c0() { /* 0x120d7c0 */ }
 // sub_120d8c0: implemented in prog/matched/main/
 // sub_120d8d0: implemented in prog/matched/main/
 // sub_120d8e0: implemented in prog/matched/main/
-void sub_120d8f0() { /* 0x120d8f0 */ }
+// sub_120d8f0: implemented in prog/matched/main/
 // sub_120d910: implemented in prog/matched/main/
 // sub_120d920: implemented in prog/matched/main/
 // sub_120d930: implemented in prog/matched/main/

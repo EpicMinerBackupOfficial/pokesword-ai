@@ -7,7 +7,7 @@ namespace main {
 void sub_e11680() { /* 0xe11680 */ }
 void sub_e11740() { /* 0xe11740 */ }
 void seperator_mark_18() { /* 0xe11880 */ }
-void sub_e11fa0() { /* 0xe11fa0 */ }
+// sub_e11fa0: implemented in prog/matched/main/
 void class_check_10() { /* 0xe11fc0 */ }
 void sub_e12260() { /* 0xe12260 */ }
 void sol_no_matching_function_call_takes_this_number_of_argum_2() { /* 0xe12290 */ }
@@ -488,7 +488,7 @@ void sol_no_matching_function_call_takes_this_number_of_argum_3() { /* 0xe26500 
 void aligned_allocation_of_userdata_block_data_section_for_s_4() { /* 0xe26680 */ }
 void sub_e268d0() { /* 0xe268d0 */ }
 void sub_e26ab0() { /* 0xe26ab0 */ }
-void sub_e26b20() { /* 0xe26b20 */ }
+// sub_e26b20: implemented in prog/matched/main/
 void sub_e26b40() { /* 0xe26b40 */ }
 void sol_no_matching_function_call_takes_this_number_of_argum_4() { /* 0xe26b70 */ }
 void sub_e26cf0() { /* 0xe26cf0 */ }
@@ -2942,7 +2942,7 @@ void sub_ec68f0() { /* 0xec68f0 */ }
 void sub_ec6930() { /* 0xec6930 */ }
 // sub_ec69c0: implemented in prog/matched/main/
 void sub_ec69d0() { /* 0xec69d0 */ }
-void sub_ec6ae0() { /* 0xec6ae0 */ }
+// sub_ec6ae0: implemented in prog/matched/main/
 void sub_ec6b00() { /* 0xec6b00 */ }
 void sub_ec6e20() { /* 0xec6e20 */ }
 // sub_ec6e30: implemented in prog/matched/main/

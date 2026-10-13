@@ -3884,7 +3884,7 @@ void sub_12ec40() { /* 0x12ec40 */ }
 void sub_12edf0() { /* 0x12edf0 */ }
 void sub_130120() { /* 0x130120 */ }
 void sub_130340() { /* 0x130340 */ }
-void sub_130b80() { /* 0x130b80 */ }
+// sub_130b80: implemented in prog/matched/main/
 void sub_130bb0() { /* 0x130bb0 */ }
 void sub_130bf0() { /* 0x130bf0 */ }
 void GuMidphaseInterface_4() { /* 0x1311f0 */ }

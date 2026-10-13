@@ -1673,7 +1673,7 @@ void sub_34d2d0() { /* 0x34d2d0 */ }
 void sub_34d350() { /* 0x34d350 */ }
 void sub_34d400() { /* 0x34d400 */ }
 void sub_34d480() { /* 0x34d480 */ }
-void sub_34d4f0() { /* 0x34d4f0 */ }
+// sub_34d4f0: implemented in prog/matched/sdk/
 void sub_34d510() { /* 0x34d510 */ }
 void sub_34d590() { /* 0x34d590 */ }
 void sub_34d610() { /* 0x34d610 */ }

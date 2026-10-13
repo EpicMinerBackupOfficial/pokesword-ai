@@ -972,14 +972,14 @@ void sub_596390() { /* 0x596390 */ }
 void sub_596410() { /* 0x596410 */ }
 void sub_596460() { /* 0x596460 */ }
 void sub_596490() { /* 0x596490 */ }
-void sub_5964e0() { /* 0x5964e0 */ }
-void sub_596500() { /* 0x596500 */ }
+// sub_5964e0: implemented in prog/matched/main/
+// sub_596500: implemented in prog/matched/main/
 void sub_596520() { /* 0x596520 */ }
 void sub_596530() { /* 0x596530 */ }
 void sub_596570() { /* 0x596570 */ }
 void sub_5965a0() { /* 0x5965a0 */ }
-void sub_5965f0() { /* 0x5965f0 */ }
-void sub_596610() { /* 0x596610 */ }
+// sub_5965f0: implemented in prog/matched/main/
+// sub_596610: implemented in prog/matched/main/
 void sub_596630() { /* 0x596630 */ }
 void sub_596640() { /* 0x596640 */ }
 void sub_596680() { /* 0x596680 */ }
