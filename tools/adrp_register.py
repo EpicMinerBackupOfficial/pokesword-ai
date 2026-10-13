@@ -218,10 +218,20 @@ def main():
                     c = lst[0]
                     addr, size, name, _id, target, src, sig, n_ins, nargs, ret, \
                         pages, nth = c
-                    if (target, addr) not in stubs:
-                        stubs.add((target, addr))
+                    # The stub's return type must match the VARIANT's, or the
+                    # source assigns the result of a `void` function and Clang
+                    # folds everything downstream to a constant:
+                    #
+                    #     ours  bl ; mov w0, wzr        <- the load vanished
+                    #
+                    # One stub per (callee, body, return type).
+                    skey = (target, addr, c[9] if c else "uint64_t")
+                    if skey not in stubs:
+                        stubs.add(skey)
                         parts.append(
-                            "extern void g_%x_%x();" % (target, addr))
+                            "extern %s g_%x_%x();"
+                            % ("void" if skey[2] == "void" else skey[2],
+                               target, addr))
                     # A definition, because this path actually links.
                     # `call_register` never links, so an undefined callee was
                     # harmless there; `ld.lld` refuses. The stub's body and address
@@ -229,12 +239,14 @@ def main():
                     # `<target>` -- but it must not be inlined, or Clang sees an
                     # empty function and deletes the `bl` along with the argument
                     # setup that the comparison is there to check.
+                        _rt = "void" if skey[2] == "void" else skey[2]
                         parts.append(
-                            "void g_%x_%x() __attribute__((noinline));"
-                            % (target, addr))
+                            "%s g_%x_%x() __attribute__((noinline));"
+                            % (_rt, target, addr))
                         parts.append(
-                            "void g_%x_%x() { __asm__ volatile(\"\"); }"
-                            % (target, addr))
+                            "%s g_%x_%x() { __asm__ volatile(\"\"); %s }"
+                            % (_rt, target, addr,
+                               "return 0;" if _rt != "void" else ""))
                     # EVERY variant gets its own function and its own placement.
                     #
                     # Emitting only variant 0 and then "trying" the rest compares

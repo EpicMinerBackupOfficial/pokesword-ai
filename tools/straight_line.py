@@ -724,6 +724,37 @@ class StraightLine:
                 icy = EXTEND_TYPES[ext][0]
             else:
                 icy = "uint32_t"
+            # `state` first, the parameter list only as a fallback.
+            #
+            # Reaching for `arg_reg` unconditionally meant an index register could
+            # only ever render as its incoming parameter `aN`, whatever the body
+            # had done to it. That is invisible until a call sits between the two:
+            #
+            #     bl  <callee>                 ; x0 is the callee's return
+            #     ldr w0, [x8, w0, sxtw #2]    ; the index is x0 -- the return
+            #
+            # rendered as `a0`, which has to survive the call, so Clang spills it
+            # to x19 and emits three instructions the original does not have:
+            #
+            #     ours  str x19 ; mov w19,w0 ; bl ; ldr w0,[x8,w19,sxtw#2] ...
+            #
+            # The index is returned as a value tuple, not a string, so it renders
+            # at emit time with the real names -- the same reason call arguments
+            # are held raw during the walk.
+            _r = wreg(index)
+            _v = state.get(_r)
+            if _v is not None:
+                # Keep the scale. The fallback below returns a string that has
+                # `* %d` in it, and the `load_i` render arm does not apply one --
+                # so returning the bare value silently dropped `* 4` from
+                # `ldr w0, [x8, w0, sxtw #2]` and Clang then indexed by elements
+                # rather than bytes. An `expr` node is the one form that renders
+                # recursively at emit time, which is what a walk-time reference
+                # needs.
+                _vt = _rw(_v)
+                if scale == 1:
+                    return _v
+                return ("expr", "*", _v, ("imm", scale, _vt), _vt)
             n = arg_reg(index)
             idx_args[n] = icy
             # `used_args` too, not just the type. The parameter list below is
