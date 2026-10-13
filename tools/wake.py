@@ -283,12 +283,14 @@ def main():
 
     if a.loop:
         print("  waking %s every %ds" % (sess, a.every))
+        sys.stdout.flush()
         if a.delay:
             # The first wake is deferred so that launching this from inside a turn
             # does not immediately re-enter the turn that launched it. A wake sent
             # while the agent is still working is the overlap the lock exists to
             # prevent, and the launcher is by definition still working.
             print("  first wake in %ds" % a.delay)
+            sys.stdout.flush()
             time.sleep(a.delay)
         while True:
             held = lock_held()
