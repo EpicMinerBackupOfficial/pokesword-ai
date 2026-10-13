@@ -3505,7 +3505,7 @@ void sub_debc20() { /* 0xdebc20 */ }
 // sub_debc90: implemented in prog/matched/main/
 // sub_debca0: implemented in prog/matched/main/
 void sub_debcb0() { /* 0xdebcb0 */ }
-void sub_debcc0() { /* 0xdebcc0 */ }
+// sub_debcc0: implemented in prog/matched/main/
 // sub_debce0: implemented in prog/matched/main/
 // sub_debcf0: implemented in prog/matched/main/
 // sub_debd00: implemented in prog/matched/main/

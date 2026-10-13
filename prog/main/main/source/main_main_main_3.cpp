@@ -941,9 +941,9 @@ void sub_452400() { /* 0x452400 */ }
 void TFXString_7() { /* 0x4525a0 */ }
 void sub_452740() { /* 0x452740 */ }
 void sub_452790() { /* 0x452790 */ }
-void sub_4527b0() { /* 0x4527b0 */ }
-void sub_4527e0() { /* 0x4527e0 */ }
-void sub_452800() { /* 0x452800 */ }
+// sub_4527b0: implemented in prog/matched/main/
+// sub_4527e0: implemented in prog/matched/main/
+// sub_452800: implemented in prog/matched/main/
 void allocated_3() { /* 0x452820 */ }
 void allocated_4() { /* 0x4529a0 */ }
 void sub_452b30() { /* 0x452b30 */ }
@@ -1692,8 +1692,8 @@ void sub_4c5920() { /* 0x4c5920 */ }
 void sub_4c5930() { /* 0x4c5930 */ }
 void sub_4c5a40() { /* 0x4c5a40 */ }
 void sub_4c5a90() { /* 0x4c5a90 */ }
-void sub_4c5b30() { /* 0x4c5b30 */ }
-void sub_4c5b50() { /* 0x4c5b50 */ }
+// sub_4c5b30: implemented in prog/matched/main/
+// sub_4c5b50: implemented in prog/matched/main/
 void sub_4c5b70() { /* 0x4c5b70 */ }
 void sub_4c5c60() { /* 0x4c5c60 */ }
 void SiCore_String_11() { /* 0x4c5d50 */ }
@@ -2672,7 +2672,7 @@ void sub_4ff8c0() { /* 0x4ff8c0 */ }
 void sub_4ffab0() { /* 0x4ffab0 */ }
 // sub_4ffaf0: implemented in prog/matched/main/
 void sub_4ffb00() { /* 0x4ffb00 */ }
-void sub_4ffb80() { /* 0x4ffb80 */ }
+// sub_4ffb80: implemented in prog/matched/main/
 // sub_4ffbb0: implemented in prog/matched/main/
 // sub_4ffbd0: implemented in prog/matched/main/
 void sub_4ffbe0() { /* 0x4ffbe0 */ }
@@ -3875,7 +3875,7 @@ void sub_5594b0() { /* 0x5594b0 */ }
 void sub_559700() { /* 0x559700 */ }
 void sub_5597d0() { /* 0x5597d0 */ }
 void sub_559820() { /* 0x559820 */ }
-void sub_559880() { /* 0x559880 */ }
+// sub_559880: implemented in prog/matched/main/
 void ShaderProgram__d() { /* 0x559ac0 */ }
 void sub_559b60() { /* 0x559b60 */ }
 // sub_559d30: implemented in prog/matched/main/

@@ -1710,7 +1710,7 @@ void sub_c35c50() { /* 0xc35c50 */ }
 void sub_c35d10() { /* 0xc35d10 */ }
 void sub_c360b0() { /* 0xc360b0 */ }
 void sub_c36240() { /* 0xc36240 */ }
-void sub_c36400() { /* 0xc36400 */ }
+// sub_c36400: implemented in prog/matched/main/
 // sub_c36430: implemented in prog/matched/main/
 // sub_c36440: implemented in prog/matched/main/
 void sub_c36450() { /* 0xc36450 */ }

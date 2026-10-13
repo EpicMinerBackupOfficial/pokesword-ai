@@ -336,11 +336,11 @@ void AString_cpp_264_CHECK_LE_start_size_failed() { /* 0x15c950 */ }
 void sub_15cb10() { /* 0x15cb10 */ }
 void AString_cpp_288_CHECK_mData_NULL_failed() { /* 0x15cb20 */ }
 void AString_cpp_224_CHECK_result_0_size_t_result_sizeof_s_fa_4() { /* 0x15cec0 */ }
-void sub_15cfd0() { /* 0x15cfd0 */ }
+// sub_15cfd0: implemented in prog/matched/subsdk0/
 void sub_15cff0() { /* 0x15cff0 */ }
 void sub_15d000() { /* 0x15d000 */ }
 void sub_15d030() { /* 0x15d030 */ }
-void sub_15d040() { /* 0x15d040 */ }
+// sub_15d040: implemented in prog/matched/subsdk0/
 void sub_15d070() { /* 0x15d070 */ }
 void sub_15d100() { /* 0x15d100 */ }
 void sub_15d140() { /* 0x15d140 */ }
@@ -3295,7 +3295,7 @@ void sub_228b00() { /* 0x228b00 */ }
 void sub_228cb0() { /* 0x228cb0 */ }
 void sub_228e00() { /* 0x228e00 */ }
 void sub_228ea0() { /* 0x228ea0 */ }
-void sub_228f20_subsdk0_228f20() { /* 0x228f20 */ }
+// sub_228f20_subsdk0_228f20: implemented in prog/matched/subsdk0/
 void sub_228f40() { /* 0x228f40 */ }
 void TimedEventQueue() { /* 0x228f50 */ }
 void sub_229110() { /* 0x229110 */ }

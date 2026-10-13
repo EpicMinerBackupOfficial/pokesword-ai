@@ -24,7 +24,7 @@ void sub_510_subsdk1_510() { /* 0x510 */ }
 void sub_530() { /* 0x530 */ }
 void sub_560_subsdk1_560() { /* 0x560 */ }
 void sub_5a0() { /* 0x5a0 */ }
-void sub_600() { /* 0x600 */ }
+// sub_600: implemented in prog/matched/subsdk1/
 void sub_620() { /* 0x620 */ }
 void sub_630_subsdk1_630() { /* 0x630 */ }
 void undefined_subsdk1_640() { /* 0x640 */ }

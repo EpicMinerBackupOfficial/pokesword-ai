@@ -1042,7 +1042,7 @@ void sub_b332d0() { /* 0xb332d0 */ }
 void sub_b33370() { /* 0xb33370 */ }
 void sub_b33410() { /* 0xb33410 */ }
 void sub_b334b0() { /* 0xb334b0 */ }
-void sub_b334c0() { /* 0xb334c0 */ }
+// sub_b334c0: implemented in prog/matched/main/
 void sub_b334e0() { /* 0xb334e0 */ }
 void sub_b334f0() { /* 0xb334f0 */ }
 void sub_b33500() { /* 0xb33500 */ }

@@ -578,7 +578,7 @@ void sub_141b9d0() { /* 0x141b9d0 */ }
 void uikit_item_num_select_00_lyt() { /* 0x141bbd0 */ }
 void sub_141bdb0() { /* 0x141bdb0 */ }
 void sub_141be00() { /* 0x141be00 */ }
-void sub_141be10() { /* 0x141be10 */ }
+// sub_141be10: implemented in prog/matched/main/
 void sub_141be30() { /* 0x141be30 */ }
 void sub_141be60() { /* 0x141be60 */ }
 void sub_141be80() { /* 0x141be80 */ }

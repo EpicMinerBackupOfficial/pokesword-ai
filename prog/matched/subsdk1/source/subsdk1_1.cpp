@@ -1,4 +1,4 @@
-/* subsdk1 -- 1512 functions verified to match the original.
+/* subsdk1 -- 1514 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -53,6 +53,15 @@ uint64_t subsdk1_f_250() { return 0; }
 
 // sub_260  (orig 0x260, mov_ret)
 uint32_t subsdk1_f_260() { return 0; }
+
+// sub_600  (orig 0x600, call)
+extern void callee_4cf7f0();
+uint32_t subsdk1_f_600() {
+    callee_4cf7f0();
+    uint32_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
 
 // sub_1290  (orig 0x1290, setter-chain)
 void subsdk1_f_1290(void* a0) { *(uint64_t*)((char*)(a0) + 32) = 0; *(uint64_t*)((char*)(a0) + 40) = 0; __asm__ __volatile__("" ::: "memory");; *(uint64_t*)((char*)(a0) + 48) = 0; }
@@ -3170,6 +3179,14 @@ uint32_t subsdk1_f_27a430(void* a0) { return *(uint32_t*)((char*)((*(uint64_t*)(
 void subsdk1_f_27af90(uint64_t unused0, uint64_t unused1, uint64_t a2, void* a3, void* a4) {
     *(uint32_t*)((char*)(a3)) = 192;
     *(uint32_t*)((char*)(a4)) = (uint32_t)(a2);
+}
+
+// sub_29d550  (orig 0x29d550, call)
+extern void sub_264740();
+uint64_t subsdk1_f_29d550() {
+    uint64_t r0 = (((uint64_t (*)(void))&sub_264740)()) & (4294967295);
+    asm volatile("");
+    return r0;
 }
 
 // sub_29d570  (orig 0x29d570, ret_only)

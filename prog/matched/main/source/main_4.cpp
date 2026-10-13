@@ -7006,6 +7006,14 @@ void main_f_37af50(void* a0) { *(uint8_t*)((char*)(a0) + 292) = 0; *(uint64_t*)(
 // sub_37df40  (orig 0x37df40, mov_ret)
 uint64_t main_f_37df40() { return 0; }
 
+// sub_37f540  (orig 0x37f540, call)
+extern void sub_37f4b0();
+uint32_t main_f_37f540() {
+    uint32_t r0 = ((((uint32_t (*)(void))&sub_37f4b0)() == 1) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
+
 // sub_380ff0  (orig 0x380ff0, ret_only)
 void main_f_380ff0() {}
 
@@ -7234,6 +7242,14 @@ uint8_t main_f_3a6470(void* a0) { return *(uint8_t*)((char*)(a0) + 28); }
 
 // sub_3a6480  (orig 0x3a6480, setter)
 void main_f_3a6480(void* a0) { *(uint8_t*)((char*)(a0) + 28) = 0; }
+
+// sub_3a6510  (orig 0x3a6510, call)
+extern void callee_17e9700();
+uint32_t main_f_3a6510(void* a0) {
+    uint32_t r0 = (((((uint32_t (*)(uintptr_t))&callee_17e9700)(((uintptr_t)((char*)(a0) + 64))) != 0)) ? ((1) + (1)) : (1));
+    asm volatile("");
+    return r0;
+}
 
 // sub_3a6540  (orig 0x3a6540, ptr_add)
 void* main_f_3a6540(void* a0) { return (char*)a0 + 40; }
@@ -8287,6 +8303,30 @@ void* main_f_44fb10(void* a0) { return (char*)a0 + 448; }
 // GPUInterfaceEffect_cpp_d_PPFX_ERROR  (orig 0x44fb20, ptr_add)
 void* main_f_44fb20(void* a0) { return (char*)a0 + 512; }
 
+// sub_4527b0  (orig 0x4527b0, call)
+extern void callee_17e9220();
+uint32_t main_f_4527b0(void* a0, void* a1) {
+    uint32_t r0 = ((((uint32_t (*)(uintptr_t, uintptr_t))&callee_17e9220)(((uintptr_t)(*(uint64_t*)((char*)(a0) + 8))), ((uintptr_t)(*(uint64_t*)((char*)(a1) + 8)))) != 0) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
+
+// sub_4527e0  (orig 0x4527e0, call)
+extern void callee_17e9220();
+uint32_t main_f_4527e0(void* a0) {
+    uint32_t r0 = ((((uint32_t (*)(uintptr_t))&callee_17e9220)(((uintptr_t)(*(uint64_t*)((char*)(a0) + 8)))) == 0) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
+
+// sub_452800  (orig 0x452800, call)
+extern void callee_17e9220();
+uint32_t main_f_452800(void* a0, void* a1) {
+    uint32_t r0 = (((uint32_t (*)(uintptr_t, uintptr_t))&callee_17e9220)(((uintptr_t)(*(uint64_t*)((char*)(a0) + 8))), ((uintptr_t)(*(uint64_t*)((char*)(a1) + 8))))) >> (31);
+    asm volatile("");
+    return r0;
+}
+
 // GPUPostEffect_cpp_d_PPFX_ERROR_7  (orig 0x4534d0, straight)
 uint32_t main_f_4534d0(void* a0, uint64_t a1, uint64_t a2) {
     *(uint32_t*)((char*)(a0) + 544) = (uint32_t)(a1);
@@ -8553,6 +8593,24 @@ void main_f_4c4d70() {}
 
 // SiCore_String_139  (orig 0x4c4d80, ret_only)
 void main_f_4c4d80() {}
+
+// sub_4c5b30  (orig 0x4c5b30, call)
+extern void sub_4c4700();
+uint32_t main_f_4c5b30() {
+    sub_4c4700();
+    uint32_t r0 = 1;
+    asm volatile("");
+    return r0;
+}
+
+// sub_4c5b50  (orig 0x4c5b50, call)
+extern void sub_4c4700();
+uint32_t main_f_4c5b50() {
+    sub_4c4700();
+    uint32_t r0 = 1;
+    asm volatile("");
+    return r0;
+}
 
 // sub_4c66b0  (orig 0x4c66b0, getter)
 uint32_t main_f_4c66b0(void* a0) { return *(uint32_t*)((char*)(a0) + 32); }
@@ -9112,27 +9170,4 @@ void main_f_4fcbe0() {}
 
 // sub_4fcbf0  (orig 0x4fcbf0, ret_only)
 void main_f_4fcbf0() {}
-
-// sub_4fcc00  (orig 0x4fcc00, ptr_add)
-void* main_f_4fcc00(void* a0) { return (char*)a0 + 128; }
-
-// sub_4fcc10  (orig 0x4fcc10, mov_ret)
-uint32_t main_f_4fcc10() { return 1; }
-
-// sub_4fcf40  (orig 0x4fcf40, ptr_add)
-void* main_f_4fcf40(void* a0) { return (char*)a0 + 192; }
-
-// sub_4fcf50  (orig 0x4fcf50, getter)
-uint64_t main_f_4fcf50(void* a0) { return *(uint64_t*)((char*)(a0) + 48); }
-
-// sub_4fd020  (orig 0x4fd020, getter)
-uint8_t main_f_4fd020(void* a0) { return *(uint8_t*)((char*)(a0) + 268); }
-
-// sub_4fd070  (orig 0x4fd070, getter)
-uint64_t main_f_4fd070(void* a0) { return *(uint64_t*)((char*)(a0) + 320); }
-
-// sub_4fdc90  (orig 0x4fdc90, straight)
-void main_f_4fdc90(void* a0, uint32_t a1) {
-    *(uint8_t*)((char*)(a0) + 269) = (uint8_t)((((uint32_t)a1)) & (1));
-}
 

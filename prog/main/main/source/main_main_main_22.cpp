@@ -612,8 +612,8 @@ void sub_1617530() { /* 0x1617530 */ }
 void sub_16175f0() { /* 0x16175f0 */ }
 void sub_16176b0() { /* 0x16176b0 */ }
 void sub_1617710() { /* 0x1617710 */ }
-void sub_1617750() { /* 0x1617750 */ }
-void sub_1617770() { /* 0x1617770 */ }
+// sub_1617750: implemented in prog/matched/main/
+// sub_1617770: implemented in prog/matched/main/
 // sub_1617790: implemented in prog/matched/main/
 void sub_16177a0() { /* 0x16177a0 */ }
 void sub_16177e0() { /* 0x16177e0 */ }
@@ -1460,7 +1460,7 @@ void sub_164a700() { /* 0x164a700 */ }
 void sub_164a830() { /* 0x164a830 */ }
 void sub_164a950() { /* 0x164a950 */ }
 void sub_164aac0() { /* 0x164aac0 */ }
-void sub_164ac40() { /* 0x164ac40 */ }
+// sub_164ac40: implemented in prog/matched/main/
 // prudps_2: implemented in prog/matched/main/
 void sub_164ac70() { /* 0x164ac70 */ }
 void sub_164ace0() { /* 0x164ace0 */ }
@@ -1701,7 +1701,7 @@ void sub_1653370() { /* 0x1653370 */ }
 void sub_1653520() { /* 0x1653520 */ }
 void sub_1653630() { /* 0x1653630 */ }
 void sub_1653790() { /* 0x1653790 */ }
-void sub_1653860() { /* 0x1653860 */ }
+// sub_1653860: implemented in prog/matched/main/
 void sub_1653890() { /* 0x1653890 */ }
 void sub_16538d0() { /* 0x16538d0 */ }
 void sub_1653900() { /* 0x1653900 */ }
@@ -2027,7 +2027,7 @@ void sub_1662330() { /* 0x1662330 */ }
 void sub_1662340() { /* 0x1662340 */ }
 // sub_1662350: implemented in prog/matched/main/
 void sub_1662360() { /* 0x1662360 */ }
-void sub_1662370() { /* 0x1662370 */ }
+// sub_1662370: implemented in prog/matched/main/
 void sub_1662390() { /* 0x1662390 */ }
 void sub_16623a0() { /* 0x16623a0 */ }
 void sub_1662420() { /* 0x1662420 */ }
@@ -3034,8 +3034,8 @@ void sub_168c080() { /* 0x168c080 */ }
 void sub_168c330() { /* 0x168c330 */ }
 void sub_168c500() { /* 0x168c500 */ }
 void sub_168c800() { /* 0x168c800 */ }
-void sub_168c840() { /* 0x168c840 */ }
-void sub_168c860() { /* 0x168c860 */ }
+// sub_168c840: implemented in prog/matched/main/
+// sub_168c860: implemented in prog/matched/main/
 void sub_168c880() { /* 0x168c880 */ }
 // sub_168c8d0: implemented in prog/matched/main/
 // sub_168c8e0: implemented in prog/matched/main/

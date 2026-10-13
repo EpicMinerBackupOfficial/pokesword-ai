@@ -420,7 +420,7 @@ void sub_270b90() { /* 0x270b90 */ }
 void sub_270c40() { /* 0x270c40 */ }
 void sub_270e30() { /* 0x270e30 */ }
 void sub_270f40_subsdk0_270f40() { /* 0x270f40 */ }
-void sub_271030() { /* 0x271030 */ }
+// sub_271030: implemented in prog/matched/subsdk0/
 void sub_271050() { /* 0x271050 */ }
 void sub_271210() { /* 0x271210 */ }
 void sub_271320() { /* 0x271320 */ }

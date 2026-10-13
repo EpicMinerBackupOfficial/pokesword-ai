@@ -2045,7 +2045,7 @@ void sub_29d3e0() { /* 0x29d3e0 */ }
 void sub_29d430() { /* 0x29d430 */ }
 void sub_29d470_subsdk1_29d470() { /* 0x29d470 */ }
 void sub_29d4f0() { /* 0x29d4f0 */ }
-void sub_29d550() { /* 0x29d550 */ }
+// sub_29d550: implemented in prog/matched/subsdk1/
 // sub_29d570: implemented in prog/matched/subsdk1/
 void sub_29d580() { /* 0x29d580 */ }
 void sub_29d5a0() { /* 0x29d5a0 */ }

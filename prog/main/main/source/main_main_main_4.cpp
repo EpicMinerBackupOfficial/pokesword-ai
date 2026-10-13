@@ -477,7 +477,7 @@ void SiIOBinaryArchive_WriteChunkHandler_Failed_to_write_chun() { /* 0x57b9c0 */
 void sub_57bb60() { /* 0x57bb60 */ }
 void sub_57bd30() { /* 0x57bd30 */ }
 // sub_57bef0: implemented in prog/matched/main/
-void sub_57bf00() { /* 0x57bf00 */ }
+// sub_57bf00: implemented in prog/matched/main/
 // sub_57bf30: implemented in prog/matched/main/
 // sub_57bf40: implemented in prog/matched/main/
 // sub_57bf50: implemented in prog/matched/main/
@@ -1121,7 +1121,7 @@ void sub_59d690() { /* 0x59d690 */ }
 void sub_59d6a0() { /* 0x59d6a0 */ }
 void sub_59d7a0() { /* 0x59d7a0 */ }
 void sub_59d880() { /* 0x59d880 */ }
-void sub_59d960() { /* 0x59d960 */ }
+// sub_59d960: implemented in prog/matched/main/
 void sub_59d980() { /* 0x59d980 */ }
 void sub_59d990() { /* 0x59d990 */ }
 void sub_59da60() { /* 0x59da60 */ }
@@ -1464,9 +1464,9 @@ void sub_5b4fb0() { /* 0x5b4fb0 */ }
 void sub_5b5030() { /* 0x5b5030 */ }
 void sub_5b50c0() { /* 0x5b50c0 */ }
 void sub_5b50f0() { /* 0x5b50f0 */ }
-void sub_5b5100() { /* 0x5b5100 */ }
+// sub_5b5100: implemented in prog/matched/main/
 void sub_5b5120() { /* 0x5b5120 */ }
-void sub_5b5130() { /* 0x5b5130 */ }
+// sub_5b5130: implemented in prog/matched/main/
 void sub_5b5150() { /* 0x5b5150 */ }
 void sub_5b51d0() { /* 0x5b51d0 */ }
 void sub_5b5250() { /* 0x5b5250 */ }

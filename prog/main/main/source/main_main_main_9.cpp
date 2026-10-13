@@ -2188,7 +2188,7 @@ void sub_a8b750() { /* 0xa8b750 */ }
 void sub_a8b790() { /* 0xa8b790 */ }
 void sub_a8b7c0() { /* 0xa8b7c0 */ }
 void sub_a8b7d0() { /* 0xa8b7d0 */ }
-void sub_a8b7e0() { /* 0xa8b7e0 */ }
+// sub_a8b7e0: implemented in prog/matched/main/
 // sub_a8b800: implemented in prog/matched/main/
 // sub_a8b810: implemented in prog/matched/main/
 void sub_a8b820() { /* 0xa8b820 */ }
@@ -2209,7 +2209,7 @@ void sub_a8c870() { /* 0xa8c870 */ }
 void sub_a8c8d0() { /* 0xa8c8d0 */ }
 void sub_a8c930() { /* 0xa8c930 */ }
 void sub_a8c940() { /* 0xa8c940 */ }
-void sub_a8c950() { /* 0xa8c950 */ }
+// sub_a8c950: implemented in prog/matched/main/
 // sub_a8c970: implemented in prog/matched/main/
 // sub_a8c980: implemented in prog/matched/main/
 // sub_a8c990: implemented in prog/matched/main/
@@ -2323,7 +2323,7 @@ void sub_a96a70() { /* 0xa96a70 */ }
 void sub_a96aa0() { /* 0xa96aa0 */ }
 void sub_a96ad0() { /* 0xa96ad0 */ }
 void sub_a96ae0() { /* 0xa96ae0 */ }
-void sub_a96af0() { /* 0xa96af0 */ }
+// sub_a96af0: implemented in prog/matched/main/
 void sub_a96b10() { /* 0xa96b10 */ }
 // sub_a96b20: implemented in prog/matched/main/
 // sub_a96b30: implemented in prog/matched/main/
@@ -2540,7 +2540,7 @@ void sub_ab3760() { /* 0xab3760 */ }
 void sub_ab3810() { /* 0xab3810 */ }
 void sub_ab3ab0() { /* 0xab3ab0 */ }
 void sub_ab3ac0() { /* 0xab3ac0 */ }
-void sub_ab3ad0() { /* 0xab3ad0 */ }
+// sub_ab3ad0: implemented in prog/matched/main/
 // sub_ab3af0: implemented in prog/matched/main/
 // sub_ab3b00: implemented in prog/matched/main/
 void sub_ab3b10() { /* 0xab3b10 */ }
@@ -3025,7 +3025,7 @@ void sub_ad5e70() { /* 0xad5e70 */ }
 void sub_ad5f10() { /* 0xad5f10 */ }
 void sub_ad5f40() { /* 0xad5f40 */ }
 void btlspot_bg_00_lyt() { /* 0xad5f60 */ }
-void sub_ad6070() { /* 0xad6070 */ }
+// sub_ad6070: implemented in prog/matched/main/
 void sub_ad6090() { /* 0xad6090 */ }
 void sub_ad60c0() { /* 0xad60c0 */ }
 void sub_ad6130() { /* 0xad6130 */ }
@@ -3042,7 +3042,7 @@ void grid_TopMenu_3() { /* 0xad67c0 */ }
 void grid_TopMenu_4() { /* 0xad67e0 */ }
 void msg_ui_btlspot_help_00() { /* 0xad6860 */ }
 void uikit_btlspot_top_00_lyt() { /* 0xad6cc0 */ }
-void sub_ad6ea0() { /* 0xad6ea0 */ }
+// sub_ad6ea0: implemented in prog/matched/main/
 void sub_ad6ec0() { /* 0xad6ec0 */ }
 void sub_ad6ef0() { /* 0xad6ef0 */ }
 void sub_ad6f60() { /* 0xad6f60 */ }
@@ -3079,7 +3079,7 @@ void sub_ad8cd0() { /* 0xad8cd0 */ }
 void sub_ad8d40() { /* 0xad8d40 */ }
 void uikit_btlspot_menu_00_lyt() { /* 0xad8d60 */ }
 void sub_ad8f40() { /* 0xad8f40 */ }
-void sub_ad9140() { /* 0xad9140 */ }
+// sub_ad9140: implemented in prog/matched/main/
 void sub_ad9160() { /* 0xad9160 */ }
 void sub_ad9190() { /* 0xad9190 */ }
 void sub_ad9200() { /* 0xad9200 */ }
@@ -3123,7 +3123,7 @@ void pane_T_btlspot_title_00() { /* 0xad9c70 */ }
 void pane_T_btlspot_title_01() { /* 0xad9f00 */ }
 void sub_ada040() { /* 0xada040 */ }
 void btlspot_title_00_lyt() { /* 0xada0b0 */ }
-void sub_ada1c0() { /* 0xada1c0 */ }
+// sub_ada1c0: implemented in prog/matched/main/
 void sub_ada1e0() { /* 0xada1e0 */ }
 void sub_ada210() { /* 0xada210 */ }
 void sub_ada280() { /* 0xada280 */ }
@@ -3140,7 +3140,7 @@ void sub_ada4f0() { /* 0xada4f0 */ }
 void sub_ada510() { /* 0xada510 */ }
 void sub_ada530() { /* 0xada530 */ }
 void btlspot_rankup_00_lyt() { /* 0xada550 */ }
-void sub_ada660() { /* 0xada660 */ }
+// sub_ada660: implemented in prog/matched/main/
 void sub_ada680() { /* 0xada680 */ }
 void sub_ada6a0() { /* 0xada6a0 */ }
 void sub_ada700() { /* 0xada700 */ }
@@ -3168,7 +3168,7 @@ void sub_adc400() { /* 0xadc400 */ }
 void sub_adc470() { /* 0xadc470 */ }
 void uikit_btlspot_license_00_lyt() { /* 0xadc4e0 */ }
 void sub_adc6c0() { /* 0xadc6c0 */ }
-void sub_adc790() { /* 0xadc790 */ }
+// sub_adc790: implemented in prog/matched/main/
 void sub_adc7b0() { /* 0xadc7b0 */ }
 void sub_adc7e0() { /* 0xadc7e0 */ }
 void sub_adc850() { /* 0xadc850 */ }
@@ -3214,7 +3214,7 @@ void sub_ade980() { /* 0xade980 */ }
 void sub_adeab0() { /* 0xadeab0 */ }
 void uikit_btlspot_detail_btlcup_01_lyt() { /* 0xadebe0 */ }
 void sub_adedc0() { /* 0xadedc0 */ }
-void sub_adede0() { /* 0xadede0 */ }
+// sub_adede0: implemented in prog/matched/main/
 void sub_adee00() { /* 0xadee00 */ }
 void sub_adee20() { /* 0xadee20 */ }
 // sub_adee70: implemented in prog/matched/main/
@@ -3236,7 +3236,7 @@ void pane_T_matchmake_r_08() { /* 0xadfc90 */ }
 void sub_ae0350() { /* 0xae0350 */ }
 void anime_L_card_rival_search_P_matchmake_icon_00_keep() { /* 0xae0370 */ }
 void uikit_btlspot_matchmake_00_lyt() { /* 0xae03e0 */ }
-void sub_ae05c0() { /* 0xae05c0 */ }
+// sub_ae05c0: implemented in prog/matched/main/
 void sub_ae05e0() { /* 0xae05e0 */ }
 void sub_ae0600() { /* 0xae0600 */ }
 void sub_ae06a0() { /* 0xae06a0 */ }
@@ -3616,7 +3616,7 @@ void grid_Menu4_2() { /* 0xae8380 */ }
 void grid_Menu4_3() { /* 0xae8400 */ }
 void uikit_btlspot_menu_btlcup_00_lyt() { /* 0xae84b0 */ }
 void msg_ui_btlspot_help_00_2() { /* 0xae8690 */ }
-void sub_ae8c30() { /* 0xae8c30 */ }
+// sub_ae8c30: implemented in prog/matched/main/
 void sub_ae8c50() { /* 0xae8c50 */ }
 void sub_ae8c80() { /* 0xae8c80 */ }
 void sub_ae8cf0() { /* 0xae8cf0 */ }
@@ -3647,7 +3647,7 @@ void pane_T_detail_f_21() { /* 0xae93a0 */ }
 void sub_aea850() { /* 0xaea850 */ }
 void uikit_btlspot_detail_btlcup_friend_00_lyt() { /* 0xaea870 */ }
 void sub_aeaa50() { /* 0xaeaa50 */ }
-void sub_aeac90() { /* 0xaeac90 */ }
+// sub_aeac90: implemented in prog/matched/main/
 void sub_aeacb0() { /* 0xaeacb0 */ }
 void sub_aeacd0() { /* 0xaeacd0 */ }
 void sub_aead30() { /* 0xaead30 */ }
@@ -3696,7 +3696,7 @@ void pane_T_detail_t_19() { /* 0xaeb9f0 */ }
 void sub_aecbb0() { /* 0xaecbb0 */ }
 void uikit_btlspot_detail_btlcup_00_lyt() { /* 0xaecbd0 */ }
 void sub_aecdb0() { /* 0xaecdb0 */ }
-void sub_aece80() { /* 0xaece80 */ }
+// sub_aece80: implemented in prog/matched/main/
 void sub_aecea0() { /* 0xaecea0 */ }
 void sub_aecec0() { /* 0xaecec0 */ }
 void sub_aecf20() { /* 0xaecf20 */ }
@@ -3771,7 +3771,7 @@ void grid_Menu_4() { /* 0xaef330 */ }
 void sub_aef3b0() { /* 0xaef3b0 */ }
 void uikit_btlspot_menu_rankmatch_00_lyt() { /* 0xaef3d0 */ }
 void sub_aef5b0() { /* 0xaef5b0 */ }
-void sub_aef9b0() { /* 0xaef9b0 */ }
+// sub_aef9b0: implemented in prog/matched/main/
 void sub_aef9d0() { /* 0xaef9d0 */ }
 void sub_aef9f0() { /* 0xaef9f0 */ }
 void sub_aefa50() { /* 0xaefa50 */ }
@@ -3807,7 +3807,7 @@ void pane_T_detail_o_17() { /* 0xaf0390 */ }
 void sub_af14f0() { /* 0xaf14f0 */ }
 void uikit_btlspot_detail_btlcup_official_00_lyt() { /* 0xaf1510 */ }
 void sub_af16f0() { /* 0xaf16f0 */ }
-void sub_af1bd0() { /* 0xaf1bd0 */ }
+// sub_af1bd0: implemented in prog/matched/main/
 void sub_af1bf0() { /* 0xaf1bf0 */ }
 void sub_af1c20() { /* 0xaf1c20 */ }
 void sub_af1c90() { /* 0xaf1c90 */ }
@@ -3899,7 +3899,7 @@ void sub_af5010() { /* 0xaf5010 */ }
 void sub_af5030() { /* 0xaf5030 */ }
 void msg_ui_btlspot_help_08() { /* 0xaf5070 */ }
 void uikit_btlspot_list_tournament_lyt() { /* 0xaf5310 */ }
-void sub_af54f0() { /* 0xaf54f0 */ }
+// sub_af54f0: implemented in prog/matched/main/
 void sub_af5510() { /* 0xaf5510 */ }
 void sub_af5550() { /* 0xaf5550 */ }
 void sub_af55c0() { /* 0xaf55c0 */ }

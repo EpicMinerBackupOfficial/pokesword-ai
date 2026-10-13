@@ -1,4 +1,4 @@
-/* sdk -- 71 functions verified to match the original.
+/* sdk -- 70 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -48,7 +48,6 @@ namespace sdk { void sub_3c3f40(); }
 extern uint32_t sdk_f_3c4790();
 namespace sdk { void sub_3c4050(); }
 namespace sdk { void sub_3c4090(); }
-namespace sdk { void sub_3c40d0_sdk_3c40d0(); }
 namespace sdk { void sub_3c40f0(); }
 extern uint32_t sdk_f_3c47a0();
 extern uint32_t sdk_f_3c47c0();
@@ -169,9 +168,6 @@ void sdk_f_3bc690() { sdk::sub_3c4050(); }
 
 // sub_3bc6a0  (orig 0x3bc6a0, tailcall)
 void sdk_f_3bc6a0() { sdk::sub_3c4090(); }
-
-// sub_3bc6b0  (orig 0x3bc6b0, tailcall)
-void sdk_f_3bc6b0() { sdk::sub_3c40d0_sdk_3c40d0(); }
 
 // sub_3bc6c0  (orig 0x3bc6c0, tailcall)
 void sdk_f_3bc6c0() { sdk::sub_3c40f0(); }
