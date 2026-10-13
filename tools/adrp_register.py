@@ -220,6 +220,7 @@ def main():
                 # section index is recorded, so the registered source can name the
                 # same section it was compiled against.
                 page_sec = {}
+                stubparts = []
                 for ident, lst in group:
                     for pg in lst[0][10]:
                         if pg not in page_sec:
@@ -244,18 +245,42 @@ def main():
                             "extern %s g_%x_%x();"
                             % ("void" if skey[2] == "void" else skey[2],
                                target, addr))
-                    # A definition, because this path actually links.
-                    # `call_register` never links, so an undefined callee was
-                    # harmless there; `ld.lld` refuses. The stub's body and address
-                    # do not matter -- `MH.compare` normalises branch targets to
-                    # `<target>` -- but it must not be inlined, or Clang sees an
-                    # empty function and deletes the `bl` along with the argument
-                    # setup that the comparison is there to check.
+                    # A definition is needed because this path actually links
+                    # (`call_register` never links, so an undefined callee was
+                    # harmless there; `ld.lld` refuses). But it must NOT be in
+                    # this translation unit.
+                    #
+                    # `-deadargelim` runs per-module at -O3 and, for a function the
+                    # module DEFINES, replaces each unused parameter in its
+                    # callers with poison and then deletes whatever fed it:
+                    #
+                    #     (DeadArgumentElimination.cpp, removeDeadArgumentsFromCallers)
+                    #     // We cannot change the arguments if this TU does not
+                    #     // define the function or if the linker may choose a
+                    #     // function body from another TU
+                    #
+                    # So a page load that exists only to become a call argument is
+                    # dead code, and it goes:
+                    #
+                    #     retail  adrp x8,#0x714000 ; ldr x0,[x8,#0x68] ; bl ...
+                    #     ours    bl ...                        <- gone entirely
+                    #
+                    # Measured, three callees over one source, differing only in
+                    # whether the body is visible:
+                    #
+                    #     defined here, param ignored -> adrp and ldr DELETED
+                    #     declared only              -> adrp and ldr survive
+                    #     defined here, param used    -> adrp and ldr survive
+                    #
+                    # The stub goes to its own TU for exactly the reason upstream
+                    # gives: we do not know what the real callee does with its
+                    # arguments, and the whole point is that the optimiser must not
+                    # know either.
                         _rt = "void" if skey[2] == "void" else skey[2]
                         parts.append(
                             "%s g_%x_%x() __attribute__((noinline));"
                             % (_rt, target, addr))
-                        parts.append(
+                        stubparts.append(
                             "%s g_%x_%x() { __asm__ volatile(\"\"); %s }"
                             % (_rt, target, addr,
                                "return 0;" if _rt != "void" else ""))
@@ -293,6 +318,27 @@ def main():
                 if r.returncode:
                     tally["compile failed"] += len(group)
                     continue
+
+                # The callees, in a translation unit of their own. Compiled with
+                # the same CFLAGS so the ABI and the definition agree, but kept
+                # apart so `-deadargelim` cannot see a body and conclude the
+                # arguments are dead.
+                # C++, because MH.CFLAGS carries -std=c++17 and that is rejected
+                # for a C input. The stubs are plain C and compile unchanged as
+                # C++; only the translation unit boundary matters here.
+                stubp = os.path.join(work, "stubs.cpp")
+                io.open(stubp, "w", encoding="utf-8").write(
+                    "\n".join(stubparts) + "\n")
+                stubobj = os.path.join(work, "stubs.o")
+                r = subprocess.run(
+                    [MH.tool("clang++")] + MH.CFLAGS
+                    + ["-c", stubp, "-o", stubobj],
+                    capture_output=True, text=True)
+                if r.returncode:
+                    tally["stub compile failed"] += len(group)
+                    if tally["stub compile failed"] == len(group):
+                        print("  first stub error: %s" % r.stderr.strip()[:700])
+                    continue
                 placements.sort(key=lambda t: t[0])
                 lines = ["SECTIONS {"]
                 for addr, sec, pat in placements:
@@ -304,7 +350,8 @@ def main():
                     "\n".join(lines) + "\n")
                 elf = os.path.join(work, "linked.elf")
                 r = subprocess.run([MH.tool("ld.lld"), "-T", script, obj,
-                                    "-o", elf], capture_output=True, text=True)
+                                    stubobj, "-o", elf],
+                                   capture_output=True, text=True)
                 if r.returncode:
                     first = tally["link failed"] == 0
                     tally["link failed"] += len(group)
