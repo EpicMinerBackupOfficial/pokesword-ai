@@ -910,15 +910,26 @@ class StraightLine:
                     _args.append(_v)
                 _ret = _info.get("ret") or "uint64_t"
                 saw_call = True
-                if _ret == "void":
-                    # No value comes back, so the call has to be a statement.
-                    # `pre` is emitted before the deferred store block, which is
-                    # consistent with how stores are already ordered relative to
-                    # each other, and a store that depended on this call's effect
-                    # would fail to match rather than match wrongly.
-                    call_stmts.append((_info["name"], tuple(_args)))
-                else:
-                    state["x0"] = ("call_n", _info["name"], tuple(_args), _ret)
+                # The call is ALWAYS recorded as a statement, and the value in x0
+                # becomes a reference to a local that statement defines.
+                #
+                # Recording only the value was wrong in a way that looked like a
+                # mismatch rather than a dropped instruction. `StraightLine`
+                # composes one expression per value, so a `call_n` node that
+                # nothing reads is never rendered: the call silently disappears
+                # from the emitted C. Measured on `main@0x130b80`:
+                #
+                #     retail  stp/mov ; ldr w1,[x1,#0x10] ; add x0,x0,#0x10
+                #             mov x5,x6 ; bl #0x130bf0 ; mov w0,#1 ; ldp ; ret
+                #     ours    mov w0, #1 ; ret
+                #
+                # A fire-and-forget call -- result discarded, which is common -- had
+                # no representation at all, and 377 of 432 otherwise-ready bodies
+                # were in this state. A statement cannot go unreferenced.
+                _alias = "%s__r%d" % (ident, len(call_stmts))
+                call_stmts.append((_info["name"], tuple(_args), _ret, _alias))
+                if _ret != "void":
+                    state["x0"] = ("local", _alias, _ret)
                 # x1..x7 are caller-saved. Anything the body reads from them after
                 # the call is a mis-translation waiting to happen, and the byte
                 # comparison would catch it -- but it is cheaper to decline than to
@@ -1998,38 +2009,18 @@ class StraightLine:
             return val[3], "%s(%s)" % (val[1], _eu)
         if kind == "call_n":
             # A call to a named function, with the arguments it was given.
-            #
-            # Arguments are cast to `uintptr_t` because the callee's real
-            # prototype is in another module and is not known here, so the
-            # declaration this has to compile against is
-            #
-            #     extern RET callee(uintptr_t, uintptr_t, ...);
-            #
-            # and C++ will not implicitly convert `void*` to `uintptr_t`, let
-            # alone to `unsigned long`. Without the cast the source does not
-            # compile at all -- `invalid conversion from 'void*' to
-            # 'unsigned long'` -- for every prototype tried, which is
-            # indistinguishable from "no prototype matches".
-            #
-            # The cast is free at the machine level: on AArch64 a pointer and a
-            # 64-bit integer share a representation and Clang emits nothing for
-            # it. That is checked by the byte comparison rather than trusted --
-            # if it ever cost an instruction, bodies here would simply stop
-            # matching.
+            # Retained for callers that build a call as a value; the walk now
+            # emits calls as statements and refers to the result through `local`,
+            # because a value that nothing reads renders as nothing at all.
             _ae = ", ".join(call_arg(self._render(a, names)) for a in val[2])
-            # The call goes through a cast of the callee's own address rather than
-            # through a prototype that commits to an arity.
-            #
-            # Two bodies in the same generated translation unit routinely call the
-            # same callee with different argument counts -- sdk@0x3e130 and
-            # sdk@0x3e160 both call 0x5113b0 -- and two `extern` lines disagreeing
-            # about arity is a redefinition, which kills the whole unit, not just
-            # the two bodies. A cast states the arity at the call site instead,
-            # which is the one place it is actually known, and the single
-            # declaration the cast needs (`extern void callee();`) is identical
-            # wherever it appears so it redeclares cleanly.
             _pt = ", ".join("uintptr_t" for _ in val[2]) or "void"
             return val[3], "((%s (*)(%s))&%s)(%s)" % (val[3], _pt, val[1], _ae)
+        if kind == "local":
+            # A local defined by a call statement earlier in the same function.
+            # Not a value the translator has to rebuild -- it already exists, which
+            # is the whole point: keeping the call's result in a variable is what
+            # lets the call be emitted unconditionally.
+            return val[2], val[1]
         if kind == "cast":
             # Reachable at top level, not only nested inside `expr`: the widening
             # product of a `smaddl`/`umull` can be stored to a register on its own
@@ -2314,9 +2305,20 @@ class StraightLine:
         # been built, is the first point where every argument name is known.
         if call_stmts:
             _call_txt = []
-            for _nm, _vals in call_stmts:
-                _call_txt.append("%s(%s);" % (
-                    _nm, ", ".join(call_arg(self._render(v, names)) for v in _vals)))
+            for _nm, _vals, _rt, _alias in call_stmts:
+                # Through a cast of the callee's own address, for the same reason
+                # as the `call_n` arm: two bodies in one unit calling one callee
+                # with different arities would otherwise be two `extern` lines that
+                # disagree, which is a redefinition and kills the whole unit. The
+                # cast states the arity at the call site, which is where it is
+                # known. A single `extern void callee();` is then valid wherever
+                # it appears and redeclares cleanly.
+                _pt = ", ".join("uintptr_t" for _ in _vals) or "void"
+                _ae = ", ".join(call_arg(self._render(v, names))
+                                for v in _vals)
+                _call = "((%s (*)(%s))&%s)(%s)" % (_rt, _pt, _nm, _ae)
+                _call_txt.append(("%s %s = %s;" % (_rt, _alias, _call))
+                                 if _rt != "void" else ("%s;" % _call))
             # After `pre`, not before it. The synthetic pointer locals live in
             # `pre` and the call's arguments are expressions over them, so putting
             # the call first yields `callee(p0);` followed by `void* p0 = ...;` --
