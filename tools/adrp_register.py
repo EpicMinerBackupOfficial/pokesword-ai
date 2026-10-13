@@ -158,15 +158,32 @@ def main():
                 continue
 
             # Group by body; only the first body of a group can be the winner.
-            byident = collections.OrderedDict()
+            # Group by VARIANT INDEX: one link pass per index, each covering
+            # every body that has a candidate at that index.
+            #
+            # All of a body's variants must be placed at that body's own retail
+            # address -- an `adrp` encodes its target page-relative, so a body
+            # compared anywhere else emits the wrong immediate. That also means
+            # only one variant can occupy the address, so putting all sixteen in
+            # one link let the linker keep variant 0 (`nargs=0`) and leave the
+            # rest unreachable. Every body then reported "differs" with its
+            # argument setup deleted, which reads like a translator defect.
+            by_nth = collections.defaultdict(list)
             for c in cands:
-                byident.setdefault(c[3], []).append(c)
+                by_nth[c[11]].append(c)
+            byident = collections.OrderedDict()
+            for nth_i in sorted(by_nth):
+                for c in by_nth[nth_i]:
+                    byident["%s#%d" % (c[3], nth_i)] = [c]
 
             done = set()
             for base in range(0, len(byident), a.per_module):
                 group = list(byident.items())[base:base + a.per_module]
                 parts = []
                 placements = []
+                # Stubs are per (callee, body) and several variants of one body
+                # share a callee, so they must be emitted once per link group.
+                stubs = set()
                 # One declaration and one placement per DISTINCT page in the group.
                 #
                 # 52 of the sdk bodies share page 0x27ee000, so declaring per body
@@ -186,7 +203,10 @@ def main():
                     c = lst[0]
                     addr, size, name, _id, target, src, sig, n_ins, nargs, ret, \
                         pages, nth = c
-                    parts.append("extern void g_%x_%x();" % (target, addr))
+                    if (target, addr) not in stubs:
+                        stubs.add((target, addr))
+                        parts.append(
+                            "extern void g_%x_%x();" % (target, addr))
                     # A definition, because this path actually links.
                     # `call_register` never links, so an undefined callee was
                     # harmless there; `ld.lld` refuses. The stub's body and address
@@ -194,10 +214,12 @@ def main():
                     # `<target>` -- but it must not be inlined, or Clang sees an
                     # empty function and deletes the `bl` along with the argument
                     # setup that the comparison is there to check.
-                    parts.append("void g_%x_%x() __attribute__((noinline));"
-                                 % (target, addr))
-                    parts.append("void g_%x_%x() { __asm__ volatile(\"\"); }"
-                                 % (target, addr))
+                        parts.append(
+                            "void g_%x_%x() __attribute__((noinline));"
+                            % (target, addr))
+                        parts.append(
+                            "void g_%x_%x() { __asm__ volatile(\"\"); }"
+                            % (target, addr))
                     # EVERY variant gets its own function and its own placement.
                     #
                     # Emitting only variant 0 and then "trying" the rest compares
@@ -207,10 +229,14 @@ def main():
                     # was not -- which is how fourteen bodies came out as
                     # "linked but differs" with no variant of any of them tried.
                     for v in lst:
-                        vaddr, vsize, vname, _vid, vtgt, vsrc, vsig, vn, \
+                        vaddr, vsize, vname, vident, vtgt, vsrc, vsig, vn, \
                             vnargs, vret, vpages, vnth = v
-                        vid = "%s_v%d" % (ident, vnth)
-                        vsrc2 = vsrc.replace(ident, vid)
+                        # The candidate's own ident. NOT the group key: the key
+                        # carries a "#<index>" suffix for dictionary uniqueness
+                        # and "#" is not valid in a C identifier, which made every
+                        # candidate a syntax error.
+                        vid = "%s_v%d" % (vident, vnth)
+                        vsrc2 = vsrc.replace(vident, vid)
                         parts.append(vsrc2)
                         placements.append(
                             (vaddr, ".text.%s" % MH.mangle(vid, vsig),
@@ -253,7 +279,7 @@ def main():
                     c = lst[0]
                     addr, size, name, _id, target, src, sig, n_ins, nargs, ret, \
                         pages, nth = c
-                    code = _at(linked, ident, sig, size)
+                    code = _at(linked, "%s_v%d" % (c[3], c[11]), sig, size)
                     if not code:
                         tally["no bytes at the placed address"] += 1
                         continue
