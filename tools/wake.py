@@ -166,8 +166,67 @@ def progress_line():
     return "TOTAL (unreadable)"
 
 
+API_PATH = "/api/session/%s/prompt"
+
+
+API_MODEL = "/api/session/%s/model"
+MODEL_ID = "space-bunny-free"
+MODEL_PROVIDER = "opencode"
+
+
 def wake(cli, sess, prompt, timeout):
-    cmd = [cli, "run", "--session", sess, "--auto", "--prompt", prompt, ROOT]
+    # Two calls, in this order.
+    #
+    # 1. POST /api/session/{id}/model  -- pin the model.
+    #
+    #    A session that does not already have one falls back to a default that is
+    #    gated on this provider account, and every wake fails identically:
+    #
+    #      finish=error  provider.auth
+    #      "This model requires you to complete the following before use:
+    #       18+ age confirmation."
+    #
+    #    The endpoint's body is `{"model": {"id", "providerID"}}` -- nesting matters,
+    #    and `{"providerID": ..., "modelID": ...}` returns
+    #    `InvalidRequestError: Missing key at ["model"]`.
+    #
+    #    For a session that already runs on this model it is a harmless no-op, so
+    #    it is sent unconditionally rather than guessed at.
+    #
+    # 2. POST /api/session/{id}/prompt -- {"text": ..., "resume": true}
+    #
+    # Verified end to end against a throwaway session:
+    #
+    #      finish=stop  model=space-bunny-free  text=WAKE_OK
+    def call(path, body, timeout=120):
+        cmd = [cli, "api", "POST", path, "--data", json.dumps(body)]
+        return subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                              timeout=timeout)
+
+    r = call(API_MODEL % sess,
+             {"model": {"id": MODEL_ID, "providerID": MODEL_PROVIDER}},
+             timeout=60)
+    if r.returncode:
+        print("  model pin failed (rc=%d): %s" % (r.returncode,
+                                                 (r.stderr or r.stdout)[:200]))
+
+    body = {"text": prompt, "resume": True}
+    cmd = [cli, "api", "POST", API_PATH % sess, "--data", json.dumps(body)]
+    print("  waking %s" % sess)
+    sys.stdout.flush()
+    try:
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                           timeout=timeout)
+        tail = (r.stdout or r.stderr or "").strip().splitlines()
+        for ln in tail[-4:]:
+            print("    %s" % ln[:180])
+        print("  rc=%d" % r.returncode)
+        return r.returncode
+    except subprocess.TimeoutExpired:
+        print("  wake timed out after %ds" % timeout)
+        return 124
+    finally:
+        release()
     print("  waking %s" % sess)
     sys.stdout.flush()
     try:
