@@ -174,6 +174,40 @@ MODEL_ID = "space-bunny-free"
 MODEL_PROVIDER = "opencode"
 
 
+API_MSGS = "/api/session/%s/message"
+
+
+def wait_idle(cli, sess, max_wait, poll=15):
+    """Block until the session reports idle again, or `max_wait` elapses.
+
+    Without this the loop posts on a fixed timer whether or not the previous turn
+    finished, and the prompts stack: four arrived back to back before this was
+    added. Nothing errors -- `resume: true` accepts each one, the session just
+    accumulates them, and each queued turn then does work that the one before it
+    already did.
+
+    The last entry in the message list is `type: "idle"` once the turn has settled
+    (an `assistant` entry means it is still running), which is enough to tell.
+    Returns True if it went idle, False on timeout.
+    """
+    import json as _json
+    end = time.time() + max_wait
+    while time.time() < end:
+        try:
+            r = subprocess.run(
+                [cli, "api", "GET", API_MSGS % sess],
+                cwd=ROOT, capture_output=True, text=True, timeout=60)
+            data = _json.loads(r.stdout or "{}")
+            items = data.get("data") if isinstance(data, dict) else None
+            items = items or []
+            if items and items[-1].get("type") == "idle":
+                return True
+        except Exception:                               # noqa: BLE001
+            pass
+        time.sleep(poll)
+    return False
+
+
 def wake(cli, sess, prompt, timeout):
     # Two calls, in this order.
     #
@@ -301,10 +335,16 @@ def main():
             else:
                 before = progress_line()
                 rc = wake(cli, sess, prompt, a.timeout)
+                # Hold until the woken turn has actually finished before sleeping
+                # the interval. Posting on a fixed timer regardless is what let
+                # four prompts queue up: each was accepted, none errored, and each
+                # queued turn repeated the work of the one before it.
+                idle = wait_idle(cli, sess, a.timeout)
                 after = progress_line()
-                record(last_rc=rc, last_before=before, last_after=after)
-                print("  [%s] %s -> %s" % (time.strftime("%H:%M:%S"),
-                                           before, after))
+                record(last_rc=rc, last_before=before, last_after=after,
+                       last_idle=idle)
+                print("  [%s] %s -> %s  (idle=%s)"
+                      % (time.strftime("%H:%M:%S"), before, after, idle))
             sys.stdout.flush()
             time.sleep(a.every)
 
