@@ -406,6 +406,28 @@ def access_width(mn, reg):
     return 8
 
 
+def _narrow_dst(dst, v):
+    """Value `v` as written into register `dst`, preserving `w` vs `x`.
+
+    A `w` destination means a 32-bit write. `wreg` collapses `w1` and `x1` to one
+    state key, so without this the destination's width is invisible to Clang and it
+    emits a 64-bit move. Only integers are narrowed: a pointer destination is a
+    pointer whatever register class spelled it, and narrowing one would silently
+    change a load's meaning.
+    """
+    d = (dst or "").strip()
+    if not d.startswith("w"):
+        return v
+    try:
+        t = _rw(v)
+    except Exception:                                   # noqa: BLE001
+        return v
+    if t in ("void*", "uint32_t", "int32_t", "uint16_t", "int16_t",
+             "uint8_t", "int8_t"):
+        return v
+    return ("cast", "uint32_t", v)
+
+
 def _rw(v):
     """The C type name for an integer value tuple's result width."""
     k = v[0]
@@ -1165,7 +1187,21 @@ class StraightLine:
                                    "known register" % (src,))
                     state[wreg(dst)] = av
                     continue
-                state[wreg(dst)] = state[wreg(src)]
+                # `mov wD, wS` and `mov xD, xS` carry the same value but are
+                # different instructions, and the difference is observable:
+                #
+                #     retail  ldr w8, [x0,#0x30] ; mov w1, w8 ; bl ...
+                #     ours    ldr w8, [x0,#0x30] ; mov x1, x8 ; bl ...
+                #
+                # `wreg` maps `w1` and `x1` to the same state entry, so copying the
+                # tuple loses which one it was and Clang then takes the width from
+                # the value's type rather than from the register the body wrote.
+                #
+                # Narrowing the value to uint32_t when the destination is a `w`
+                # register restores it. A 32-bit call argument is zero-extended
+                # into x1, which is precisely what a `w` write does, so this yields
+                # `mov w1, w8` rather than a load and a separate widen.
+                state[wreg(dst)] = _narrow_dst(dst, state[wreg(src)])
                 continue
 
             # Bitwise and bitfield value operations.

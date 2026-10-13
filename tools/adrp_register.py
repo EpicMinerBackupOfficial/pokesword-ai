@@ -133,6 +133,7 @@ def main():
     ap.add_argument("--per-module", type=int, default=60,
                     help="bodies linked per link invocation")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--quiet", action="store_true", help="suppress the per-body diff")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
@@ -271,6 +272,31 @@ def main():
                             break
                     if not hit:
                         tally["linked but differs"] += 1
+                        if not a.quiet:
+                            # Report the LONGEST emission, not lst[0]: that is
+                            # `nargs=0`, where Clang deletes the setup for
+                            # arguments it is not forwarding and so removes the
+                            # whole adrp chain. The diff would then show a body
+                            # with everything stripped out and say nothing about
+                            # the prototypes that do forward. The widest variant
+                            # is the one carrying the setup under test.
+                            best2, code3, bestlen = None, b"", -1
+                            for c3 in lst:
+                                t3 = _at(linked, "%s_v%d" % (c3[3], c3[11]),
+                                         c3[6], size)
+                                if len(t3) > bestlen:
+                                    best2, code3, bestlen = c3, t3, len(t3)
+                            want3 = blobm[addr:addr + size]
+                            print("  --- %s@%#x nargs=%s ret=%s ---"
+                                  % (name, addr, best2[8], best2[9]))
+                            print("    retail (%d bytes): %s"
+                                  % (len(want3), want3.hex()))
+                            print("    ours   (%d bytes): %s"
+                                  % (len(code3), code3.hex()))
+                            for i in md.disasm(want3, addr):
+                                print("      R %-8s %s" % (i.mnemonic, i.op_str))
+                            for i in md.disasm(code3, addr):
+                                print("      O %-8s %s" % (i.mnemonic, i.op_str))
                         continue
                     addr2, size2, name2, _id2, target2, src2, sig2, n_ins2, \
                         nargs2, ret2, pages2, nth2 = c
