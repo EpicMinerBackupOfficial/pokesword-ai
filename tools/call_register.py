@@ -167,7 +167,48 @@ def arg_reg_cap(work):
     return min(MAXNARGS, max(0, hi + 1))
 
 
-def prototype_order(work):
+# Arity bounds derived from the CALLEE's body, not the caller's.
+#
+# `arg_reg_cap` bounds the CALLER -- the most arguments it can set up. It says
+# nothing about what the callee accepts, so the search was trying arities the
+# callee provably cannot have.
+#
+# Under AAPCS64 the first eight integer/pointer arguments arrive in x0..x7, so a
+# callee that READS xN before WRITING it must have been passed at least N+1
+# arguments. That is a hard LOWER bound: a callee may accept eight and touch only
+# x0, so this yields no upper bound and must not be used as one.
+#
+# Ghidra was asked for these signatures first and correctly declined: AArch64
+# encodes no parameter count, and nothing in the module calls these callees with a
+# known type, so every one came back "0 undefined sub_XXXX ()".
+#
+# work/callee_nargs.json comes from work/calleenargs.py. If it is absent or
+# malformed the search degrades to exactly the previous behaviour rather than
+# failing -- a missing bound must never mean a body stops being tried.
+
+def _load_callee_nargs():
+    try:
+        import json as _json
+        p = os.path.join(ROOT, "work", "callee_nargs.json")
+        if not os.path.exists(p):
+            return {}
+        raw = _json.load(io.open(p, encoding="utf-8"))
+        return {m: {(int(a, 16) if isinstance(a, str) else a): v
+                    for a, v in (rows or [])}
+                for m, rows in raw.items()}
+    except Exception:                                     # noqa: BLE001
+        return {}
+
+
+CALLEE_NARGS = _load_callee_nargs()
+
+
+def callee_arg_floor(mod, target):
+    """Lowest arity the callee can possibly have, or None when unknown."""
+    return (CALLEE_NARGS.get(mod) or {}).get(target)
+
+
+def prototype_order(work, mod=None, target=None):
     """-> [(nargs, ret)] in the order they are worth trying.
 
     Ascending nargs, over the full 0..MAXNARGS range.
@@ -186,10 +227,18 @@ def prototype_order(work):
         that wins is usually a low one. Putting the widest first burns a compile
         per body on a guess that is usually wrong.
     """
+    floor = callee_arg_floor(mod, target)
+    if floor:
+        # An arity below the floor cannot match, and skipping it is worth more
+        # than the compile time it saves: Clang DELETES the argument setup for a
+        # prototype whose parameters the callee's body never reads, so such a
+        # variant does not merely differ in the arguments -- it loses the whole
+        # setup. Removing it takes a decoy out of the comparison.
+        return [(n, r) for n in range(floor, MAXNARGS + 1) for r in RETS]
     return [(n, r) for n in range(0, MAXNARGS + 1) for r in RETS]
 
 
-def variant(work, ident, target, cname, nth):
+def variant(work, ident, target, cname, nth, mod=None):
     """The `nth` *translatable* prototype for one body, or None if there are fewer.
 
     "nth translatable", not "nth in the order". A prototype that `Bail`s is not a
@@ -204,7 +253,7 @@ def variant(work, ident, target, cname, nth):
     use.
     """
     seen = 0
-    for nargs, ret in prototype_order(work):
+    for nargs, ret in prototype_order(work, mod, target):
         calls = {target: {"name": cname, "nargs": nargs, "ret": ret}}
         try:
             src, sig = SL.StraightLine(work).translate(ident, calls=calls)
@@ -316,7 +365,7 @@ def main():
                     flat = []
                     for addr, size, name, ident, target, work, n_ins in chunk:
                         v = variant(work, ident, target,
-                                    "g_%x_%x" % (target, addr), nth)
+                                    "g_%x_%x" % (target, addr), nth, mod)
                         if v is None:
                             continue
                         nargs, ret, src, sig = v
