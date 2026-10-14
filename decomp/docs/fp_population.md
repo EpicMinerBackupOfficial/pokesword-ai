@@ -44,6 +44,44 @@ none of that is modelled. It is also the only remaining blocker class large
 enough to matter on its own — the next two after it are pre-index stores
 (`str x8, [x0], #8`, 80) and `stp xzr, xzr, [x0]` (78).
 
+## Measured, not predicted
+
+The spellings above were checked rather than assumed — clang 5.0.1 `-O3`, four
+cases, one compile:
+
+    union { double d; u64 u; } v; v.d = x; return v.u;   ->  fmov x0, d0
+    memcpy(&r, &x, 8)                                    ->  fmov x0, d0
+    the same pun reversed (u64 in, double out)           ->  fmov d0, x0
+    -x on a double                                       ->  fneg d0, d0
+
+The first is byte-identical to the instruction in `main@0x66f480`, and the last is
+exactly the shape the ten `fneg` bodies need. The recipes are correct; what is
+missing is the translator side.
+
+## What implementing it actually requires
+
+Not a mnemonic handler. The FP register file itself.
+
+`fmov x0, d0` moves bits between two register files that the model currently
+treats as one. On AArch64 `d0` and `x0` are the same storage, so the *right*
+model is an alias rather than a new value kind — but that only works if the
+parameter is **typed**. `u64 f(double x)` and `u64 f(u64 x)` receive their
+argument in the same register and differ only in what Clang emits to convert it,
+so the translator has to know the declared type, and the type maps
+(`used_args` / `ptr_args` / `idx_args`) have no floating-point entry at all.
+
+Concretely, in order:
+
+1. An `f64`/`f32` entry in the argument type maps, set when an FP register is
+   written. This is the load-bearing change; without it a double parameter is
+   declared `u64` and no pun is ever emitted.
+2. `fneg <Dd>, <Dn>` as unary minus on that typed argument.
+3. `fmov <Xd>, <Dn>` / `fmov <Dd>, <Xd>` as the union pun, in both directions.
+4. Only then `fcvt`, which additionally needs correct rounding intrinsics.
+
+1 and 2 together are the ten `fneg` bodies. 1 and 3 are the thirty `fmov` bodies.
+None of them needs a real value kind — `d0`/`x0` aliasing covers all of it.
+
 ## The shapes to support, in order of frequency
 
 1. **`fmov <Xd>, <Dn>` / `fmov <Dd>, <Dn>`** — bit pun, union-backed. 30 bodies.
