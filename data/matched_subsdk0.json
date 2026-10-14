@@ -12716,6 +12716,22 @@
    "sig": "mmmm",
    "size": 36,
    "src": "extern void callee_3654b0();\nuint64_t f_8a650(uint64_t unused0, uint64_t a1, uint64_t a2, uint64_t a3) {\n    uint64_t f_8a650__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&callee_3654b0)(((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(((uint64_t)a2))), ((uintptr_t)(((uint64_t)a3))));\n    uint64_t r0 = 0;\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 2089856,
+   "call_args": 1,
+   "call_ret": "uint32_t",
+   "callee": "callee_370690",
+   "callee_synthetic": true,
+   "ident": "f_1fe380",
+   "module": "subsdk0",
+   "name": "sub_1fe380",
+   "new_insns": 9,
+   "orig_insns": 9,
+   "shape": "call",
+   "sig": "v",
+   "size": 36,
+   "src": "extern void callee_370690();\nuint64_t f_1fe380() {\n    uint32_t f_1fe380__r0 = ((uint32_t (*)(uintptr_t))&callee_370690)(((uintptr_t)(0)));\n    uint64_t r0 = (f_1fe380__r0) + (2082844800);\n    asm volatile(\"\");\n    return r0;\n}\n"
   }
  ],
  "module": "subsdk0",

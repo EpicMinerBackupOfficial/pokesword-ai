@@ -2641,7 +2641,7 @@ void sub_1fe120() { /* 0x1fe120 */ }
 // sub_1fe160: implemented in prog/matched/subsdk0/
 void sub_1fe170() { /* 0x1fe170 */ }
 void sub_1fe200() { /* 0x1fe200 */ }
-void sub_1fe380() { /* 0x1fe380 */ }
+// sub_1fe380: implemented in prog/matched/subsdk0/
 void sub_1fe3b0() { /* 0x1fe3b0 */ }
 void MPEG4Writer_5() { /* 0x1fe620 */ }
 void sub_1fe760() { /* 0x1fe760 */ }

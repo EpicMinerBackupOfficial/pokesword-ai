@@ -94,6 +94,13 @@ EXTEND_TYPES = {
 # They are listed separately from the `add`/`mov`/`sub` group because they are
 # the ones added in response to a measured decline census rather than by
 # increment -- see the no-call/no-branch census in decomp/docs/remaining_pool.md.
+# Floating-point mnemonics with measured C equivalents (decomp/docs/
+# fp_population.md). Listed here because the whole-body pre-filter runs
+# BEFORE any handler: a mnemonic missing from that filter is declined as
+# "unsupported mnemonic" no matter what the handler below could do. The
+# bitwise handlers changed nothing at all for exactly this reason.
+FP_MNEMONICS = ("fmov", "fneg")
+
 BITWISE_MNEMONICS = ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
                      "ubfiz", "mvn", "neg", "lsl", "lsr", "asr")
 
@@ -440,6 +447,10 @@ def _rw(v):
         return v[4]
     if k in ("sel", "cset"):
         return v[5] if k == "sel" else v[3]
+    if k == "fpun":
+        return "uint64_t" if v[2] == "to_int" else "double"
+    if k == "fpneg":
+        return "double"
     if k == "arg":
         return v[2] if len(v) > 2 else "void*"
     if k == "argval":
@@ -586,7 +597,8 @@ class StraightLine:
                     and i.mnemonic not in COND_MNEMONICS
                     and i.mnemonic not in MUL_MNEMONICS
                     and i.mnemonic not in WIDEN_MNEMONICS
-                    and i.mnemonic not in DIV_MNEMONICS):
+                    and i.mnemonic not in DIV_MNEMONICS
+                    and i.mnemonic not in FP_MNEMONICS):
                 raise Bail("unsupported mnemonic %r" % (i.mnemonic,))
 
         state = {}
@@ -744,6 +756,19 @@ class StraightLine:
             return arg_reg(base), True
 
         idx_args = {}      # arg number -> C type, for indexed operands
+        # arg number -> C type for a FLOATING-POINT argument.
+        #
+        # This entry is the load-bearing part of floating point. On AArch64
+        # `d0` and `x0` are the same storage, so no new value kind is needed --
+        # but `u64 f(double x)` and `u64 f(u64 x)` take their argument in the
+        # same register and differ only in what Clang emits to convert it. The
+        # parameter has to be DECLARED double or no pun is ever produced:
+        #
+        #     u64 f1(double a0){ union { double d; u64 u; } v; v.d=a0; return v.u; }
+        #         ->  fmov x0, d0          (main@0x66f480, measured)
+        #     u64 f2(uint64_t a0){ return a0; }
+        #         ->  (nothing; a0 is already in x0)
+        fp_args = {}
 
         def index_expr(index, ext, scale, base_id):
             """Address contribution of an index register, as a C expression.
@@ -1980,6 +2005,57 @@ class StraightLine:
                 state[wreg(dst)] = ("expr", op, s1, s2, _rw(s1))
                 continue
 
+            # ---- floating point -------------------------------------------
+            #
+            # Only the shapes measured on clang 5.0.1 -O3 are claimed:
+            #
+            #   fmov <Xd>, <Dn>   ->  ((union { double d; u64 u; }){ .d = aN }).u
+            #   fmov <Dd>, <Xn>   ->  ((union { double d; u64 u; }){ .u = aN }).d
+            #   fneg <Dd>, <Dn>   ->  -aN
+            #
+            # d0 and x0 are the same storage, so a pun is a cast between views of
+            # one register rather than a move. Nothing here needs a new value
+            # kind; `fpun` and `fpneg` render as expressions over the argument.
+            #
+            # Only an ARGUMENT source is modelled. A pun of a loaded value would
+            # need the load to stay live in the FP file, which is a larger claim
+            # than these bodies make, so it declines rather than guesses.
+            if mn in ("fmov", "fneg"):
+                _ops = [o.strip() for o in i.op_str.split(",")]
+                if len(_ops) == 2:
+                    _d, _s = _ops
+                    def _fpidx(r):
+                        return int(r[1:]) if r and r[0] in "dsqv" \
+                            and r[1:].isdigit() else None
+                    _di, _si = _fpidx(_d), _fpidx(_s)
+                    _dt = "double" if _d[:1] in ("d", "q") else "float"
+                    if mn == "fneg" and _di is not None and _si is not None \
+                            and _di <= 7 and _si <= 7:
+                        # `fneg d0, d0` in place: the source is already in d0.
+                        fp_args[_si] = "double"
+                        used_args.add(_si)
+                        state[_d] = ("fpneg", _si, _si)
+                        continue
+                    if mn == "fmov":
+                        # The operands are MIXED: `fmov x0, d0` has an integer
+                        # destination and an FP source. Requiring both to be FP
+                        # rejected every real fmov.
+                        _sfp = _s[:1] in ("d", "q")
+                        _dfp = _d[:1] in ("d", "q")
+                        if _sfp and not _dfp and _si is not None and _si <= 7:
+                            # integer view of an FP argument
+                            fp_args[_si] = "double"
+                            used_args.add(_si)
+                            state[_d] = ("fpun", _si, "to_int")
+                            continue
+                        if _dfp and not _sfp and _di is not None and _di <= 7:
+                            # FP view of an integer argument
+                            fp_args[_di] = "double"
+                            used_args.add(_di)
+                            state[_d] = ("fpun", _di, "to_fp")
+                            continue
+                raise Bail("unsupported %s form %r" % (mn, i.op_str))
+
             raise Bail("unhandled instruction %r %r" % (mn, i.op_str))
 
         # `_emit` is a separate method and never saw this walk-local, and
@@ -2051,6 +2127,8 @@ class StraightLine:
                 late_synth.add(_k)
 
         self._pinned = pinned
+        # `_emit` is a separate method, as with the pinned set.
+        self._fp_args = fp_args
         self._late_synth = late_synth
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
                                call_stmts, saw_call)
@@ -2308,6 +2386,23 @@ class StraightLine:
             if len(val) > 3 and val[3]:
                 return val[2], names[val[1]]
             return val[2], "((%s)%s)" % (val[2], names[val[1]])
+        if kind == "fpun":
+            # A union pun between the two views of ONE register. d0 and x0 are
+            # the same storage, so this is a cast between views rather than a
+            # move, and a compound literal keeps it to one expression:
+            #
+            #     ((union { double d; uint64_t u; }){ .d = a0 }).u
+            #
+            # Measured, clang 5.0.1 -O3: emits exactly `fmov x0, d0`.
+            _n = val[1]
+            if val[2] == "to_int":
+                return ("uint64_t",
+                        "((union { double d; uint64_t u; }){ .d = a%d }).u" % _n)
+            return ("double",
+                    "((union { double d; uint64_t u; }){ .u = a%d }).d" % _n)
+        if kind == "fpneg":
+            # `fneg d0, d0` is unary minus on the FP argument.
+            return ("double", "(-a%d)" % val[1])
         raise Bail("unknown value kind %r" % (kind,))
 
     def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
@@ -2375,6 +2470,11 @@ class StraightLine:
                 codes.append("S_" if ptrs else "Pv")
                 ptrs += 1
                 decls.append("void* a%d" % k)
+            elif k in getattr(self, "_fp_args", {}):
+                # `double` / `float`. Itanium: d for double, f for float.
+                _f = self._fp_args[k]
+                codes.append("d" if _f == "double" else "f")
+                decls.append("%s a%d" % (_f, k))
             elif k in idx_args:
                 # An index register's type comes from the extension on the
                 # instruction: `sxtw` is a signed 32-bit index (`i`), `uxtw` an
