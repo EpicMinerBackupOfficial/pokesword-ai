@@ -328,7 +328,7 @@ def main():
                 # C++; only the translation unit boundary matters here.
                 stubp = os.path.join(work, "stubs.cpp")
                 io.open(stubp, "w", encoding="utf-8").write(
-                    "\n".join(stubparts) + "\n")
+                    MH.PREAMBLE + "\n".join(stubparts) + "\n")
                 stubobj = os.path.join(work, "stubs.o")
                 r = subprocess.run(
                     [MH.tool("clang++")] + MH.CFLAGS
