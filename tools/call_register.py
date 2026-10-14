@@ -121,7 +121,14 @@ def candidates(mod, reg, md, limit):
         target = int(work[bls[0]].op_str.lstrip("#"), 16)
         out.append((addr, size, name, "f_%x" % addr, target,
                     list(work) + [_ret_insn(md)], len(ins)))
-        if len(out) >= limit:
+        # `limit <= 0` means UNLIMITED, not "one".
+        #
+        # `len(out) >= 0` is true on the very first append, so asking for
+        # "no limit" returned exactly one body -- and reported it as a
+        # complete answer. A caller scripting this module got 1 candidate per
+        # module where the tool itself reports 90/474/14/16. Silent, and in
+        # the direction that looks like "nothing left to try".
+        if limit and limit > 0 and len(out) >= limit:
             break
     return out
 
