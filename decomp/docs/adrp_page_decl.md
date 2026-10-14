@@ -57,6 +57,49 @@ the load must be performed. The `adrp` and the `ldr` come straight back:
 One page covers every offset an `adrp` can address, and each page already has its
 own section, so the extra bytes cannot collide with another page's.
 
+## 4. And the callee's stub was in the same TU, so LLVM deleted the argument
+
+This was never a constant fold. A non-volatile load whose result is unused *can* be
+deleted, and the result was unused as far as the optimiser could see — because the
+stub that received it was **defined in the same translation unit** and ignored its
+parameter.
+
+`-deadargelim` is an IPO pass that runs per-module at `-O3`. For a function the
+module defines, it replaces each unused parameter in its callers with poison and
+then deletes whatever fed it (`RecursivelyDeleteTriviallyDeadInstructions`). Upstream
+states the condition exactly:
+
+> We cannot change the arguments if **this TU does not define the function** or if
+> the linker may choose a function body from another TU
+> — `DeadArgumentElimination.cpp`, `removeDeadArgumentsFromCallers`
+
+So a page load that exists only to become a call argument is dead code:
+
+    retail  adrp x8,#0x714000 ; ldr x0,[x8,#0x68] ; bl #0x372200 ; mov w0,wzr
+    ours    bl #0x269890 ; mov w0,wzr
+
+Measured, three callees over one source, differing *only* in whether the body is
+visible to the caller:
+
+| callee | result |
+|---|---|
+| defined here, parameter ignored | `adrp` and `ldr` **deleted** |
+| declared only, defined elsewhere | `adrp` and `ldr` **survive** |
+| defined here, parameter used | `adrp` and `ldr` **survive** |
+
+The stubs now live in their own translation unit (`stubs.cpp`, compiled with the
+same CFLAGS so the ABI agrees) and the body TU only declares them. That is not a
+workaround — it is the truth: we do not know what the real callee does with its
+arguments, and the whole point is that the optimiser must not know either.
+
+## Ordering matters here
+
+Fixing (3) without (4) changed nothing observable for the argument case, because
+the load was already being deleted before any folding question arose. Two fixes in
+the wrong order look like one fix that did not work. The sequence that actually
+produced a surviving load was: displace the offset → size the object → drop
+`const` → move the callee out of the TU.
+
 ## The shape that survives, and why it is this specific
 
 An `adrp` needs all four of:
