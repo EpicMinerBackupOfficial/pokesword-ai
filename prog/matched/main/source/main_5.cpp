@@ -27,6 +27,12 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_4fcb70  (orig 0x4fcb70, getter)
+uint64_t main_f_4fcb70(void* a0) { return *(uint64_t*)((char*)(a0) + 32); }
+
+// sub_4fcb80  (orig 0x4fcb80, getter)
+uint64_t main_f_4fcb80(void* a0) { return *(uint64_t*)((char*)(a0) + 40); }
+
 // sub_4fcb90  (orig 0x4fcb90, ptr_add)
 void* main_f_4fcb90(void* a0) { return (char*)a0 + 108; }
 
@@ -7141,13 +7147,4 @@ uint64_t main_f_7d0b90(void* a0) { return *(uint64_t*)((char*)(a0) + 240); }
 
 // sub_7d0ba0  (orig 0x7d0ba0, getter)
 uint64_t main_f_7d0ba0(void* a0) { return *(uint64_t*)((char*)(a0) + 592); }
-
-// sub_7d0bb0  (orig 0x7d0bb0, getter)
-uint64_t main_f_7d0bb0(void* a0) { return *(uint64_t*)((char*)(a0) + 592); }
-
-// sub_7d0bc0  (orig 0x7d0bc0, straight-line)
-uint16_t main_f_7d0bc0(void* a0, uint32_t a1) {
-    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a1)) * 2)));
-    return *(uint16_t*)((char*)(p0) + 600);
-}
 

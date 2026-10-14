@@ -1740,7 +1740,11 @@ class StraightLine:
                                               % ptr_add(nm(s[1]), s[2])))
                                 synth_of[wreg(src)] = key
                             state[wreg(dst)] = ("addr", synth_of[wreg(src)], off)
-                        elif s[0] in ("load", "expr", "arg"):
+                        # `local` is a CALL RESULT. Arithmetic on one is
+                        # ordinary integer arithmetic, exactly as on a loaded
+                        # value -- refusing it cost 168 bodies whose only
+                        # obstacle was this list entry.
+                        elif s[0] in ("load", "expr", "arg", "local"):
                             # Structured, so `_emit` can render it with real names.
                             op_str = "+" if mn == "add" else "-"
                             state[wreg(dst)] = (
@@ -1922,7 +1926,10 @@ class StraightLine:
                 # this list, and `sub w0, w9, w8` where w9 came from a `cset`
                 # declined as "add/sub on a 'cset' value is not value arithmetic".
                 # That is 29 bodies whose only obstacle was a missing list entry.
-                _ARITH = ("load", "expr", "arg", "argval", "imm", "cset", "sel")
+                # `local` added for the same reason: a call result is a value, and
+                # `add w0, w0, w1` after `bl` is as ordinary as after `ldr`.
+                _ARITH = ("load", "expr", "arg", "argval", "imm", "cset",
+                          "sel", "local")
                 if s1[0] not in _ARITH:
                     raise Bail("add/sub on a %r value is not value arithmetic" % (s1[0],))
                 if s2[0] not in _ARITH:

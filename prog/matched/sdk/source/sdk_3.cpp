@@ -27,6 +27,18 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_173970  (orig 0x173970, ret_only)
+void sdk_f_173970() {}
+
+// sub_173a70  (orig 0x173a70, straight-line)
+void sdk_f_173a70(void* a0, uint64_t a1, uint32_t a2) {
+    *(uint64_t*)((char*)(a0)) = a1;
+    *(uint64_t*)((char*)(a0) + 16) = (uint64_t)(((int64_t)(((int32_t)(((uint32_t)a2))))));
+}
+
+// sub_179b50  (orig 0x179b50, ret_only)
+void sdk_f_179b50() {}
+
 // sub_179ea0  (orig 0x179ea0, ret_only)
 void sdk_f_179ea0() {}
 
@@ -8034,6 +8046,15 @@ void* sdk_f_266700(void* a0) { return (char*)a0 + 8; }
 // sub_266710  (orig 0x266710, straight)
 void* sdk_f_266710(void* a0) { return (char*)(a0) - 24; }
 
+// sub_2685c0  (orig 0x2685c0, call)
+extern void callee_51e640();
+uint64_t sdk_f_2685c0() {
+    uint64_t f_2685c0__r0 = ((uint64_t (*)(void))&callee_51e640)();
+    uint64_t r0 = (f_2685c0__r0) + (72);
+    asm volatile("");
+    return r0;
+}
+
 // sub_26a550  (orig 0x26a550, straight-line)
 int64_t sdk_f_26a550(uint32_t a0) { return (((int64_t)(((int32_t)(((uint32_t)a0)))))) * (((int64_t)(((int32_t)(104))))); }
 
@@ -12110,29 +12131,6 @@ uint64_t sdk_f_31a320(uint64_t a0, uint64_t a1) {
 extern void callee_523200();
 uint64_t sdk_f_31a8d0() {
     uint64_t r0 = (((uint64_t (*)(void))&callee_523200)()) & (4294967295);
-    asm volatile("");
-    return r0;
-}
-
-// sub_31a8f0  (orig 0x31a8f0, ret_only)
-void sdk_f_31a8f0() {}
-
-// sub_31a900  (orig 0x31a900, delegator)
-extern void callee_523550();
-void sdk_f_31a900(unsigned long a0) { ((void(*)(unsigned long))callee_523550)(a0); asm volatile(""); }
-
-// sub_31a980  (orig 0x31a980, call)
-extern void callee_5235c0();
-uint32_t sdk_f_31a980() {
-    uint32_t r0 = ((((uint32_t (*)(void))&callee_5235c0)() == 2) ? 1 : 0);
-    asm volatile("");
-    return r0;
-}
-
-// sub_31a9a0  (orig 0x31a9a0, call)
-extern void callee_5235c0();
-uint32_t sdk_f_31a9a0() {
-    uint32_t r0 = ((((uint32_t (*)(void))&callee_5235c0)() == 3) ? 1 : 0);
     asm volatile("");
     return r0;
 }

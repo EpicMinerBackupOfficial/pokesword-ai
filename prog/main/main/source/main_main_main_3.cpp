@@ -868,8 +868,8 @@ void TinyEffect_cpp_d_PPFX_ERROR_2() { /* 0x44c370 */ }
 void TinyEffect() { /* 0x44c920 */ }
 void glsl_mrg() { /* 0x44cbd0 */ }
 void TinyEffect_cpp_d_PPFX() { /* 0x44dbc0 */ }
-void sub_44dd40() { /* 0x44dd40 */ }
-void sub_44dd60() { /* 0x44dd60 */ }
+// sub_44dd40: implemented in prog/matched/main/
+// sub_44dd60: implemented in prog/matched/main/
 void sub_44dd80() { /* 0x44dd80 */ }
 // sub_44dd90: implemented in prog/matched/main/
 void sub_44dda0() { /* 0x44dda0 */ }

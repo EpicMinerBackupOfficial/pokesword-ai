@@ -1,4 +1,4 @@
-/* main -- 399 functions verified to match the original.
+/* main -- 405 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,37 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_173e7c0  (orig 0x173e7c0, ret_only)
+void main_f_173e7c0() {}
+
+// sub_173eb40  (orig 0x173eb40, ret_only)
+void main_f_173eb40() {}
+
+// sub_173eb50  (orig 0x173eb50, setter)
+void main_f_173eb50(void* a0, uint64_t a1) { *(uint64_t*)((char*)(a0) + 2992) = a1; }
+
+// sub_173ef30  (orig 0x173ef30, straight)
+void main_f_173ef30(void* a0, uint64_t a1, uint32_t a2) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a2)) * 1)));
+    *(uint8_t*)((char*)(p0) + 1544) = (uint8_t)(a1);
+}
+
+// sub_173ef40  (orig 0x173ef40, straight)
+void main_f_173ef40(void* a0, uint32_t a1, uint32_t a2) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a2)) * 1)));
+    *(uint8_t*)((char*)(p0) + 1544) = (uint8_t)((((uint32_t)a1)) >> (8));
+    *(uint8_t*)((char*)(p0) + 1545) = (uint8_t)(a1);
+}
+
+// sub_173ef60  (orig 0x173ef60, straight)
+void main_f_173ef60(void* a0, uint32_t a1, uint32_t a2) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a2)) * 1)));
+    *(uint8_t*)((char*)(p0) + 1544) = (uint8_t)((((uint32_t)a1)) >> (24));
+    *(uint8_t*)((char*)(p0) + 1545) = (uint8_t)((((uint32_t)a1)) >> (16));
+    *(uint8_t*)((char*)(p0) + 1546) = (uint8_t)((((uint32_t)a1)) >> (8));
+    *(uint8_t*)((char*)(p0) + 1547) = (uint8_t)(a1);
+}
 
 // sub_173ef90  (orig 0x173ef90, straight)
 void main_f_173ef90(void* a0, uint64_t a1, uint32_t a2) {

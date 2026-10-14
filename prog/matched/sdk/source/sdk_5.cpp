@@ -1,4 +1,4 @@
-/* sdk -- 300 functions verified to match the original.
+/* sdk -- 307 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,24 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_453860  (orig 0x453860, mov_ret)
+uint32_t sdk_f_453860() { return 0; }
+
+// sub_453868  (orig 0x453868, mov_ret)
+uint64_t sdk_f_453868() { return 0; }
+
+// sub_453950  (orig 0x453950, mov_ret)
+uint32_t sdk_f_453950() { return -1; }
+
+// sub_453998  (orig 0x453998, mov_ret)
+uint32_t sdk_f_453998() { return -1; }
+
+// sub_453a70  (orig 0x453a70, mov_ret)
+uint32_t sdk_f_453a70() { return -1; }
+
+// sub_453b88  (orig 0x453b88, ret_only)
+void sdk_f_453b88() {}
 
 // sub_4567d8  (orig 0x4567d8, ret_only)
 void sdk_f_4567d8() {}
@@ -1265,6 +1283,15 @@ extern void callee_510e80();
 uint32_t sdk_f_508b18() {
     callee_510e80();
     uint32_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
+
+// sub_508f00  (orig 0x508f00, call)
+extern void callee_52d790();
+uint64_t sdk_f_508f00() {
+    uint64_t f_508f00__r0 = ((uint64_t (*)(void))&callee_52d790)();
+    uint64_t r0 = (f_508f00__r0) - (24);
     asm volatile("");
     return r0;
 }

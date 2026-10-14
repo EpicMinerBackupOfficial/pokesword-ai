@@ -2438,8 +2438,8 @@ void sub_363440() { /* 0x363440 */ }
 void sub_3635b0() { /* 0x3635b0 */ }
 void sub_363730() { /* 0x363730 */ }
 void sub_3638c0() { /* 0x3638c0 */ }
-void sub_363a50() { /* 0x363a50 */ }
-void sub_363a70() { /* 0x363a70 */ }
+// sub_363a50: implemented in prog/matched/sdk/
+// sub_363a70: implemented in prog/matched/sdk/
 void sub_363a90() { /* 0x363a90 */ }
 void sub_363b80() { /* 0x363b80 */ }
 void sub_363c70() { /* 0x363c70 */ }

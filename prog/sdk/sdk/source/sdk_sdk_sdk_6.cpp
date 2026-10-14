@@ -2388,7 +2388,7 @@ void sub_508c60() { /* 0x508c60 */ }
 void sub_508cf0() { /* 0x508cf0 */ }
 void sub_508e78() { /* 0x508e78 */ }
 void sub_508ea8() { /* 0x508ea8 */ }
-void sub_508f00() { /* 0x508f00 */ }
+// sub_508f00: implemented in prog/matched/sdk/
 void sub_508f18() { /* 0x508f18 */ }
 void sub_508f80() { /* 0x508f80 */ }
 void sub_5091e8() { /* 0x5091e8 */ }

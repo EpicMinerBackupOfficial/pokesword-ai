@@ -27,6 +27,29 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_31a8f0  (orig 0x31a8f0, ret_only)
+void sdk_f_31a8f0() {}
+
+// sub_31a900  (orig 0x31a900, delegator)
+extern void callee_523550();
+void sdk_f_31a900(unsigned long a0) { ((void(*)(unsigned long))callee_523550)(a0); asm volatile(""); }
+
+// sub_31a980  (orig 0x31a980, call)
+extern void callee_5235c0();
+uint32_t sdk_f_31a980() {
+    uint32_t r0 = ((((uint32_t (*)(void))&callee_5235c0)() == 2) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
+
+// sub_31a9a0  (orig 0x31a9a0, call)
+extern void callee_5235c0();
+uint32_t sdk_f_31a9a0() {
+    uint32_t r0 = ((((uint32_t (*)(void))&callee_5235c0)() == 3) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
+
 // sub_31a9c0  (orig 0x31a9c0, delegator)
 extern void callee_5235d0();
 void sdk_f_31a9c0(unsigned long a0) { ((void(*)(unsigned long))callee_5235d0)(a0); asm volatile(""); }
@@ -4123,6 +4146,24 @@ uint32_t sdk_f_363250() { return 4; }
 
 // sub_363260  (orig 0x363260, mov_ret)
 uint32_t sdk_f_363260() { return 4; }
+
+// sub_363a50  (orig 0x363a50, call)
+extern void callee_527120();
+uint64_t sdk_f_363a50(uint64_t a0, void* a1) {
+    uint64_t f_363a50__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&callee_527120)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)((char*)(a1) + 4)));
+    uint64_t r0 = (f_363a50__r0) + (12);
+    asm volatile("");
+    return r0;
+}
+
+// sub_363a70  (orig 0x363a70, call)
+extern void callee_527130();
+uint64_t sdk_f_363a70(uint64_t a0, void* a1) {
+    uint64_t f_363a70__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&callee_527130)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)((char*)(a1) + 4)));
+    uint64_t r0 = (f_363a70__r0) + (12);
+    asm volatile("");
+    return r0;
+}
 
 // sub_363e10  (orig 0x363e10, mov_ret)
 uint32_t sdk_f_363e10() { return 28; }
@@ -10133,22 +10174,4 @@ uint64_t sdk_f_453840() { return 0; }
 
 // sub_453850  (orig 0x453850, straight)
 uint64_t sdk_f_453850() { return 0; }
-
-// sub_453860  (orig 0x453860, mov_ret)
-uint32_t sdk_f_453860() { return 0; }
-
-// sub_453868  (orig 0x453868, mov_ret)
-uint64_t sdk_f_453868() { return 0; }
-
-// sub_453950  (orig 0x453950, mov_ret)
-uint32_t sdk_f_453950() { return -1; }
-
-// sub_453998  (orig 0x453998, mov_ret)
-uint32_t sdk_f_453998() { return -1; }
-
-// sub_453a70  (orig 0x453a70, mov_ret)
-uint32_t sdk_f_453a70() { return -1; }
-
-// sub_453b88  (orig 0x453b88, ret_only)
-void sdk_f_453b88() {}
 

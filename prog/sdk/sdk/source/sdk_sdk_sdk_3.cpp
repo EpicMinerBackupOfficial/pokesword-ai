@@ -481,7 +481,7 @@ void sub_2684f0() { /* 0x2684f0 */ }
 void sub_268500() { /* 0x268500 */ }
 void sub_268510() { /* 0x268510 */ }
 void sub_268520() { /* 0x268520 */ }
-void sub_2685c0() { /* 0x2685c0 */ }
+// sub_2685c0: implemented in prog/matched/sdk/
 void sub_2685e0() { /* 0x2685e0 */ }
 void sub_268640() { /* 0x268640 */ }
 void sub_2686a0() { /* 0x2686a0 */ }

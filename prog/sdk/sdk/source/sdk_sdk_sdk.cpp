@@ -991,7 +991,7 @@ void sub_1f630() { /* 0x1f630 */ }
 void sub_1f680() { /* 0x1f680 */ }
 void sub_1f6d0() { /* 0x1f6d0 */ }
 void sub_1f720() { /* 0x1f720 */ }
-void sub_1f770() { /* 0x1f770 */ }
+// sub_1f770: implemented in prog/matched/sdk/
 void sub_1f790() { /* 0x1f790 */ }
 void sub_1f7a0() { /* 0x1f7a0 */ }
 void sub_1f870() { /* 0x1f870 */ }

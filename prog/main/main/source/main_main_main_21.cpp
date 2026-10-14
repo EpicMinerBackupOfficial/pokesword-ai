@@ -1847,7 +1847,7 @@ void base_out_of_range() { /* 0x1566380 */ }
 void sub_1566590() { /* 0x1566590 */ }
 void value_expected_2() { /* 0x15665d0 */ }
 void sub_1566630() { /* 0x1566630 */ }
-void sub_15666f0() { /* 0x15666f0 */ }
+// sub_15666f0: implemented in prog/matched/main/
 void sub_1566710() { /* 0x1566710 */ }
 void sub_15667d0() { /* 0x15667d0 */ }
 void too_many_nested_functions() { /* 0x1566830 */ }

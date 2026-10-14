@@ -315,6 +315,16 @@ uint64_t sdk_f_1d100(void* a0) { return *(uint64_t*)((char*)(a0) + 16); }
 // sub_1e520  (orig 0x1e520, getter)
 uint64_t sdk_f_1e520(void* a0) { return *(uint64_t*)((char*)(a0) + 16); }
 
+// sub_1f770  (orig 0x1f770, call)
+extern void callee_510140();
+uint64_t sdk_f_1f770(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 8));
+    uint64_t f_1f770__r0 = ((uint64_t (*)(uintptr_t))&callee_510140)(((uintptr_t)(*(uint64_t*)((char*)(p0) + 48))));
+    uint64_t r0 = (f_1f770__r0) + (48);
+    asm volatile("");
+    return r0;
+}
+
 // sub_1fc10  (orig 0x1fc10, getter)
 uint64_t sdk_f_1fc10(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 
@@ -6856,6 +6866,15 @@ void sdk_f_7f900(void* a0) { *(uint64_t*)((char*)(a0)) = 0; }
 // sub_7f910  (orig 0x7f910, setter-chain)
 void sdk_f_7f910(void* a0) { *(uint64_t*)((char*)(a0)) = 0; *(uint32_t*)((char*)(a0) + 72) = 0; }
 
+// sub_7f920  (orig 0x7f920, call)
+extern void callee_513160();
+uint64_t sdk_f_7f920() {
+    uint64_t f_7f920__r0 = ((uint64_t (*)(void))&callee_513160)();
+    uint64_t r0 = (((f_7f920__r0) + (63)) & (18446744073709551552)) + (972);
+    asm volatile("");
+    return r0;
+}
+
 // sub_7f9c0  (orig 0x7f9c0, getter-chain)
 uint16_t sdk_f_7f9c0(void* a0) { return *(uint16_t*)((char*)((*(uint64_t*)((char*)(a0)))) + 12); }
 
@@ -6958,6 +6977,15 @@ uint16_t sdk_f_82b30(void* a0) { return *(uint16_t*)((char*)((*(uint64_t*)((char
 uint64_t sdk_f_82b40(void* a0) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0)));
     return (*(int32_t*)((char*)(p0) + 52)) * (1000000);
+}
+
+// sub_830f0  (orig 0x830f0, call)
+extern void callee_513160();
+uint64_t sdk_f_830f0() {
+    uint64_t f_830f0__r0 = ((uint64_t (*)(void))&callee_513160)();
+    uint64_t r0 = ((f_830f0__r0) + (63)) & (18446744073709551552);
+    asm volatile("");
+    return r0;
 }
 
 // sub_834f0  (orig 0x834f0, getter-chain)
@@ -10918,16 +10946,4 @@ void sdk_f_173960(void* a0) {
     __asm__ __volatile__("" ::: "memory");
     *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
 }
-
-// sub_173970  (orig 0x173970, ret_only)
-void sdk_f_173970() {}
-
-// sub_173a70  (orig 0x173a70, straight-line)
-void sdk_f_173a70(void* a0, uint64_t a1, uint32_t a2) {
-    *(uint64_t*)((char*)(a0)) = a1;
-    *(uint64_t*)((char*)(a0) + 16) = (uint64_t)(((int64_t)(((int32_t)(((uint32_t)a2))))));
-}
-
-// sub_179b50  (orig 0x179b50, ret_only)
-void sdk_f_179b50() {}
 
