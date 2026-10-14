@@ -1984,6 +1984,21 @@ class StraightLine:
         # destination does not count as a read -- including being the second
         # destination of its own `ldp`. Only dead halves are pinned: pinning a live
         # one is redundant, and a redundant load is not free.
+        # A synth local built from a CALL RESULT cannot be declared before the
+        # call. `pre` is emitted ahead of the call statements, so the declaration
+        # landed above the initialiser it references:
+        #
+        #     void* p0 = (void*)((uintptr_t)(f__r0));   <- uses f__r0
+        #     uint64_t f__r0 = callee(...);            <- declared here
+        #
+        # which is not C and does not compile. Those locals move to the post-call
+        # position, which already exists for the pins.
+        late_synth = set()
+        for _k, _init in synth:
+            _t = _init[1] if (isinstance(_init, tuple) and len(_init) > 1) else None
+            if _t == "local" or (isinstance(_init, tuple) and _init[0] == "local"):
+                late_synth.add(_k)
+
         for _d2, _base2, _off2, _w2 in pair_seconds:
             _live = False
             for _ins in insns:
@@ -2009,7 +2024,27 @@ class StraightLine:
             synth.append((_key, '(void *)(*(uint64_t *)(%s))'
                           % ptr_add(nm(_base2), _off2)))
             pinned.add(_key)
+
+        # Lateness PROPAGATES. A pin local built on a late base names it, so
+        # moving the base alone just moves the error one line up:
+        #
+        #     void* p1 = ...(p0)...;     <- p0 is declared below it
+        #     uint64_t r0 = callee(...);
+        #     void* p0 = ...(r0)...;
+        #
+        # `synth` is in allocation order and an initialiser only ever names
+        # EARLIER entries, so a single forward pass reaches the fixpoint.
+        for _k, _init in synth:
+            if _k in late_synth:
+                continue
+            _txt = _init if isinstance(_init, str) else (
+                _init[1] if (isinstance(_init, tuple) and len(_init) > 1
+                             and isinstance(_init[1], str)) else "")
+            if any(nm(_p) in _txt for _p in late_synth):
+                late_synth.add(_k)
+
         self._pinned = pinned
+        self._late_synth = late_synth
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
                                call_stmts, saw_call)
 
@@ -2402,7 +2437,9 @@ class StraightLine:
                 init_txt = "(uintptr_t)(%s)" % _se
             else:
                 init_txt = init
-            pre.append("void* %s = (void*)(%s);" % (nm(key), init_txt))
+            # A late local is declared after the call, alongside the pins.
+            _dst = pins if key in getattr(self, "_late_synth", ()) else pre
+            _dst.append("void* %s = (void*)(%s);" % (nm(key), init_txt))
             # A DISPLACED address has to survive as a register.
             #
             # Clang folds `page + 0xfc0` straight into the addressing mode of

@@ -1028,8 +1028,8 @@ void sub_116deb0() { /* 0x116deb0 */ }
 void sub_116df70() { /* 0x116df70 */ }
 void sub_116e000() { /* 0x116e000 */ }
 void sub_116e170() { /* 0x116e170 */ }
-void sub_116e430() { /* 0x116e430 */ }
-void sub_116e480() { /* 0x116e480 */ }
+// sub_116e430: implemented in prog/matched/main/
+// sub_116e480: implemented in prog/matched/main/
 void sub_116e4d0() { /* 0x116e4d0 */ }
 void sub_116e650() { /* 0x116e650 */ }
 void sub_116e730() { /* 0x116e730 */ }

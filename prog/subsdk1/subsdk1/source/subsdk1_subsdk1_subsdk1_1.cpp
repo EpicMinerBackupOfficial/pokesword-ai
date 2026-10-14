@@ -3199,7 +3199,7 @@ void sub_302e20() { /* 0x302e20 */ }
 void sub_302ee0() { /* 0x302ee0 */ }
 void sub_302f30() { /* 0x302f30 */ }
 void sub_302ff0() { /* 0x302ff0 */ }
-void sub_303050() { /* 0x303050 */ }
+// sub_303050: implemented in prog/matched/subsdk1/
 void sub_303070() { /* 0x303070 */ }
 void sub_3030d0_subsdk1_3030d0() { /* 0x3030d0 */ }
 void unnamed_26_subsdk1_3032f0() { /* 0x3032f0 */ }

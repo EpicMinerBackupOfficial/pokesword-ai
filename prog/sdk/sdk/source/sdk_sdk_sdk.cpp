@@ -1728,7 +1728,7 @@ void sub_37d30() { /* 0x37d30 */ }
 void sub_37db0() { /* 0x37db0 */ }
 void sub_37e60() { /* 0x37e60 */ }
 void sub_37f20() { /* 0x37f20 */ }
-void sub_38030() { /* 0x38030 */ }
+// sub_38030: implemented in prog/matched/sdk/
 void sub_38050() { /* 0x38050 */ }
 void sub_38060() { /* 0x38060 */ }
 void sub_38070() { /* 0x38070 */ }

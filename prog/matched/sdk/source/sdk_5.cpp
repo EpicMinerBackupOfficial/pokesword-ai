@@ -1,4 +1,4 @@
-/* sdk -- 292 functions verified to match the original.
+/* sdk -- 300 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,30 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_4567d8  (orig 0x4567d8, ret_only)
+void sdk_f_4567d8() {}
+
+// sub_4593d8  (orig 0x4593d8, ret_only)
+void sdk_f_4593d8() {}
+
+// sub_45b4e0  (orig 0x45b4e0, ret_only)
+void sdk_f_45b4e0() {}
+
+// sub_45d688  (orig 0x45d688, ret_only)
+void sdk_f_45d688() {}
+
+// iostream  (orig 0x45d7a0, strlit-ret)
+const char *sdk_f_45d7a0() { static char g_f_45d7a0[1]; __asm__ volatile("" ::: "memory"); return g_f_45d7a0; }
+
+// sub_46c5f0  (orig 0x46c5f0, mov_ret)
+uint32_t sdk_f_46c5f0() { return 2; }
+
+// sub_46e4b0  (orig 0x46e4b0, mov_ret)
+uint32_t sdk_f_46e4b0() { return 2; }
+
+// sub_4717b0  (orig 0x4717b0, ptr_add)
+void* sdk_f_4717b0(void* a0) { return (char*)a0 + 32; }
 
 // sub_4717b8  (orig 0x4717b8, ptr_add)
 void* sdk_f_4717b8(void* a0) { return (char*)a0 + 16; }

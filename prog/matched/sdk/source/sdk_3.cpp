@@ -27,6 +27,9 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_179ea0  (orig 0x179ea0, ret_only)
+void sdk_f_179ea0() {}
+
 // sub_17a220  (orig 0x17a220, ret_only)
 void sdk_f_17a220() {}
 
@@ -12133,8 +12136,4 @@ uint32_t sdk_f_31a9a0() {
     asm volatile("");
     return r0;
 }
-
-// sub_31a9c0  (orig 0x31a9c0, delegator)
-extern void callee_5235d0();
-void sdk_f_31a9c0(unsigned long a0) { ((void(*)(unsigned long))callee_5235d0)(a0); asm volatile(""); }
 

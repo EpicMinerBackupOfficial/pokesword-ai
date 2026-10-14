@@ -27,6 +27,42 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_1097800  (orig 0x1097800, copy-chain-store)
+void main_f_1097800(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_1098860  (orig 0x1098860, ret_only)
+void main_f_1098860() {}
+
+// sub_1098870  (orig 0x1098870, ret_only)
+void main_f_1098870() {}
+
+// sub_1098880  (orig 0x1098880, ret_only)
+void main_f_1098880() {}
+
+// sub_1098a10  (orig 0x1098a10, copy-chain-store)
+void main_f_1098a10(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_1098ae0  (orig 0x1098ae0, copy-chain-store)
+void main_f_1098ae0(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_1099640  (orig 0x1099640, ret_only)
+void main_f_1099640() {}
+
 // sub_1099650  (orig 0x1099650, ret_only)
 void main_f_1099650() {}
 
@@ -2781,6 +2817,17 @@ uint32_t main_f_1136910(void* a0) { return *(uint32_t*)((char*)(a0) + 872); }
 // Play_Camp_Pass_Ball  (orig 0x1136c10, getter)
 uint64_t main_f_1136c10(void* a0) { return *(uint64_t*)((char*)(a0) + 1248); }
 
+// sub_1136c20  (orig 0x1136c20, call)
+extern void sub_1178b20();
+uint64_t main_f_1136c20(void* a0) {
+    uint64_t f_1136c20__r0 = ((uint64_t (*)(uintptr_t))&sub_1178b20)(((uintptr_t)(*(uint64_t*)((char*)(a0) + 864))));
+    void* p0 = (void*)((uintptr_t)(f_1136c20__r0));
+    void* p1 = (void*)(*(uint64_t *)((char*)(p0) + 192));
+    uint64_t r0 = *(uint64_t*)((char*)(p1) + 120);
+    asm volatile("");
+    return r0;
+}
+
 // sub_1136c40  (orig 0x1136c40, getter)
 uint64_t main_f_1136c40(void* a0) { return *(uint64_t*)((char*)(a0) + 1256); }
 
@@ -3521,6 +3568,26 @@ bool main_f_116bb80(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0) + 24)
 
 // sub_116ccd0  (orig 0x116ccd0, getter)
 uint8_t main_f_116ccd0(void* a0) { return *(uint8_t*)((char*)(a0) + 14); }
+
+// sub_116e430  (orig 0x116e430, call)
+extern void sub_5b9220();
+uint64_t main_f_116e430() {
+    uint64_t f_116e430__r0 = ((uint64_t (*)(void))&sub_5b9220)();
+    void* p0 = (void*)((uintptr_t)(f_116e430__r0));
+    uint64_t r0 = (((*(uint64_t*)((char*)(p0)) == 8015303138799666458) ? 1 : 0)) | (((*(uint64_t*)((char*)(p0)) == 1479298046300538241) ? 1 : 0));
+    asm volatile("");
+    return r0;
+}
+
+// sub_116e480  (orig 0x116e480, call)
+extern void sub_5b9220();
+uint64_t main_f_116e480() {
+    uint64_t f_116e480__r0 = ((uint64_t (*)(void))&sub_5b9220)();
+    void* p0 = (void*)((uintptr_t)(f_116e480__r0));
+    uint64_t r0 = (((*(uint64_t*)((char*)(p0)) == 12522269297729989463) ? 1 : 0)) | (((*(uint64_t*)((char*)(p0)) == 2586101489681837195) ? 1 : 0));
+    asm volatile("");
+    return r0;
+}
 
 // sub_116e7b0  (orig 0x116e7b0, ret_only)
 void main_f_116e7b0() {}
@@ -7599,52 +7666,4 @@ void main_f_126c5b0() {}
 
 // sub_126c5c0  (orig 0x126c5c0, ret_only)
 void main_f_126c5c0() {}
-
-// sub_126c5d0  (orig 0x126c5d0, ret_only)
-void main_f_126c5d0() {}
-
-// sub_126c5e0  (orig 0x126c5e0, ret_only)
-void main_f_126c5e0() {}
-
-// sub_126cb10  (orig 0x126cb10, copy-chain-store)
-void main_f_126cb10(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a1;
-    uint32_t t1 = *(uint32_t*)(char*)a0;
-    *(uint32_t*)(char*)(t0) = (uint32_t)(t1);
-}
-
-// sub_126cb20  (orig 0x126cb20, ret_only)
-void main_f_126cb20() {}
-
-// sub_126cb30  (orig 0x126cb30, copy2)
-void main_f_126cb30(void* a0, void* a1) { *(uint32_t*)((char*)(a1)) = *(uint32_t*)((char*)(a0)); }
-
-// sub_126cb40  (orig 0x126cb40, copy2)
-void main_f_126cb40(void* a0, void* a1) { *(uint32_t*)((char*)(a1)) = *(uint32_t*)((char*)(a0)); }
-
-// sub_126cb70  (orig 0x126cb70, ret_only)
-void main_f_126cb70() {}
-
-// sub_126cb80  (orig 0x126cb80, struct-copy)
-void main_f_126cb80(void* a0, void* a1) {
-    struct u64x2 { uint64_t a, b; };
-    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
-    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
-    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = s0.a;
-}
-
-// sub_126cba0  (orig 0x126cba0, struct-copy)
-void main_f_126cba0(void* a0, void* a1) {
-    struct u64x2 { uint64_t a, b; };
-    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
-    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
-    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = s0.a;
-}
-
-// sub_126cc60  (orig 0x126cc60, ret_only)
-void main_f_126cc60() {}
 

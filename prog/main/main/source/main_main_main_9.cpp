@@ -296,8 +296,8 @@ void sub_9b8910() { /* 0x9b8910 */ }
 void sub_9b8ad0() { /* 0x9b8ad0 */ }
 void sub_9b8b20() { /* 0x9b8b20 */ }
 void sub_9b8c20() { /* 0x9b8c20 */ }
-void sub_9b8c30() { /* 0x9b8c30 */ }
-void sub_9b8c60() { /* 0x9b8c60 */ }
+// sub_9b8c30: implemented in prog/matched/main/
+// sub_9b8c60: implemented in prog/matched/main/
 void sub_9b8c80() { /* 0x9b8c80 */ }
 void sub_9b8d10() { /* 0x9b8d10 */ }
 void d230() { /* 0x9b8f70 */ }

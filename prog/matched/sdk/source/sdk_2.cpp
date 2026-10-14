@@ -476,6 +476,17 @@ void sdk_f_36fe0() {}
 // sub_37530  (orig 0x37530, mov_ret)
 uint32_t sdk_f_37530() { return 0; }
 
+// sub_38030  (orig 0x38030, call)
+extern void sub_37f20();
+uint64_t sdk_f_38030(uint64_t a0, uint64_t a1, uint64_t a2) {
+    uint64_t f_38030__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_37f20)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(((uint64_t)a2))));
+    void* p0 = (void*)((uintptr_t)(f_38030__r0));
+    *(uint16_t*)((char*)(p0)) = 0;
+    uint64_t r0 = f_38030__r0;
+    asm volatile("");
+    return r0;
+}
+
 // sub_39640  (orig 0x39640, getter)
 uint64_t sdk_f_39640(void* a0) { return *(uint64_t*)((char*)(a0) + 40); }
 
@@ -10919,7 +10930,4 @@ void sdk_f_173a70(void* a0, uint64_t a1, uint32_t a2) {
 
 // sub_179b50  (orig 0x179b50, ret_only)
 void sdk_f_179b50() {}
-
-// sub_179ea0  (orig 0x179ea0, ret_only)
-void sdk_f_179ea0() {}
 

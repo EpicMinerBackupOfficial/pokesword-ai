@@ -3983,7 +3983,7 @@ void sub_1136920() { /* 0x1136920 */ }
 void sub_1136950() { /* 0x1136950 */ }
 void sub_1136be0() { /* 0x1136be0 */ }
 // sub_1136c10: implemented in prog/matched/main/
-void sub_1136c20() { /* 0x1136c20 */ }
+// sub_1136c20: implemented in prog/matched/main/
 // sub_1136c40: implemented in prog/matched/main/
 void sub_1136c50() { /* 0x1136c50 */ }
 void sub_1136ce0() { /* 0x1136ce0 */ }

@@ -1,4 +1,4 @@
-/* subsdk1 -- 1514 functions verified to match the original.
+/* subsdk1 -- 1516 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -1908,6 +1908,17 @@ void subsdk1_f_112380(uint64_t unused0, uint64_t unused1, void* a2) {
 
 // sub_1127d0  (orig 0x1127d0, ret_only)
 void subsdk1_f_1127d0() {}
+
+// sub_1134f0  (orig 0x1134f0, call)
+extern void sub_65420();
+uint32_t subsdk1_f_1134f0(void* a0, uint32_t a1) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 8));
+    uint64_t f_1134f0__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_65420)(((uintptr_t)(*(uint64_t*)((char*)(p0) + 552))), ((uintptr_t)(7)), ((uintptr_t)(((uint32_t)a1))));
+    void* p1 = (void*)((uintptr_t)(f_1134f0__r0));
+    uint32_t r0 = *(uint32_t*)((char*)(p1) + 24);
+    asm volatile("");
+    return r0;
+}
 
 // sub_118400  (orig 0x118400, straight)
 void subsdk1_f_118400(void* a0, void* a1) {
@@ -4027,6 +4038,16 @@ uint8_t subsdk1_f_2f9d70(uint64_t unused0, void* a1) { return (((*(uint8_t*)((ch
 
 // sub_3024e0  (orig 0x3024e0, straight)
 uint32_t subsdk1_f_3024e0(void* a0, void* a1) { return (*(uint32_t*)((char*)(a0) + 4)) - (*(uint32_t*)((char*)(a1) + 4)); }
+
+// sub_303050  (orig 0x303050, call)
+extern void sub_302f30();
+uint64_t subsdk1_f_303050(uint64_t a0, uint64_t a1, uint64_t a2) {
+    uint64_t f_303050__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_302f30)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(((uint64_t)a2))));
+    void* p0 = (void*)((uintptr_t)(f_303050__r0));
+    uint64_t r0 = *(uint64_t*)((char*)(p0) + 8);
+    asm volatile("");
+    return r0;
+}
 
 // sub_31e0a0  (orig 0x31e0a0, copy-chain-store)
 void subsdk1_f_31e0a0(uint64_t a0) {

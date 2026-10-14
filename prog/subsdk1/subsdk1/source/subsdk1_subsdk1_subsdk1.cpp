@@ -2982,7 +2982,7 @@ void sub_112940() { /* 0x112940 */ }
 void sub_112c40_subsdk1_112c40() { /* 0x112c40 */ }
 void sub_112cc0() { /* 0x112cc0 */ }
 void sub_112f20() { /* 0x112f20 */ }
-void sub_1134f0_subsdk1_1134f0() { /* 0x1134f0 */ }
+// sub_1134f0_subsdk1_1134f0: implemented in prog/matched/subsdk1/
 void sub_113520_subsdk1_113520() { /* 0x113520 */ }
 void sub_113650_subsdk1_113650() { /* 0x113650 */ }
 void sub_1137b0_subsdk1_1137b0() { /* 0x1137b0 */ }

@@ -2620,7 +2620,7 @@ void sub_5fb010() { /* 0x5fb010 */ }
 void sub_5fb0a0() { /* 0x5fb0a0 */ }
 void sub_5fb120() { /* 0x5fb120 */ }
 void sub_5fb340() { /* 0x5fb340 */ }
-void sub_5fb390() { /* 0x5fb390 */ }
+// sub_5fb390: implemented in prog/matched/main/
 // sub_5fb3b0: implemented in prog/matched/main/
 void sub_5fb3d0() { /* 0x5fb3d0 */ }
 void sub_5fb460() { /* 0x5fb460 */ }

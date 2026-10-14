@@ -27,6 +27,42 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_bb4070  (orig 0xbb4070, straight)
+void main_f_bb4070(void* a0) {
+    *(uint32_t*)((char*)(a0) + 432) = (((*(uint32_t*)((char*)(a0) + 432) == 12)) ? (6) : ((((*(uint32_t*)((char*)(a0) + 432) == 23)) ? (26) : (24))));
+    *(uint8_t*)((char*)(a0) + 458) = 0;
+}
+
+// sub_bb40a0  (orig 0xbb40a0, straight)
+void main_f_bb40a0(void* a0) {
+    *(uint32_t*)((char*)(a0) + 32) = (((*(uint32_t*)((char*)(a0) + 32) == 12)) ? (6) : ((((*(uint32_t*)((char*)(a0) + 32) == 23)) ? (26) : (24))));
+    *(uint8_t*)((char*)(a0) + 58) = 0;
+}
+
+// sub_bb40d0  (orig 0xbb40d0, straight)
+void main_f_bb40d0(void* a0) {
+    *(uint32_t*)((char*)(a0) + 432) = 26;
+    *(uint8_t*)((char*)(a0) + 458) = 0;
+}
+
+// sub_bb40e0  (orig 0xbb40e0, straight)
+void main_f_bb40e0(void* a0) {
+    *(uint32_t*)((char*)(a0) + 32) = 26;
+    *(uint8_t*)((char*)(a0) + 58) = 0;
+}
+
+// sub_bb40f0  (orig 0xbb40f0, ret_only)
+void main_f_bb40f0() {}
+
+// sub_bb4100  (orig 0xbb4100, ret_only)
+void main_f_bb4100() {}
+
+// sub_bb4110  (orig 0xbb4110, straight)
+void main_f_bb4110(void* a0) {
+    uint32_t k0 = 1;
+    *(uint8_t*)((char*)(a0) + 459) = (uint8_t)k0;
+}
+
 // sub_bb4120  (orig 0xbb4120, straight)
 void main_f_bb4120(void* a0) {
     uint32_t k0 = 1;
@@ -6645,32 +6681,4 @@ void main_f_ea3e20(void* a0, void* a1) {
     __asm__ __volatile__("" ::: "memory");
     *(uint64_t*)(char*)a1 = s0.a;
 }
-
-// sub_ea3e40  (orig 0xea3e40, struct-copy)
-void main_f_ea3e40(void* a0, void* a1) {
-    struct u64x2 { uint64_t a, b; };
-    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
-    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
-    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = s0.a;
-}
-
-// sub_ea3f20  (orig 0xea3f20, getter)
-uint64_t main_f_ea3f20(void* a0) { return *(uint64_t*)((char*)(a0) + 8); }
-
-// sub_ea3f30  (orig 0xea3f30, ptr_add)
-void* main_f_ea3f30(void* a0) { return (char*)a0 + 32; }
-
-// sub_ea3f40  (orig 0xea3f40, ptr_add)
-void* main_f_ea3f40(void* a0) { return (char*)a0 + 24; }
-
-// sub_ea3f50  (orig 0xea3f50, ptr_add)
-void* main_f_ea3f50(void* a0) { return (char*)a0 + 24; }
-
-// sub_ea3f60  (orig 0xea3f60, ptr_add)
-void* main_f_ea3f60(void* a0) { return (char*)a0 + 32; }
-
-// sub_ea3f80  (orig 0xea3f80, mov_ret)
-uint32_t main_f_ea3f80() { return 1; }
 

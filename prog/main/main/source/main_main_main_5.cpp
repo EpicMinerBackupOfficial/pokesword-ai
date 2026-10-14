@@ -3311,8 +3311,8 @@ void sub_71b900() { /* 0x71b900 */ }
 void sub_71b940() { /* 0x71b940 */ }
 void sub_71bab0() { /* 0x71bab0 */ }
 void sub_71bc30() { /* 0x71bc30 */ }
-void sub_71bc80() { /* 0x71bc80 */ }
-void sub_71bcb0() { /* 0x71bcb0 */ }
+// sub_71bc80: implemented in prog/matched/main/
+// sub_71bcb0: implemented in prog/matched/main/
 void sub_71bcd0() { /* 0x71bcd0 */ }
 void sub_71bd20() { /* 0x71bd20 */ }
 void sub_71bd80() { /* 0x71bd80 */ }

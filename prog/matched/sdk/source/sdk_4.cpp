@@ -27,6 +27,10 @@ typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
 
+// sub_31a9c0  (orig 0x31a9c0, delegator)
+extern void callee_5235d0();
+void sdk_f_31a9c0(unsigned long a0) { ((void(*)(unsigned long))callee_5235d0)(a0); asm volatile(""); }
+
 // sub_31a9f0  (orig 0x31a9f0, call)
 extern void callee_5235e0();
 uint64_t sdk_f_31a9f0() {
@@ -3773,6 +3777,26 @@ void* sdk_f_353560(void* a0) { return (char*)(a0) - 8; }
 // sub_354de0  (orig 0x354de0, compare)
 bool sdk_f_354de0(uint64_t a0, uint64_t a1) { return (uint64_t)(a0) == (uint64_t)(a1); }
 
+// sub_354df0  (orig 0x354df0, call)
+extern void callee_518a60();
+uint32_t sdk_f_354df0() {
+    uint64_t f_354df0__r0 = ((uint64_t (*)(void))&callee_518a60)();
+    void* p0 = (void*)((uintptr_t)(f_354df0__r0));
+    uint32_t r0 = *(uint32_t*)((char*)(p0) + 256);
+    asm volatile("");
+    return r0;
+}
+
+// sub_354e40  (orig 0x354e40, call)
+extern void callee_518a60();
+uint8_t sdk_f_354e40() {
+    uint64_t f_354e40__r0 = ((uint64_t (*)(void))&callee_518a60)();
+    void* p0 = (void*)((uintptr_t)(f_354e40__r0));
+    uint8_t r0 = *(uint8_t*)((char*)(p0) + 256);
+    asm volatile("");
+    return r0;
+}
+
 // sub_355a30  (orig 0x355a30, mov_ret)
 uint64_t sdk_f_355a30() { return 0; }
 
@@ -5127,6 +5151,46 @@ uint64_t sdk_f_383e90() {
 extern void callee_5283b0();
 void sdk_f_383eb0(unsigned long a0) { ((void(*)(unsigned long))callee_5283b0)(a0); asm volatile(""); }
 
+// sub_3847f0  (orig 0x3847f0, call)
+extern void callee_528330();
+uint64_t sdk_f_3847f0() {
+    uint64_t f_3847f0__r0 = ((uint64_t (*)(void))&callee_528330)();
+    void* p0 = (void*)((uintptr_t)(f_3847f0__r0));
+    uint64_t r0 = *(uint64_t*)((char*)(p0) + 64);
+    asm volatile("");
+    return r0;
+}
+
+// sub_384840  (orig 0x384840, call)
+extern void callee_528330();
+uint64_t sdk_f_384840() {
+    uint64_t f_384840__r0 = ((uint64_t (*)(void))&callee_528330)();
+    void* p0 = (void*)((uintptr_t)(f_384840__r0));
+    uint64_t r0 = *(uint64_t*)((char*)(p0) + 80);
+    asm volatile("");
+    return r0;
+}
+
+// sub_3848a0  (orig 0x3848a0, call)
+extern void callee_528330();
+uint64_t sdk_f_3848a0() {
+    uint64_t f_3848a0__r0 = ((uint64_t (*)(void))&callee_528330)();
+    void* p0 = (void*)((uintptr_t)(f_3848a0__r0));
+    uint64_t r0 = *(uint64_t*)((char*)(p0) + 72);
+    asm volatile("");
+    return r0;
+}
+
+// sub_3848f0  (orig 0x3848f0, call)
+extern void callee_528330();
+uint64_t sdk_f_3848f0() {
+    uint64_t f_3848f0__r0 = ((uint64_t (*)(void))&callee_528330)();
+    void* p0 = (void*)((uintptr_t)(f_3848f0__r0));
+    uint64_t r0 = *(uint64_t*)((char*)(p0) + 88);
+    asm volatile("");
+    return r0;
+}
+
 // sub_385550  (orig 0x385550, getter)
 uint64_t sdk_f_385550(void* a0) { return *(uint64_t*)((char*)(a0)); }
 
@@ -5156,6 +5220,16 @@ uint8_t sdk_f_386350(void* a0) { return *(uint8_t*)((char*)(a0) + 205); }
 
 // sub_386360  (orig 0x386360, getter)
 uint8_t sdk_f_386360(void* a0) { return *(uint8_t*)((char*)(a0) + 204); }
+
+// sub_386370  (orig 0x386370, call)
+extern void callee_528330();
+uint8_t sdk_f_386370(void* a0) {
+    uint64_t f_386370__r0 = ((uint64_t (*)(uintptr_t))&callee_528330)(((uintptr_t)((char*)(a0) + 208)));
+    void* p0 = (void*)((uintptr_t)(f_386370__r0));
+    uint8_t r0 = ((*(uint8_t*)((char*)(p0) + 205) != 0) ? 1 : 0);
+    asm volatile("");
+    return r0;
+}
 
 // sub_387390  (orig 0x387390, ret_only)
 void sdk_f_387390() {}
@@ -10077,28 +10151,4 @@ uint32_t sdk_f_453a70() { return -1; }
 
 // sub_453b88  (orig 0x453b88, ret_only)
 void sdk_f_453b88() {}
-
-// sub_4567d8  (orig 0x4567d8, ret_only)
-void sdk_f_4567d8() {}
-
-// sub_4593d8  (orig 0x4593d8, ret_only)
-void sdk_f_4593d8() {}
-
-// sub_45b4e0  (orig 0x45b4e0, ret_only)
-void sdk_f_45b4e0() {}
-
-// sub_45d688  (orig 0x45d688, ret_only)
-void sdk_f_45d688() {}
-
-// iostream  (orig 0x45d7a0, strlit-ret)
-const char *sdk_f_45d7a0() { static char g_f_45d7a0[1]; __asm__ volatile("" ::: "memory"); return g_f_45d7a0; }
-
-// sub_46c5f0  (orig 0x46c5f0, mov_ret)
-uint32_t sdk_f_46c5f0() { return 2; }
-
-// sub_46e4b0  (orig 0x46e4b0, mov_ret)
-uint32_t sdk_f_46e4b0() { return 2; }
-
-// sub_4717b0  (orig 0x4717b0, ptr_add)
-void* sdk_f_4717b0(void* a0) { return (char*)a0 + 32; }
 

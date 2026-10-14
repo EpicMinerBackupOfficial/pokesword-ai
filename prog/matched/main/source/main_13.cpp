@@ -1,4 +1,4 @@
-/* main -- 389 functions verified to match the original.
+/* main -- 399 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -26,6 +26,46 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+
+// sub_173ef90  (orig 0x173ef90, straight)
+void main_f_173ef90(void* a0, uint64_t a1, uint32_t a2) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a2)) * 1)));
+    *(uint8_t*)((char*)(p0) + 1544) = (uint8_t)((((uint64_t)a1)) >> (56));
+    *(uint8_t*)((char*)(p0) + 1545) = (uint8_t)((((uint64_t)a1)) >> (48));
+    *(uint8_t*)((char*)(p0) + 1546) = (uint8_t)((((uint64_t)a1)) >> (40));
+    *(uint8_t*)((char*)(p0) + 1547) = (uint8_t)((((uint64_t)a1)) >> (32));
+    *(uint8_t*)((char*)(p0) + 1548) = (uint8_t)((((uint64_t)a1)) >> (24));
+    *(uint8_t*)((char*)(p0) + 1549) = (uint8_t)((((uint64_t)a1)) >> (16));
+    *(uint8_t*)((char*)(p0) + 1550) = (uint8_t)((((uint64_t)a1)) >> (8));
+    *(uint8_t*)((char*)(p0) + 1551) = (uint8_t)(a1);
+}
+
+// sub_1741960  (orig 0x1741960, ret_only)
+void main_f_1741960() {}
+
+// sub_1742610  (orig 0x1742610, mov_ret)
+uint32_t main_f_1742610() { return 132; }
+
+// sub_1742620  (orig 0x1742620, mov_ret)
+uint32_t main_f_1742620() { return 20; }
+
+// sub_1743940  (orig 0x1743940, ret_only)
+void main_f_1743940() {}
+
+// sub_1743950  (orig 0x1743950, mov_ret)
+uint32_t main_f_1743950() { return 124; }
+
+// sub_1746cb0  (orig 0x1746cb0, mov_ret)
+uint32_t main_f_1746cb0() { return 0; }
+
+// sub_17474f0  (orig 0x17474f0, mov_ret)
+uint32_t main_f_17474f0() { return 0; }
+
+// sub_1747500  (orig 0x1747500, ret_only)
+void main_f_1747500() {}
+
+// sub_1747b90  (orig 0x1747b90, getter)
+uint64_t main_f_1747b90(void* a0) { return *(uint64_t*)((char*)(a0) + 816); }
 
 // sub_1747bb0  (orig 0x1747bb0, mov_ret)
 uint32_t main_f_1747bb0() { return 608; }
