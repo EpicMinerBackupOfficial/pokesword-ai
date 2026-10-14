@@ -2078,7 +2078,8 @@ class StraightLine:
                     if mn == "fneg" and _di is not None and _si is not None \
                             and _di <= 7 and _si <= 7:
                         # `fneg d0, d0` in place: the source is already in d0.
-                        fp_args[_si] = "double"
+                        fp_slots[_si] = _dt   # parameter index resolved at emit time
+                        used_args.discard(_si)   # _imax comes from used_args
                         used_args.add(_si)
                         state[_d] = ("fpneg", _si, _si)
                         continue
