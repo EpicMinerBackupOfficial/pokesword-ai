@@ -1,0 +1,764 @@
+# Real type names recovered from .rodata RTTI in data/main.elf.
+# 547 demangled names across 106 namespaces. .rodata carries NO data
+# symbols in the ELF, so this is the only naming source for the module
+# that does not require an analysis provider. Sorted by namespace.
+# address  name
+
+## movie  (13)
+0x001a9e136  movie::SetCoreMask
+0x001a9e179  movie
+0x001a9e192  movie
+0x001a9e698  movie::Buffer
+0x001a9e6b1  movie
+0x001a9e6d3  movie
+0x001a9e6f6  movie
+0x001a9e70f  movie
+0x001a9e7a1  movie
+0x001a9e7fe  movie::GetThreadPriority
+0x001a9e898  movie
+0x001a9e8c1  movie
+0x001a9e901  movie::SetAllocator
+
+## movie::Buffer  (10)
+0x001a9e14f  movie::Buffer::E
+0x001a9e164  movie::Buffer::E
+0x001a9e5d2  movie::Buffer::SetInt32Data
+0x001a9e5f3  movie::Buffer::SetInt64Data
+0x001a9e614  movie::Buffer::SetUint32Data
+0x001a9e636  movie::Buffer::SetRange
+0x001a9e653  movie::Buffer::E
+0x001a9e66a  movie::Buffer::E
+0x001a9e683  movie::Buffer::E
+0x001a9e72c  movie::Buffer::SetDataAndCapacity
+
+## movie::Decoder  (1)
+0x001a9e81d  movie::Decoder::E
+
+## movie::Extractor  (1)
+0x001a9e86e  movie::Extractor::E
+
+## movie::MediaData  (3)
+0x001a9e755  movie::MediaData::Clear
+0x001a9e771  movie::MediaData::E
+0x001a9e789  movie::MediaData::E
+
+## nn  (4)
+0x001a9a280  nn::time
+0x001a9dfda  nn::settings
+0x001a9ec3e  nn::time
+0x001aa0ca5  nn::settings
+
+## nn::account  (14)
+0x001a99fd6  nn::account::Initialize
+0x001a99ff3  nn::account::GetNickname
+0x001a9a02a  nn::account::GetUserId
+0x001a9ab31  nn::account::ListOpenUsers
+0x001a9ad3e  nn::account::GetNetworkServiceAccountId
+0x001a9ad9c  nn::account::EnsureNetworkServiceAccountAvailable
+0x001a9ade5  nn::account::LoadNetworkServiceAccountIdTokenCache
+0x001a9ae34  nn::account::EnsureNetworkServiceAccountIdTokenCacheAsync
+0x001a9d0b6  nn::account::OpenPreselectedUser
+0x001a9d11b  nn::account::LoadCachedNintendoAccountInfo
+0x001a9d181  nn::account::IsNetworkServiceAccountAvailable
+0x001a9ef58  nn::account::LoadNetworkServiceLicenseInfoAsync
+0x001a9f3d5  nn::account::ShowLicenseRequirementsForNetworkService
+0x001aa1412  nn::account::GetUserExistence
+
+## nn::account::AsyncContext  (7)
+0x001a9aca6  nn::account::AsyncContext::Cancel
+0x001a9accc  nn::account::AsyncContext::HasDone
+0x001a9acf4  nn::account::AsyncContext::GetResult
+0x001a9ad1d  nn::account::AsyncContext::E
+0x001a9ef37  nn::account::AsyncContext::Ev
+0x001a9f022  nn::account::AsyncContext::E
+0x001aa0c59  nn::account::AsyncContext::GetSystemEvent
+
+## nn::account::AsyncNetworkServiceLicenseInfoContext  (2)
+0x001a9eefd  nn::account::AsyncNetworkServiceLicenseInfoContext::E
+0x001a9efcc  nn::account::AsyncNetworkServiceLicenseInfoContext::GetNetworkServiceLicenseKind
+
+## nn::account::CachedNintendoAccountInfo  (1)
+0x001a9d0ed  nn::account::CachedNintendoAccountInfo::E
+
+## nn::aoc  (2)
+0x001a9963c  nn::aoc::ListAddOnContent
+0x001a9965e  nn::aoc::CountAddOnContent
+
+## nn::audio  (21)
+0x001a98f28  nn::audio::GetActiveAudioDeviceName
+0x001a98f67  nn::audio::AcquireAudioDeviceNotificationForOutput
+0x001a9e1ad  nn::audio::StopAudioOut
+0x001a9e1d8  nn::audio::CloseAudioOut
+0x001a9e204  nn::audio::StartAudioOut
+0x001a9e264  nn::audio::InitializeResampler
+0x001a9e2a2  nn::audio::OpenDefaultAudioOut
+0x001a9e2ee  nn::audio::AppendAudioOutBuffer
+0x001a9e337  nn::audio::GetAudioOutSampleRate
+0x001a9e36c  nn::audio::SetAudioOutBufferInfo
+0x001a9e3ab  nn::audio::ProcessResamplerBuffer
+0x001a9e3ef  nn::audio::GetAudioOutChannelCount
+0x001a9e426  nn::audio::GetAudioOutSampleFormat
+0x001a9e45d  nn::audio::GetAudioOutBufferDataSize
+0x001a9e49d  nn::audio::GetReleasedAudioOutBuffer
+0x001a9e4d5  nn::audio::InitializeAudioOutParameter
+0x001a9e519  nn::audio::GetAudioOutBufferDataPointer
+0x001a9e55c  nn::audio::GetResamplerOutputSampleCount
+0x001a9e5a0  nn::audio::GetRequiredBufferSizeForResampler
+0x001a9f97a  nn::audio::GetAudioOutState
+0x001a9f9aa  nn::audio::OpenDefaultAudioOut
+
+## nn::audio::GetSampleByteSize  (1)
+0x001a9e230  nn::audio::GetSampleByteSize::SampleFormat
+
+## nn::bcat  (5)
+0x001a9a6b4  nn::bcat::Initialize
+0x001a9a748  nn::bcat::RequestSyncDeliveryCache
+0x001a9a9d3  nn::bcat::MountDeliveryCacheStorage
+0x001a9a9fc  nn::bcat::UnmountDeliveryCacheStorage
+0x001a9aa27  nn::bcat::EnumerateDeliveryCacheDirectory
+
+## nn::bcat::DeliveryCacheDirectory  (6)
+0x001a9a89a  nn::bcat::DeliveryCacheDirectory::Open
+0x001a9a8c7  nn::bcat::DeliveryCacheDirectory::Open
+0x001a9a907  nn::bcat::DeliveryCacheDirectory::Read
+0x001a9a957  nn::bcat::DeliveryCacheDirectory::Close
+0x001a9a983  nn::bcat::DeliveryCacheDirectory::E
+0x001a9a9ab  nn::bcat::DeliveryCacheDirectory::E
+
+## nn::bcat::DeliveryCacheFile  (6)
+0x001a9a7b1  nn::bcat::DeliveryCacheFile::Open
+0x001a9a7d9  nn::bcat::DeliveryCacheFile::Read
+0x001a9a804  nn::bcat::DeliveryCacheFile::Close
+0x001a9a82b  nn::bcat::DeliveryCacheFile::GetSize
+0x001a9a854  nn::bcat::DeliveryCacheFile::E
+0x001a9a877  nn::bcat::DeliveryCacheFile::E
+
+## nn::bcat::DeliveryCacheProgress  (3)
+0x001a9a6ce  nn::bcat::DeliveryCacheProgress::Update
+0x001a9a6fa  nn::bcat::DeliveryCacheProgress::E
+0x001a9a721  nn::bcat::DeliveryCacheProgress::E
+
+## nn::codec::HardwareOpusDecoder  (1)
+0x001a9f88b  nn::codec::HardwareOpusDecoder::E
+
+## nn::crypto  (2)
+0x001a9c004  nn::crypto::GenerateCryptographicallyRandomBytes
+0x001aa0810  nn::crypto::GenerateSha1Hash
+
+## nn::crypto::Sha256Generator  (1)
+0x001a9f194  nn::crypto::Sha256Generator::Asn1ObjectIdentifier
+
+## nn::crypto::detail::BigNum  (5)
+0x001a9f1ca  nn::crypto::detail::BigNum::ReserveStatic
+0x001a9f1f9  nn::crypto::detail::BigNum::Set
+0x001a9f21e  nn::crypto::detail::BigNum::Cleanse
+0x001a9f244  nn::crypto::detail::BigNum::Ev
+0x001a9f264  nn::crypto::detail::BigNum::Ev
+
+## nn::crypto::detail::Md5Impl  (4)
+0x001a9a10f  nn::crypto::detail::Md5Impl::Initialize
+0x001a9a13a  nn::crypto::detail::Md5Impl::Update
+0x001a9a163  nn::crypto::detail::Md5Impl::GetHash
+0x001a9a18c  nn::crypto::detail::Md5Impl::E
+
+## nn::crypto::detail::Sha256Impl  (4)
+0x001a9a061  nn::crypto::detail::Sha256Impl::Initialize
+0x001a9a090  nn::crypto::detail::Sha256Impl::Update
+0x001a9a0bd  nn::crypto::detail::Sha256Impl::GetHash
+0x001a9a0ea  nn::crypto::detail::Sha256Impl::E
+
+## nn::cstd  (2)
+0x001a9f5da  nn::cstd::IsInf
+0x001a9f5ee  nn::cstd::IsNan
+
+## nn::detail  (1)
+0x001aa065a  nn::detail::UnexpectedDefaultImpl
+
+## nn::diag::detail  (3)
+0x001a990af  nn::diag::detail::LogImpl
+0x001a9936b  nn::diag::detail::AbortImpl
+0x001a99fae  nn::diag::detail::AbortImpl
+
+## nn::diag::detail::OnAssertionFailure  (1)
+0x001a98d19  nn::diag::detail::OnAssertionFailure::AssertionType
+
+## nn::err  (5)
+0x001a9af41  nn::err::ErrorResultVariant
+0x001a9bbc2  nn::err::ShowApplicationError
+0x001a9bc8b  nn::err::ShowError
+0x001a9bcac  nn::err::ShowError
+0x001aa0e73  nn::err::ErrorResultVariant
+
+## nn::err::ApplicationErrorArg  (5)
+0x001a9ba9e  nn::err::ApplicationErrorArg::SetLanguageCode
+0x001a9baed  nn::err::ApplicationErrorArg::SetDialogMessage
+0x001a9bb23  nn::err::ApplicationErrorArg::SetFullScreenMessage
+0x001a9bb5d  nn::err::ApplicationErrorArg::SetApplicationErrorCodeNumber
+0x001a9bb9e  nn::err::ApplicationErrorArg::E
+
+## nn::err::ErrorCode  (1)
+0x001a9ee6c  nn::err::ErrorCode::GetInvalidErrorCode
+
+## nn::err::ErrorResultVariant  (3)
+0x001a9af1e  nn::err::ErrorResultVariant::E
+0x001aa0f00  nn::err::ErrorResultVariant::E
+0x001aa170b  nn::err::ErrorResultVariant::E
+
+## nn::err::IsNetworkServiceError  (1)
+0x001a9bc00  nn::err::IsNetworkServiceError::ErrorCode
+
+## nn::err::ShowError  (1)
+0x001a9bc66  nn::err::ShowError::ErrorCode
+
+## nn::err::ShowNetworkServiceError  (1)
+0x001a9bc32  nn::err::ShowNetworkServiceError::ErrorCode
+
+## nn::fontll::ScalableFontEngine  (22)
+0x001aa00b9  nn::fontll::ScalableFontEngine::GetAdvance
+0x001aa00f4  nn::fontll::ScalableFontEngine::GetKerning
+0x001aa012a  nn::fontll::ScalableFontEngine::Initialize
+0x001aa015c  nn::fontll::ScalableFontEngine::SetAutoHint
+0x001aa018d  nn::fontll::ScalableFontEngine::ReleasesGlyph
+0x001aa01c1  nn::fontll::ScalableFontEngine::SetBoldWeight
+0x001aa01f4  nn::fontll::ScalableFontEngine::GetFontMetrics
+0x001aa0235  nn::fontll::ScalableFontEngine::AcquireGlyphmap
+0x001aa026b  nn::fontll::ScalableFontEngine::CheckGlyphExist
+0x001aa02a0  nn::fontll::ScalableFontEngine::SetOutlineWidth
+0x001aa02d5  nn::fontll::ScalableFontEngine::AcquireOtfKerning
+0x001aa0326  nn::fontll::ScalableFontEngine::AcquireOtfKerningLast
+0x001aa037a  nn::fontll::ScalableFontEngine::AcquireOtfKerningFirst
+0x001aa03cf  nn::fontll::ScalableFontEngine::GetPointerToWorkBuffer
+0x001aa040b  nn::fontll::ScalableFontEngine::FinalizeOtfKerningTable
+0x001aa046a  nn::fontll::ScalableFontEngine::InitializeOtfKerningTable
+0x001aa04b6  nn::fontll::ScalableFontEngine::SetFont
+0x001aa04e3  nn::fontll::ScalableFontEngine::Finalize
+0x001aa0510  nn::fontll::ScalableFontEngine::GetError
+0x001aa053d  nn::fontll::ScalableFontEngine::LoadFont
+0x001aa05a7  nn::fontll::ScalableFontEngine::SetScale
+0x001aa05d7  nn::fontll::ScalableFontEngine::E
+
+## nn::fontll::ScalableFontEngine::SetFlags  (1)
+0x001aa0570  nn::fontll::ScalableFontEngine::SetFlags::_
+
+## nn::fontll::ScalableFontEngineHelper  (1)
+0x001aa05fd  nn::fontll::ScalableFontEngineHelper::Decode
+
+## nn::friends  (3)
+0x001a9d1c8  nn::friends::GetFriendList
+0x001aa1463  nn::friends::GetPlayHistoryRegistrationKey
+0x001aa169b  nn::friends::AddPlayHistory
+
+## nn::friends::Friend  (1)
+0x001a98fb3  nn::friends::Friend::E
+
+## nn::fs  (14)
+0x001a99560  nn::fs::SetAllocator
+0x001a99587  nn::fs::MountSaveData
+0x001a995b6  nn::fs::IsSaveDataExisting
+0x001a995e7  nn::fs::QueryMountRomCacheSize
+0x001a9960c  nn::fs::Unmount
+0x001a99622  nn::fs::MountRom
+0x001a997da  nn::fs::GetFileSize
+0x001a99805  nn::fs::OpenFile
+0x001a9987e  nn::fs::GetEntryType
+0x001a998b4  nn::fs::EnsureSaveData
+0x001a998e1  nn::fs::Commit
+0x001a9a62f  nn::fs::CreateFile
+0x001a9decf  nn::fs::DeleteFile
+0x001a9e012  nn::fs::ReadFile
+
+## nn::fs::CloseFile  (1)
+0x001a99858  nn::fs::CloseFile::FileHandle
+
+## nn::fs::FlushFile  (1)
+0x001a9a64a  nn::fs::FlushFile::FileHandle
+
+## nn::fs::ReadFile  (1)
+0x001a9982f  nn::fs::ReadFile::FileHandle
+
+## nn::fs::SetFileSize  (1)
+0x001a9dee9  nn::fs::SetFileSize::FileHandle
+
+## nn::fs::WriteFile  (1)
+0x001a9a670  nn::fs::WriteFile::FileHandle
+
+## nn::hid  (51)
+0x001a9a1e6  nn::hid::InitializeNpad
+0x001a9a203  nn::hid::SetSupportedNpadIdType
+0x001a9a22b  nn::hid::SetSupportedNpadStyleSet
+0x001a9c33d  nn::hid::GetNpadState
+0x001a9c372  nn::hid::GetNpadState
+0x001a9c3a7  nn::hid::GetNpadState
+0x001a9c3dc  nn::hid::GetNpadState
+0x001a9c412  nn::hid::GetNpadState
+0x001a9c47c  nn::hid::GetNpadStyleSet
+0x001a9c4d2  nn::hid::BindNpadStyleSetUpdateEvent
+0x001a9c578  nn::hid::DisconnectNpad
+0x001a9c5c5  nn::hid::StopSixAxisSensor
+0x001a9c600  nn::hid::StartSixAxisSensor
+0x001a9c63c  nn::hid::GetSixAxisSensorState
+0x001a9c695  nn::hid::IsSixAxisSensorAtRest
+0x001a9c6d4  nn::hid::GetSixAxisSensorStates
+0x001a9c72f  nn::hid::GetSixAxisSensorHandles
+0x001a9c7a2  nn::hid::EnableSixAxisSensorFusion
+0x001a9c7e6  nn::hid::GetGyroscopeZeroDriftMode
+0x001a9c829  nn::hid::SetGyroscopeZeroDriftMode
+0x001a9c88b  nn::hid::IsSixAxisSensorFusionEnabled
+0x001a9c8d1  nn::hid::GetSixAxisSensorFusionParameters
+0x001a9c920  nn::hid::SetSixAxisSensorFusionParameters
+0x001a9cf6c  nn::hid::GetVibrationDeviceHandles
+0x001a9cfe3  nn::hid::InitializeVibrationDevice
+0x001a9d2cf  nn::hid::SetPalmaBoostMode
+0x001a9d2ef  nn::hid::EnableAnyPalmaConnection
+0x001a9d316  nn::hid::DisableAnyPalmaConnection
+0x001a9d33e  nn::hid::ReadPalmaStep
+0x001a9d377  nn::hid::ResetPalmaStep
+0x001a9d3b1  nn::hid::EnablePalmaStep
+0x001a9d3ed  nn::hid::InitializePalma
+0x001a9d428  nn::hid::ReadPalmaPlayLog
+0x001a9d467  nn::hid::PlayPalmaActivity
+0x001a9d4a7  nn::hid::ResetPalmaPlayLog
+0x001a9d4e7  nn::hid::SetPalmaFrModeType
+0x001a9d53d  nn::hid::ReadPalmaUniqueCode
+0x001a9d57c  nn::hid::SuspendPalmaFeature
+0x001a9d5ec  nn::hid::WritePalmaWaveEntry
+0x001a9d648  nn::hid::GetPalmaOperationInfo
+0x001a9d6a3  nn::hid::WritePalmaActivityEntry
+0x001a9d704  nn::hid::GetPalmaConnectionHandle
+0x001a9d74a  nn::hid::SetPalmaUniqueCodeInvalid
+0x001a9d78f  nn::hid::ReadPalmaApplicationSection
+0x001a9d7d8  nn::hid::WritePalmaApplicationSection
+0x001a9d84e  nn::hid::WritePalmaRgbLedPatternEntry
+0x001a9d89d  nn::hid::BindPalmaOperationCompleteEvent
+0x001a9d916  nn::hid::GetPalmaDataBaseIdentificationVersion
+0x001a9d967  nn::hid::SetPalmaDataBaseIdentificationVersion
+0x001a9eb06  nn::hid::GetNpadControllerColor
+0x001a9eb48  nn::hid::GetNpadControllerColor
+
+## nn::hid::NpadId  (3)
+0x001a9c321  nn::hid::NpadId::Handheld
+0x001a9c597  nn::hid::NpadId::No1
+0x001a9c5ae  nn::hid::NpadId::No2
+
+## nn::hid::SetNpadHandheldActivationMode  (1)
+0x001a9c52c  nn::hid::SetNpadHandheldActivationMode::NpadHandheldActivationMode
+
+## nn::hid::SetNpadJoyHoldType  (1)
+0x001a9c49c  nn::hid::SetNpadJoyHoldType::NpadJoyHoldType
+
+## nn::hid::VibrationMixer  (1)
+0x001a9ce10  nn::hid::VibrationMixer::E
+
+## nn::hid::VibrationNode  (3)
+0x001a9c96c  nn::hid::VibrationNode::SetModulationTo
+0x001a9cdb2  nn::hid::VibrationNode::DefaultVibrationSampleInterval
+0x001a9cded  nn::hid::VibrationNode::Update
+
+## nn::hid::VibrationNodeConnection  (5)
+0x001a9ca9c  nn::hid::VibrationNodeConnection::Connect
+0x001a9cae1  nn::hid::VibrationNodeConnection::E
+0x001a9cb09  nn::hid::VibrationNodeConnection::E
+0x001a9cefb  nn::hid::VibrationNodeConnection::Disconnect
+0x001a9cf2d  nn::hid::VibrationNodeConnection::E
+
+## nn::hid::VibrationPlayer  (8)
+0x001a9c9b9  nn::hid::VibrationPlayer::SetCurrentPosition
+0x001a9c9eb  nn::hid::VibrationPlayer::Load
+0x001a9ca11  nn::hid::VibrationPlayer::Play
+0x001a9ca34  nn::hid::VibrationPlayer::Stop
+0x001a9ca57  nn::hid::VibrationPlayer::Unload
+0x001a9ca7c  nn::hid::VibrationPlayer::Ev
+0x001a9cb31  nn::hid::VibrationPlayer::OnNextSampleRequired
+0x001a9cbdd  nn::hid::VibrationPlayer::Ev
+
+## nn::hid::VibrationTarget  (3)
+0x001a9ce2f  nn::hid::VibrationTarget::SetVibrationDeviceHandle
+0x001a9ce84  nn::hid::VibrationTarget::UnsetVibrationDeviceHandle
+0x001a9cebe  nn::hid::VibrationTarget::E
+
+## nn::ldn  (23)
+0x001a98c34  nn::ldn::MakeIpv4Address
+0x001a9ba54  nn::ldn::Initialize
+0x001a9ba6d  nn::ldn::Finalize
+0x001a9ba83  nn::ldn::GetState
+0x001aa0f2f  nn::ldn::OpenStation
+0x001aa0f49  nn::ldn::CloseStation
+0x001aa0f64  nn::ldn::GetIpv4Address
+0x001aa0fa5  nn::ldn::GetNetworkInfo
+0x001aa0fd4  nn::ldn::OpenAccessPoint
+0x001aa0ff2  nn::ldn::CloseAccessPoint
+0x001aa1011  nn::ldn::SetAdvertiseData
+0x001aa1033  nn::ldn::GetSecurityParameter
+0x001aa10b3  nn::ldn::AttachStateChangeEvent
+0x001aa114c  nn::ldn::Disconnect
+0x001aa1165  nn::ldn::ScanPrivate
+0x001aa11a8  nn::ldn::CreateNetwork
+0x001aa1203  nn::ldn::ConnectPrivate
+0x001aa128e  nn::ldn::DestroyNetwork
+0x001aa12ab  nn::ldn::GetNetworkConfig
+0x001aa12de  nn::ldn::CreateNetworkPrivate
+0x001aa1370  nn::ldn::Scan
+0x001aa13ab  nn::ldn::Connect
+0x001aa1441  nn::ldn::GetDisconnectReason
+
+## nn::ldn::MakeBroadcastAddress  (1)
+0x001aa106e  nn::ldn::MakeBroadcastAddress::Ipv4Address
+
+## nn::ldn::Reject  (1)
+0x001aa1127  nn::ldn::Reject::Ipv4Address
+
+## nn::ldn::SetStationAcceptPolicy  (1)
+0x001aa10f0  nn::ldn::SetStationAcceptPolicy::AcceptPolicy
+
+## nn::lmem  (3)
+0x001aa071a  nn::lmem::CreateFrameHeap
+0x001aa073c  nn::lmem::DestroyFrameHeap
+0x001aa0771  nn::lmem::AllocateFromFrameHeap
+
+## nn::mem::StandardAllocator  (6)
+0x001a9f8b1  nn::mem::StandardAllocator::Initialize
+0x001a9f8df  nn::mem::StandardAllocator::Free
+0x001a9f905  nn::mem::StandardAllocator::Allocate
+0x001a9f92f  nn::mem::StandardAllocator::Finalize
+0x001a9f958  nn::mem::StandardAllocator::E
+0x001aa07df  nn::mem::StandardAllocator::Allocate
+
+## nn::ngc::ProfanityFilter  (3)
+0x001a9df13  nn::ngc::ProfanityFilter::Initialize
+0x001a9df3f  nn::ngc::ProfanityFilter::Finalize
+0x001a9df66  nn::ngc::ProfanityFilter::E
+
+## nn::nifm  (9)
+0x001a9ab8c  nn::nifm::Initialize
+0x001a9aba6  nn::nifm::IsNetworkAvailable
+0x001a9abc8  nn::nifm::SetLocalNetworkMode
+0x001a9abeb  nn::nifm::CancelNetworkRequest
+0x001a9ac0f  nn::nifm::HandleNetworkRequestResult
+0x001a9ac39  nn::nifm::SubmitNetworkRequestAndWait
+0x001a9aee4  nn::nifm::GetCurrentIpConfigInfo
+0x001a9fe0f  nn::nifm::GetCurrentProxySetting
+0x001aa0838  nn::nifm::GetCurrentPrimaryIpAddress
+
+## nn::nsd  (1)
+0x001a9fde9  nn::nsd::ResolveEx
+
+## nn::oe  (16)
+0x001a98de5  nn::oe::GetPerformanceMode
+0x001a99d78  nn::oe::Initialize
+0x001a99d90  nn::oe::TryPopNotificationMessage
+0x001a99db8  nn::oe::SetPerformanceModeChangedNotificationEnabled
+0x001a9aa9d  nn::oe::FinishStartupLogo
+0x001a9ae99  nn::oe::GetPseudoDeviceId
+0x001a9c042  nn::oe::GetCurrentFocusState
+0x001a9d9b9  nn::oe::GetOperationMode
+0x001a9da10  nn::oe::EnterExitRequestHandlingSection
+0x001a9da3d  nn::oe::LeaveExitRequestHandlingSection
+0x001a9da6a  nn::oe::SetOperationModeChangedNotificationEnabled
+0x001a9dc17  nn::oe::SetResumeNotificationEnabled
+0x001a9dfba  nn::oe::GetDesiredLanguage
+0x001a9eb9a  nn::oe::SetUserInactivityDetectionTimeExtended
+0x001a9ebce  nn::oe::EnableScreenShot
+0x001a9ebec  nn::oe::DisableScreenShot
+
+## nn::oe::SetCpuBoostMode  (1)
+0x001a9ab5d  nn::oe::SetCpuBoostMode::CpuBoostMode
+
+## nn::oe::SetFocusHandlingMode  (1)
+0x001a9d9d7  nn::oe::SetFocusHandlingMode::FocusHandlingMode
+
+## nn::oe::SetPerformanceConfiguration  (1)
+0x001a98e05  nn::oe::SetPerformanceConfiguration::PerformanceMode
+
+## nn::os  (79)
+0x001a98c55  nn::os::QueryMemoryInfo
+0x001a98c83  nn::os::GetCurrentThread
+0x001a98ca1  nn::os::SetMemoryHeapSize
+0x001a98cc0  nn::os::DestroySystemEvent
+0x001a98cf6  nn::os::AllocateMemoryBlock
+0x001a98e69  nn::os::FinalizeMutex
+0x001a98e93  nn::os::InitializeMutex
+0x001a98ec1  nn::os::TryWaitSystemEvent
+0x001a99037  nn::os::GetThreadId
+0x001a99062  nn::os::UnlockMutex
+0x001a9908a  nn::os::LockMutex
+0x001a99102  nn::os::ClearEvent
+0x001a99129  nn::os::SignalEvent
+0x001a99151  nn::os::TryWaitEvent
+0x001a9917a  nn::os::FinalizeEvent
+0x001a991a4  nn::os::WaitLightEvent
+0x001a991d5  nn::os::InitializeEvent
+0x001a99217  nn::os::SignalLightEvent
+0x001a9924a  nn::os::FinalizeLightEvent
+0x001a9927f  nn::os::InitializeLightEvent
+0x001a992cc  nn::os::WaitEvent
+0x001a9933c  nn::os::AllocateTlsSlot
+0x001a993a4  nn::os::WaitConditionVariable
+0x001a993f3  nn::os::FinalizeConditionVariable
+0x001a99436  nn::os::BroadcastConditionVariable
+0x001a9947a  nn::os::InitializeConditionVariable
+0x001a994bf  nn::os::IsMutexLockedByCurrentThread
+0x001a9967e  nn::os::WaitThread
+0x001a996a7  nn::os::StartThread
+0x001a996d1  nn::os::CreateThread
+0x001a9970a  nn::os::CreateThread
+0x001a99744  nn::os::DestroyThread
+0x001a99770  nn::os::SetThreadName
+0x001a9979f  nn::os::SetThreadCoreMask
+0x001a998f6  nn::os::SignalConditionVariable
+0x001a99937  nn::os::GetSystemTick
+0x001a99a40  nn::os::FinalizeMultiWait
+0x001a99a73  nn::os::InitializeMultiWait
+0x001a99aa8  nn::os::LinkMultiWaitHolder
+0x001a99af8  nn::os::UnlinkMultiWaitHolder
+0x001a99b35  nn::os::FinalizeMultiWaitHolder
+0x001a99b74  nn::os::InitializeMultiWaitHolder
+0x001a99bc5  nn::os::GetMultiWaitHolderUserData
+0x001a99c08  nn::os::SetMultiWaitHolderUserData
+0x001a99c4b  nn::os::WaitAny
+0x001a9a1b4  nn::os::GetHostArgc
+0x001a9a1cd  nn::os::GetHostArgv
+0x001a9a78c  nn::os::SleepThread
+0x001a9ba31  nn::os::GenerateRandomBytes
+0x001a9c448  nn::os::ClearSystemEvent
+0x001a9cc85  nn::os::StopTimerEvent
+0x001a9ccb6  nn::os::WaitTimerEvent
+0x001a9cce7  nn::os::FinalizeTimerEvent
+0x001a9cd1c  nn::os::InitializeTimerEvent
+0x001a9cd68  nn::os::StartPeriodicTimerEvent
+0x001a9e03d  nn::os::SendMessageQueue
+0x001a9e073  nn::os::FinalizeMessageQueue
+0x001a9e0ac  nn::os::InitializeMessageQueue
+0x001a9e0ea  nn::os::TimedReceiveMessageQueue
+0x001a9e7c6  nn::os::TimedWaitEvent
+0x001a9f4d4  nn::os::YieldThread
+0x001a9f4ed  nn::os::GetCurrentCoreNumber
+0x001a9f50f  nn::os::GetThreadAvailableCoreMask
+0x001a9f63a  nn::os::TryLockMutex
+0x001a9f663  nn::os::GetSystemTickFrequency
+0x001a9f687  nn::os::TimedWaitConditionVariable
+0x001a9f6e8  nn::os::GetThreadCoreMask
+0x001a9f71d  nn::os::ChangeThreadPriority
+0x001a9f751  nn::os::SetThreadNamePointer
+0x001aa0be1  nn::os::WaitSystemEvent
+0x001aa0c14  nn::os::TimedWaitSystemEvent
+0x001aa14f6  nn::os::SdkAllocateTlsSlot
+0x001aa1528  nn::os::JamMessageQueue
+0x001aa155d  nn::os::TryJamMessageQueue
+0x001aa1595  nn::os::ReceiveMessageQueue
+0x001aa15cf  nn::os::TrySendMessageQueue
+0x001aa1608  nn::os::TryReceiveMessageQueue
+0x001aa1645  nn::os::GetThreadPriority
+0x001aa1676  nn::os::GetCurrentStackInfo
+
+## nn::os::ConvertToTimeSpan  (1)
+0x001a99952  nn::os::ConvertToTimeSpan::Tick
+
+## nn::os::FreeTlsSlot  (1)
+0x001a992f1  nn::os::FreeTlsSlot::TlsSlot
+
+## nn::os::GetTlsValue  (1)
+0x001a98e44  nn::os::GetTlsValue::TlsSlot
+
+## nn::os::Mutex  (1)
+0x001a99023  nn::os::Mutex::Ev
+
+## nn::os::SetTlsValue  (1)
+0x001a99316  nn::os::SetTlsValue::TlsSlot
+
+## nn::pdm  (1)
+0x001a9aabc  nn::pdm::QueryApplicationPlayStatistics
+
+## nn::pl::GetSharedFontAddress  (1)
+0x001a9dc7e  nn::pl::GetSharedFontAddress::SharedFontType
+
+## nn::pl::GetSharedFontLoadState  (1)
+0x001a9dceb  nn::pl::GetSharedFontLoadState::SharedFontType
+
+## nn::pl::GetSharedFontSize  (1)
+0x001a9dc4b  nn::pl::GetSharedFontSize::SharedFontType
+
+## nn::pl::RequestSharedFontLoad  (1)
+0x001a9dcb4  nn::pl::RequestSharedFontLoad::SharedFontType
+
+## nn::prepo::PlayReport  (6)
+0x001a9e93e  nn::prepo::PlayReport::Add
+0x001a9e962  nn::prepo::PlayReport::Add
+0x001a9e984  nn::prepo::PlayReport::Save
+0x001a9e9b5  nn::prepo::PlayReport::Clear
+0x001a9e9d6  nn::prepo::PlayReport::SetBuffer
+0x001a9e9fd  nn::prepo::PlayReport::E
+
+## nn::result::detail  (1)
+0x001a9df86  nn::result::detail::OnUnhandledResult
+
+## nn::settings::LanguageCode::Make  (1)
+0x001a9eecb  nn::settings::LanguageCode::Make::Language
+
+## nn::socket  (34)
+0x001a9ac64  nn::socket::Initialize
+0x001a9ac8d  nn::socket::Finalize
+0x001aa086a  nn::socket::GetSockOpt
+0x001aa088c  nn::socket::SetSockOpt
+0x001aa08ae  nn::socket::GetAddrInfo
+0x001aa08e0  nn::socket::GetSockName
+0x001aa0909  nn::socket::FreeAddrInfo
+0x001aa0930  nn::socket::GetLastErrno
+0x001aa094e  nn::socket::Bind
+0x001aa096f  nn::socket::Poll
+0x001aa098d  nn::socket::Recv
+0x001aa09a6  nn::socket::Send
+0x001aa09c0  nn::socket::Close
+0x001aa09d6  nn::socket::Fcntl
+0x001aa09ee  nn::socket::Accept
+0x001aa0a11  nn::socket::Listen
+0x001aa0a29  nn::socket::SendTo
+0x001aa0a51  nn::socket::Socket
+0x001aa0a6a  nn::socket::Connect
+0x001aa0aae  nn::socket::InetNtop
+0x001aa0acd  nn::socket::InetPton
+0x001aa0aeb  nn::socket::RecvFrom
+0x001aa0b14  nn::socket::Shutdown
+0x001aa0b2e  nn::socket::InetHtonl
+0x001aa0b48  nn::socket::InetHtons
+0x001aa0b62  nn::socket::InetNtohl
+0x001aa0b7c  nn::socket::InetNtohs
+0x001aa0cdd  nn::socket::SetSockOpt
+0x001aa0d3d  nn::socket::GetAddrInfo
+0x001aa0d74  nn::socket::FreeAddrInfo
+0x001aa0da0  nn::socket::Bind
+0x001aa0dc6  nn::socket::SendTo
+0x001aa0e39  nn::socket::RecvFrom
+0x001aa173e  nn::socket::InetAton
+
+## nn::socket::GAIStrError  (1)
+0x001aa0d14  nn::socket::GAIStrError::AiErrno
+
+## nn::socket::InetNtoa  (1)
+0x001aa0a8e  nn::socket::InetNtoa::in_addr
+
+## nn::socket::Socket  (1)
+0x001aa0dff  nn::socket::Socket::Family
+
+## nn::ssl  (1)
+0x001a9f043  nn::ssl::GetSslResultFromValue
+
+## nn::ssl::Context  (4)
+0x001a9f0a2  nn::ssl::Context::Destroy
+0x001a9f0bf  nn::ssl::Context::E
+0x001a9f0d6  nn::ssl::Context::E
+0x001aa0b96  nn::ssl::Context::ImportServerPki
+
+## nn::ssl::Context::Create  (1)
+0x001a9f076  nn::ssl::Context::Create::_
+
+## nn::swkbd  (11)
+0x001a9bd84  nn::swkbd::MakePreset
+0x001a9bdc0  nn::swkbd::SetSubText
+0x001a9bdf4  nn::swkbd::ShowKeyboard
+0x001a9be35  nn::swkbd::SetHeaderText
+0x001a9be6c  nn::swkbd::SetInitialText
+0x001a9bea5  nn::swkbd::SetUserWordList
+0x001a9beec  nn::swkbd::SetTextCheckCallback
+0x001a9bf51  nn::swkbd::GetRequiredWorkBufferSize
+0x001a9bf7b  nn::swkbd::GetRequiredWorkBufferSize
+0x001a9bfa5  nn::swkbd::GetRequiredStringBufferSize
+0x001a9bfd1  nn::swkbd::GetRequiredTextCheckWorkBufferSize
+
+## nn::time  (14)
+0x001a98ef7  nn::time::Initialize
+0x001a98f11  nn::time::Finalize
+0x001a9c2ce  nn::time::DateToDays
+0x001a9c2ea  nn::time::IsLeapYear
+0x001a9c304  nn::time::IsValidDate
+0x001a9daa2  nn::time::IsInitialized
+0x001a9dabf  nn::time::ToPosixTime
+0x001a9db16  nn::time::ToCalendarTime
+0x001a9db76  nn::time::LoadTimeZoneRule
+0x001a9dd81  nn::time::GetSpanBetween
+0x001a9ddc0  nn::time::CalculateStandardUserSystemClockDifferenceByUser
+0x001a9ec0b  nn::time::ToCalendarTimeInUtc
+0x001a9ec71  nn::time::GetDeviceLocationName
+0x001a9f7c3  nn::time::ToPosixTimeFromUtc
+
+## nn::time::ClockSnapshot  (2)
+0x001a9dd23  nn::time::ClockSnapshot::E
+0x001a9dd42  nn::time::ClockSnapshot::CreateWithStandardSystemClock
+
+## nn::time::StandardNetworkSystemClock  (1)
+0x001a9de86  nn::time::StandardNetworkSystemClock::GetCurrentTime
+
+## nn::time::StandardSteadyClock  (2)
+0x001a9c258  nn::time::StandardSteadyClock::GetCurrentTimePoint
+0x001a9ee45  nn::time::StandardSteadyClock::now
+
+## nn::time::StandardUserSystemClock  (1)
+0x001a9dbbe  nn::time::StandardUserSystemClock::GetCurrentTime
+
+## nn::util  (10)
+0x001a994f9  nn::util::DecompressZlib
+0x001a9aec6  nn::util::TSNPrintf
+0x001a9c1ab  nn::util::FloatPi
+0x001a9d079  nn::util::GetCountryFromIso31661Alpha2
+0x001a9ee98  nn::util::ConvertStringUtf16NativeToUtf8
+0x001a9f422  nn::util::ReferSymbol
+0x001aa000c  nn::util::SNPrintf
+0x001aa0057  nn::util::ConvertCharacterUtf8ToUtf32
+0x001aa0086  nn::util::PickOutCharacterFromUtf8String
+0x001aa0631  nn::util::VSNPrintf
+
+## nn::util::BinaryFileHeader  (2)
+0x001a99df2  nn::util::BinaryFileHeader::GetFirstBlock
+0x001a9ffd8  nn::util::BinaryFileHeader::GetRelocationTable
+
+## nn::util::BitArray  (1)
+0x001aa1766  nn::util::BitArray::reset
+
+## nn::util::RelocationTable  (1)
+0x001aa0687  nn::util::RelocationTable::Relocate
+
+## nn::util::detail  (15)
+0x001a99ee0  nn::util::detail::CosCoefficients
+0x001a99f05  nn::util::detail::FloatPiDivided2
+0x001a99f2a  nn::util::detail::SinCoefficients
+0x001a99f4f  nn::util::detail::Float1Divided2Pi
+0x001a99f75  nn::util::detail::FloatPi
+0x001a99f91  nn::util::detail::Float2Pi
+0x001a9c08f  nn::util::detail::FloatDegree180
+0x001a9c0b3  nn::util::detail::AtanSampleTable
+0x001a9c0d8  nn::util::detail::SinCosSampleTable
+0x001a9c0ff  nn::util::detail::AngleIndexHalfRound
+0x001a9c128  nn::util::detail::AngleIndexQuarterRound
+0x001a9c154  nn::util::detail::AngleIndexThreeQuarterRound
+0x001a9c185  nn::util::detail::AtanCoefficients
+0x001a9c1c0  nn::util::detail::FloatQuaternionEpsilon
+0x001a9c2b1  nn::util::detail::FloatUlp
+
+## nn::vi  (7)
+0x001a99c73  nn::vi::Initialize
+0x001a99c8b  nn::vi::CreateLayer
+0x001a99cbe  nn::vi::CloseDisplay
+0x001a99ce5  nn::vi::DestroyLayer
+0x001a99d0a  nn::vi::GetNativeWindow
+0x001a99d35  nn::vi::OpenDefaultDisplay
+0x001a99d63  nn::vi::Finalize
+
+## nn::web  (1)
+0x001a9f2b7  nn::web::ShowWebPage
+
+## nn::web::ShowWebPageArg  (1)
+0x001a9f391  nn::web::ShowWebPageArg::E
+
+## nn::web::ShowWebPageArg::SetBackgroundKind  (1)
+0x001a9f301  nn::web::ShowWebPageArg::SetBackgroundKind::WebBackgroundKind
+
+## nn::web::ShowWebPageArg::SetBootDisplayKind  (1)
+0x001a9f348  nn::web::ShowWebPageArg::SetBootDisplayKind::WebBootDisplayKind
+
+## nn::web::WebPageReturnValue  (1)
+0x001a9f3b2  nn::web::WebPageReturnValue::E
+
+## nv  (4)
+0x001a9997a  nv::FinalizeGraphics
+0x001a99995  nv::InitializeGraphics
+0x001a999b4  nv::SetGraphicsAllocator
+0x001a999f6  nv::SetGraphicsDevtoolsAllocator
