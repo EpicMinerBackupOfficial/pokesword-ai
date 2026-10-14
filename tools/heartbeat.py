@@ -24,7 +24,7 @@ def probe(label, argv, pick=None, timeout=2400):
     """Run a probe and return one informative line. Never raises."""
     try:
         r = subprocess.run([sys.executable] + argv, cwd=ROOT, env=ENV,
-                           capture_output=True, text=True, timeout=timeout)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
         out = r.stdout or ""
         if pick:
             for ln in out.splitlines():
@@ -38,7 +38,7 @@ def probe(label, argv, pick=None, timeout=2400):
 def git(*args):
     try:
         return subprocess.run(["git"] + list(args), cwd=ROOT,
-                              capture_output=True, text=True, timeout=120).stdout.strip()
+                              capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120).stdout.strip()
     except Exception as e:
         return "err:%s" % type(e).__name__
 
@@ -58,7 +58,7 @@ def push():
         if ahead.isdigit() and int(ahead) > 0:
             for attempt in range(3):
                 r = subprocess.run(["git", "push", "origin", "main"], cwd=ROOT,
-                                   capture_output=True, text=True, timeout=300)
+                                   capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
                 if r.returncode == 0:
                     return "pushed %s commit(s) to origin/main" % ahead
                 # The network here is intermittent; two retries with a pause.
@@ -84,7 +84,7 @@ def chain():
     """
     try:
         r = subprocess.run([sys.executable, "tools/ping_watchdog.py", "--status"],
-                           cwd=ROOT, env=ENV, capture_output=True, text=True,
+                           cwd=ROOT, env=ENV, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=60)
         first = ""
         for ln in (r.stdout or "").splitlines():

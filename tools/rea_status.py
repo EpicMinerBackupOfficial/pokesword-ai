@@ -55,7 +55,7 @@ def show(path, keys):
 
 def run(cmd, timeout=60):
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
         return r.returncode, (r.stdout or "") + (r.stderr or "")
     except FileNotFoundError:
         return 127, "not found: %s" % cmd[0]

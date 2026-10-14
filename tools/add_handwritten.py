@@ -58,7 +58,7 @@ def verify(module, addr, src_path):
     with tempfile.TemporaryDirectory() as td:
         obj = os.path.join(td, "cand.o")
         cmd = [MH.tool("clang++")] + MH.CFLAGS + [src_path, "-c", "-o", obj]
-        p = subprocess.run(cmd, capture_output=True, text=True)
+        p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
         if p.returncode != 0:
             raise SystemExit("COMPILE FAILED:\n" + p.stderr[:4000])
         syms = MH.obj_symbols(obj)
@@ -119,7 +119,7 @@ def pair_check(module, src_path, src_text, td):
         f.write(COMPANION)
         f.write("\n")
     cmd = [MH.tool("clang++")] + MH.CFLAGS + [packed, "-c", "-o", obj]
-    p = subprocess.run(cmd, capture_output=True, text=True)
+    p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if p.returncode != 0 or not os.path.isfile(obj):
         return False, (p.stderr or "")[:1500]
     return True, ""

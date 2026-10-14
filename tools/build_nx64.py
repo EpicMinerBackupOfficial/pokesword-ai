@@ -217,7 +217,7 @@ def compile_one(src, verbose=False):
     t0 = time.time()
     cmd = [os.path.join(CLANG, "clang++")] + CXXFLAGS + include_flags() + \
           [src, "-c", "-o", obj]
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         return (src, obj, False, r.stderr[:4000], time.time() - t0)
     if verbose:
@@ -231,7 +231,7 @@ def link(objs, elf, strip):
     cmd = [lld()] + LDFLAGS + objs + ["-o", elf]
     if strip:
         cmd += ["--strip-debug"]
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     return r
 
 
@@ -315,7 +315,7 @@ def main():
         # keep it.
         cmd += ["--strip-debug"]
     print("\nlinking %d objects -> build/prog.elf" % len(objs))
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         print("LINK FAILED:\n%s" % (r.stderr or r.stdout)[:4000])
         return 1
@@ -352,7 +352,7 @@ def main():
     nm = os.path.join(CLANG, "llvm-nm.exe")
     if not os.path.isfile(nm):
         nm = shutil.which("llvm-nm") or "llvm-nm"
-    n = subprocess.run([nm, elf], capture_output=True, text=True)
+    n = subprocess.run([nm, elf], capture_output=True, text=True, encoding="utf-8", errors="replace")
     syms = len([l for l in n.stdout.splitlines() if l.strip()])
 
     print("build/prog.elf  %d bytes  %d symbols  (%.1fs total)"

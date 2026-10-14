@@ -36,7 +36,7 @@ def generated():
     r = subprocess.run([sys.executable,
                         os.path.join(ROOT, "tools", "progress_json.py"),
                         "--format", "markdown"],
-                       cwd=ROOT, capture_output=True, text=True)
+                       cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         raise SystemExit("progress_json.py failed: %s" % (r.stderr[:200]))
     return r.stdout.strip()

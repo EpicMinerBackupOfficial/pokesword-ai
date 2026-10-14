@@ -46,7 +46,7 @@ def run_match_progress():
     exe = sys.executable
     script = os.path.join(ROOT, "tools", "match_progress.py")
     try:
-        r = subprocess.run([exe, script], capture_output=True, text=True,
+        r = subprocess.run([exe, script], capture_output=True, text=True, encoding="utf-8", errors="replace",
                            cwd=ROOT, timeout=600)
     except Exception as e:                                        # noqa: BLE001
         return None, "match_progress.py failed: %s" % e
@@ -88,7 +88,7 @@ def run_verify():
     for m in MODULES:
         try:
             r = subprocess.run([exe, script, "--module", m],
-                               capture_output=True, text=True, cwd=ROOT,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT,
                                timeout=7200, env=env)
         except Exception as e:                                    # noqa: BLE001
             return None, 0, 0, ["%s: %s" % (m, e)]

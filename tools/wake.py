@@ -203,7 +203,8 @@ def progress_line():
     try:
         r = subprocess.run([sys.executable,
                             os.path.join(ROOT, "tools", "match_progress.py")],
-                           capture_output=True, text=True, cwd=ROOT, timeout=180)
+                           capture_output=True, text=True, encoding="utf-8",
+            errors="replace", cwd=ROOT, timeout=180)
         for ln in r.stdout.splitlines():
             if ln.strip().startswith("TOTAL"):
                 return ln.strip()
@@ -242,7 +243,8 @@ def wait_idle(cli, sess, max_wait, poll=15):
         try:
             r = subprocess.run(
                 [cli, "api", "GET", API_MSGS % sess],
-                cwd=ROOT, capture_output=True, text=True, timeout=60)
+                cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
+                           encoding="utf-8", errors="replace")
             data = _json.loads(r.stdout or "{}")
             items = data.get("data") if isinstance(data, dict) else None
             items = items or []
@@ -280,7 +282,9 @@ def wake(cli, sess, prompt, timeout):
     #      finish=stop  model=space-bunny-free  text=WAKE_OK
     def call(path, body, timeout=120):
         cmd = [cli, "api", "POST", path, "--data", json.dumps(body)]
-        return subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+        return subprocess.run(cmd, cwd=ROOT, capture_output=True,
+                           text=True, encoding="utf-8",
+                           errors="replace",
                               timeout=timeout)
 
     r = call(API_MODEL % sess,
@@ -295,7 +299,9 @@ def wake(cli, sess, prompt, timeout):
     print("  waking %s" % sess)
     sys.stdout.flush()
     try:
-        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True,
+                           text=True, encoding="utf-8",
+                           errors="replace",
                            timeout=timeout)
         tail = (r.stdout or r.stderr or "").strip().splitlines()
         for ln in tail[-4:]:
@@ -310,7 +316,9 @@ def wake(cli, sess, prompt, timeout):
     print("  waking %s" % sess)
     sys.stdout.flush()
     try:
-        r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+        r = subprocess.run(cmd, cwd=ROOT, capture_output=True,
+                           text=True, encoding="utf-8",
+                           errors="replace",
                            timeout=timeout)
         tail = (r.stdout or r.stderr or "").strip().splitlines()
         for ln in tail[-6:]:

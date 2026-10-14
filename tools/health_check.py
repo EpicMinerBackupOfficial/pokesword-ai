@@ -32,7 +32,7 @@ def counter(name):
         r = subprocess.run(
             ["powershell", "-NoProfile", "-Command",
              "(Get-Counter '%s').CounterSamples[0].CookedValue" % name],
-            capture_output=True, text=True, timeout=20)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=20)
         return float(r.stdout.strip())
     except Exception:                                # noqa: BLE001
         return None
@@ -50,7 +50,7 @@ def cpu_sample(seconds=5):
              "$b|ForEach-Object{if($m.ContainsKey($_.Id)-and $null-ne $_.CPU)"
              "-and $null-ne $m[$_.Id]){[pscustomobject]@{N=$_.ProcessName;"
              "D=($_.CPU-$m[$_.Id])}}}|ConvertTo-Json -Compress" % seconds],
-            capture_output=True, text=True, timeout=seconds + 25)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=seconds + 25)
         data = json.loads(r.stdout.strip() or "[]")
         if isinstance(data, dict):
             data = [data]
@@ -67,7 +67,7 @@ def my_processes():
              "@(Get-CimInstance Win32_Process|Where-Object{$_.ProcessId-ne $PID"
              "-and $_.Name-match 'python|clang|ld.lld'"
              "-and $_.CommandLine-match 'PokemonSword'}).Count"],
-            capture_output=True, text=True, timeout=25)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=25)
         return int((r.stdout or "0").strip() or 0)
     except Exception:                                # noqa: BLE001
         return -1
@@ -124,7 +124,7 @@ def main():
     try:
         r = subprocess.run([sys.executable,
                             os.path.join(ROOT, "tools", "match_progress.py")],
-                           capture_output=True, text=True, cwd=ROOT, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=120)
         for line in r.stdout.splitlines():
             if line.strip().startswith("TOTAL"):
                 print("  progress      : %s" % line.strip())

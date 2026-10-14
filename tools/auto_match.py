@@ -2124,7 +2124,7 @@ def _compiles(text):
                     "typedef signed int int32_t;\n"
                     "typedef signed long int64_t;\n" + text)
         r = subprocess.run([MH.tool("clang++")] + MH.CFLAGS + [p, "-c", "-o", o],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
         return r.returncode == 0
 
 

@@ -131,7 +131,7 @@ def body_count():
     try:
         r = subprocess.run([sys.executable,
                             os.path.join(ROOT, "tools", "match_progress.py")],
-                           capture_output=True, text=True, cwd=ROOT, timeout=300, **NOWINDOW)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=300, **NOWINDOW)
     except Exception as e:                                   # noqa: BLE001
         return None, "match_progress.py unreadable: %s" % e, {}
     for line in r.stdout.splitlines():
@@ -179,7 +179,7 @@ def verify(module):
         r = subprocess.run(
             [sys.executable, os.path.join(ROOT, "tools", "verify_matches.py"),
              "--module", module],
-            capture_output=True, text=True, env=env, cwd=ROOT, timeout=5400, **NOWINDOW)
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, cwd=ROOT, timeout=5400, **NOWINDOW)
     except subprocess.TimeoutExpired:
         return "timeout"
     for line in r.stdout.splitlines():
@@ -190,7 +190,7 @@ def verify(module):
 
 def git(*args, timeout=180):
     """Run a git command in ROOT. Returns (rc, combined output)."""
-    r = subprocess.run(["git"] + list(args), capture_output=True, text=True, **NOWINDOW,
+    r = subprocess.run(["git"] + list(args), capture_output=True, text=True, encoding="utf-8", errors="replace", **NOWINDOW,
                        cwd=ROOT, timeout=timeout)
     return r.returncode, (r.stdout + r.stderr).strip()
 
@@ -247,12 +247,12 @@ def sync(a):
             chk = subprocess.run(
                 [sys.executable, os.path.join(ROOT, "tools",
                                               "refresh_status_block.py"), "--check"],
-                **NOWINDOW, capture_output=True, text=True, cwd=ROOT, timeout=120)
+                **NOWINDOW, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=120)
             if chk.returncode != 0:
                 subprocess.run(
                     [sys.executable, os.path.join(ROOT, "tools",
                                                   "refresh_status_block.py")],
-                    **NOWINDOW, capture_output=True, text=True, cwd=ROOT,
+                    **NOWINDOW, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT,
                     timeout=120)
                 # The prose figures live outside the generated block, so they need
                 # the same treatment. `sync_doc_figures.py` was written and then
@@ -265,7 +265,7 @@ def sync(a):
 
         # Audit first: never commit a tree whose own gates are red.
         audit = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "audit.py")], **NOWINDOW,
-                               capture_output=True, text=True, cwd=ROOT, timeout=900)
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=900)
         if audit.returncode == 3:
             # Deferred, not failed: a harvest held the lock, so the audit examined
             # nothing. Committing here would mean committing an unverified tree --
@@ -368,7 +368,7 @@ HARVEST_SEMANTIC = [
 
 
 def run(cmd, timeout=3600):
-    r = subprocess.run(cmd, capture_output=True, text=True, cwd=ROOT, timeout=timeout,
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=timeout,
                      **NOWINDOW)
     return r.returncode, (r.stdout + "" + r.stderr)
 
@@ -447,7 +447,7 @@ def _pid_alive(pid):
     if os.name == "nt":
         try:
             out = subprocess.run(["tasklist", "/FI", "PID eq %d" % pid, "/NH"],
-                                 capture_output=True, text=True, timeout=30,
+                                 capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30,
                                  **NOWINDOW).stdout
         except Exception:                       # noqa: BLE001
             return True                        # cannot tell: assume held
@@ -612,7 +612,7 @@ def one_tick(a, st):
                                                   "auto_match.py"),
                      "--module", m, "--shape", "strlit-ret",
                      "--limit", "5000", "--batch", "200"],
-                    capture_output=True, text=True, cwd=ROOT, timeout=5400,
+                    capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=5400,
                     env=tool_env(), **NOWINDOW)
                 for line in r.stdout.splitlines():
                     if line.startswith("MATCH "):

@@ -123,7 +123,7 @@ def _demangle_batch(names):
     try:
         import subprocess
         r = subprocess.run([_NATIVE], input="\n".join(names),
-                           capture_output=True, text=True, timeout=120)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         if r.returncode == 0:
             lines = r.stdout.splitlines()
             for n, d in zip(names, lines):

@@ -218,7 +218,7 @@ def build(module, items, blob, elfsrc):
     preamble = MH.PREAMBLE
     io.open(src_path, "w", encoding="utf-8").write(preamble + "\n".join(parts) + "\n")
     cmd = [MH.tool("clang++")] + MH.CFLAGS + ["-c", src_path, "-o", obj]
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         return None, r.stderr[:1500]
 
@@ -267,7 +267,7 @@ def build(module, items, blob, elfsrc):
 
     elf = os.path.join(work, "linked.elf")
     r = subprocess.run([MH.tool("ld.lld"), "-T", script, obj, "-o", elf],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         return None, "link failed: " + r.stderr[:800]
 

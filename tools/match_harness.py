@@ -81,7 +81,7 @@ def check_compiler():
     """
     clang = os.path.join(LLVM_BIN, "clang.exe" if os.name == "nt" else "clang")
     try:
-        r = subprocess.run([clang, "--version"], capture_output=True, text=True,
+        r = subprocess.run([clang, "--version"], capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=60)
     except Exception as e:                      # noqa: BLE001
         sys.stderr.write(
@@ -248,7 +248,7 @@ def obj_relocations(obj, names):
     if not names:
         return out
     r = subprocess.run([tool("llvm-objdump"), "-r", obj],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     section = None
     sec_re = re.compile(r"^RELOCATION RECORDS FOR \[(\S+)\]:")
     # LLVM 18 aligns the columns, 5.0.1 does not; \s+ absorbs both.
@@ -549,7 +549,7 @@ def compile_batch(candidates, workdir, incdir=None, head=None):
     cmd = [tool("clang++")] + CFLAGS + ["-c", src, "-o", obj]
     if incdir:
         cmd += ["-I", incdir]
-    r = subprocess.run(cmd, capture_output=True, text=True)
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0 or not os.path.exists(obj):
         return None, r.stderr[:4000]
 
@@ -573,7 +573,7 @@ def obj_symbols(obj):
     """-> {name: (address, size)} from an object file."""
     out = {}
     r = subprocess.run([tool("llvm-nm"), "--print-size", "--defined-only", obj],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     for line in r.stdout.splitlines():
         p = line.split()
         if len(p) == 4:
@@ -610,7 +610,7 @@ def obj_text_range(obj, syms, names):
     if not names:
         return per
     r = subprocess.run([tool("llvm-objdump"), "-d", obj],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     cur = None
     acc = b""
     for line in r.stdout.splitlines():

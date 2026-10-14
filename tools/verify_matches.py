@@ -205,7 +205,7 @@ def verify_from_elf(module, limit, batch):
     # instead of aligning them. So the divergence is real, measured, and **not**
     # fixed here.
     r = subprocess.run([nm, "-d", "--no-show-raw-insn", elf],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     text = {}
     cur = None
     for line in r.stdout.splitlines():

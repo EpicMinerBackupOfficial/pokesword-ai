@@ -85,7 +85,7 @@ def main():
             have = set()
             if os.path.isfile(nm):
                 out = subprocess.run([nm, "--defined-only", elf],
-                                     capture_output=True, text=True).stdout
+                                     capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
                 have = {ln.split()[2] for ln in out.splitlines()
                         if len(ln.split()) == 3}
             print("symbols: %d" % len(have))

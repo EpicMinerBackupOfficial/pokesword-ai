@@ -278,7 +278,7 @@ def authoritative():
     import subprocess
     out = subprocess.run([sys.executable,
                           os.path.join(ROOT, "tools", "match_progress.py")],
-                         capture_output=True, text=True, cwd=ROOT,
+                         capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT,
                          timeout=600).stdout
     per = {}
     total = None

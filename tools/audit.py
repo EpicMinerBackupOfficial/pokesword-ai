@@ -398,7 +398,7 @@ def main():
                 r = subprocess.run([clang, "--target=aarch64-none-elf",
                                     "-std=c++17", "-fsyntax-only", "-nostdinc++",
                                     "-Wall", "-I", inc, f],
-                                   capture_output=True, text=True)
+                                   capture_output=True, text=True, encoding="utf-8", errors="replace")
                 if r.returncode != 0:
                     bad.append((f, r.stderr[:200]))
             check(not bad, "all prog/ units compile for NX64",
@@ -545,7 +545,7 @@ def main():
     else:
         try:
             _r = subprocess.run([sys.executable, _sem], cwd=ROOT,
-                                capture_output=True, text=True, timeout=1800)
+                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
         except Exception as _e:                # noqa: BLE001
             _r = None
             skip("semantic matcher selftest",
@@ -699,7 +699,7 @@ def main():
         llvmnm = r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-nm.exe"
         if os.path.isfile(llvmnm):
             out = subprocess.run([llvmnm, "--defined-only", prog_elf],
-                                 capture_output=True, text=True).stdout
+                                 capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
             have = {ln.split()[2] for ln in out.splitlines() if len(ln.split()) == 3}
             def sym(r):
                 d = r.get("decomp_name") or ""
@@ -923,7 +923,7 @@ def main():
             gen = subprocess.run(
                 [sys.executable, os.path.join(ROOT, "tools", "progress_json.py"),
                  "--format", "markdown"],
-                cwd=ROOT, capture_output=True, text=True)
+                cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
             if gen.returncode != 0:
                 stale.append("progress_json.py --format markdown failed: %s"
                              % gen.stderr.strip()[:120])

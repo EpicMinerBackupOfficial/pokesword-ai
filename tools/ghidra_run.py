@@ -104,7 +104,7 @@ def run_module(mod, with_matched, sec_per_fn, keep_project=False):
     print("=" * 72)
     print("== ghidra decompile: %s" % mod)
     print("=" * 72)
-    r = subprocess.run(cmd, cwd=ROOT, env=env, capture_output=True, text=True)
+    r = subprocess.run(cmd, cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
     for line in (r.stdout or "").splitlines():
         if any(k in line for k in ("DecompileAll.java>", "ERROR", "Exception")):
             print("   " + line.strip()[:160])

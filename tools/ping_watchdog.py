@@ -223,7 +223,7 @@ def alive(pid):
     if os.name == "nt":
         try:
             out = subprocess.run(["tasklist", "/FI", "PID eq %d" % int(pid), "/NH"],
-                                 **NOWINDOW, capture_output=True, text=True,
+                                 **NOWINDOW, capture_output=True, text=True, encoding="utf-8", errors="replace",
                                  timeout=30).stdout
         except Exception:                       # noqa: BLE001
             return False
@@ -281,7 +281,7 @@ def kill_tree(pid, what):
     print("stopping %s pid %s" % (what, pid), flush=True)
     if os.name == "nt":
         subprocess.run(["taskkill", "/PID", str(int(pid)), "/T", "/F"],
-                       **NOWINDOW, capture_output=True, text=True)
+                       **NOWINDOW, capture_output=True, text=True, encoding="utf-8", errors="replace")
     else:
         try:
             os.kill(int(pid), signal.SIGTERM)
@@ -358,7 +358,7 @@ def find_keepalives():
         out = subprocess.run(
             ["wmic", "process", "where", "name='python.exe'", "get",
              "ProcessId,CommandLine", "/format:csv"],
-            **NOWINDOW, capture_output=True, text=True, timeout=60).stdout
+            **NOWINDOW, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60).stdout
     except Exception:                           # noqa: BLE001
         return pids
     for line in out.splitlines():

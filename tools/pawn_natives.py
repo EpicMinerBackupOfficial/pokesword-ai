@@ -307,7 +307,7 @@ def main():
     import subprocess
     r = subprocess.run([sys.executable,
                         os.path.join(ROOT, "tools", "pawn_disasm.py")],
-                       capture_output=True, text=True, cwd=ROOT)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT)
     tail = (r.stdout or "").strip().splitlines()[-6:]
     print("pawn_disasm.py: rc=%d" % r.returncode)
     for line in tail:

@@ -75,7 +75,7 @@ def alive(pid):
     """Is `pid` a live process? Works on Windows without psutil."""
     if os.name == "nt":
         out = subprocess.run(["tasklist", "/FI", "PID eq %d" % pid], **NOWINDOW,
-                             capture_output=True, text=True).stdout
+                             capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
         return str(pid) in out
     try:
         os.kill(pid, 0)
@@ -105,7 +105,7 @@ def stop_existing():
     try:
         if os.name == "nt":
             subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], **NOWINDOW,
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
         else:
             os.kill(pid, signal.SIGTERM)
     except OSError as e:

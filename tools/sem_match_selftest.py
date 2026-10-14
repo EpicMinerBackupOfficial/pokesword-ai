@@ -42,11 +42,11 @@ def compile_to_bytes(src, name="f"):
         f.write(src)
     r = subprocess.run([CLANG, "-target", "aarch64-none-elf", "-O3", "-c",
                         "-o", opath, cpath],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
     if r.returncode != 0:
         raise RuntimeError("compile failed:\n%s" % r.stderr[:400])
     d = subprocess.run([OBJDUMP, "-d", "--section=.text", opath],
-                       capture_output=True, text=True).stdout
+                       capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
     code = bytearray()
     started = False
     # A C symbol prints as `f:`, a C++ one as `<_Z1fv>:`. Both appear depending on

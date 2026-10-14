@@ -115,7 +115,7 @@ def demangle(mangled):
         except Exception:
             return mangled
     try:
-        r = subprocess.run([exe, mangled], capture_output=True, text=True,
+        r = subprocess.run([exe, mangled], capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=10)
         return r.stdout.strip() or mangled
     except Exception:

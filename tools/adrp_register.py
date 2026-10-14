@@ -314,7 +314,7 @@ def main():
                 obj = os.path.join(work, "batch.o")
                 r = subprocess.run(
                     [MH.tool("clang++")] + MH.CFLAGS + ["-c", srcp, "-o", obj],
-                    capture_output=True, text=True)
+                    capture_output=True, text=True, encoding="utf-8", errors="replace")
                 if r.returncode:
                     tally["compile failed"] += len(group)
                     continue
@@ -333,7 +333,7 @@ def main():
                 r = subprocess.run(
                     [MH.tool("clang++")] + MH.CFLAGS
                     + ["-c", stubp, "-o", stubobj],
-                    capture_output=True, text=True)
+                    capture_output=True, text=True, encoding="utf-8", errors="replace")
                 if r.returncode:
                     tally["stub compile failed"] += len(group)
                     if tally["stub compile failed"] == len(group):
@@ -351,7 +351,7 @@ def main():
                 elf = os.path.join(work, "linked.elf")
                 r = subprocess.run([MH.tool("ld.lld"), "-T", script, obj,
                                     stubobj, "-o", elf],
-                                   capture_output=True, text=True)
+                                   capture_output=True, text=True, encoding="utf-8", errors="replace")
                 if r.returncode:
                     first = tally["link failed"] == 0
                     tally["link failed"] += len(group)
