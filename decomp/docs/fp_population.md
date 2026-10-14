@@ -82,6 +82,55 @@ Concretely, in order:
 1 and 2 together are the ten `fneg` bodies. 1 and 3 are the thirty `fmov` bodies.
 None of them needs a real value kind — `d0`/`x0` aliasing covers all of it.
 
+## The sdk bodies are a different shape: a float punned into a call argument
+
+The 30 `fmov` bodies are not all the double pun. 13 of the 14 sampled are
+byte-identical in form, and it is a tail-call setup:
+
+    sdk@0x5a310 (40 bytes)
+      stp  x29, x30, [sp, #-0x10]!
+      mov  x29, sp
+      mov  x2, x1               <- 3rd call argument
+      fmov w1, s0               <- float parameter punned to uint32
+      add  x0, x0, #8           <- 1st argument
+      mov  w3, #3               <- 4th argument
+      bl   #0x512170
+      and  x0, x0, #0xffffffff  <- call result truncated to 32 bits
+      ldp  x29, x30, [sp], #0x10
+      ret
+
+The C that produces most of it, measured:
+
+    u64 g(u64, u32, u64, u32);
+    u32 f(void *a0, void *a1, float a2) {
+      return (u32)g((u64)a0 + 8, ((union { float f; u32 u; }){ .f = a2 }).u,
+                    (u64)a1, 3);
+    }
+
+gives `fmov w1, s0` exactly. Three remaining differences, and only one is real:
+
+| retail | this spelling | |
+|---|---|---|
+| `mov x2, x1` | `mov x8, x1` … `mov x2, x8` | a copy Clang chose for scheduling |
+| `mov w3, #3` | `orr w3, wzr, #3` | the same encoding, printed as an alias |
+| `and x0, x0, #0xffffffff` | *absent* | **the real one** |
+
+The mask is missing because under AAPCS64 a `u32` return arrives in `w0` with the
+upper half undefined, so `(u32)` on a `u64`-returning call needs no mask and Clang
+drops it. Retail has the mask, so retail computes the result in 64 bits and
+truncates it as a distinct step rather than by the ABI.
+
+So these bodies need an **explicit truncation modelled as its own operation**,
+which is a small change sitting in front of 13+ bodies.
+
+## Two shapes, one mechanism
+
+    fmov x0, d0    double parameter punned to u64   -- main@0x66f480, +1 verified
+    fmov w1, s0    float parameter punned to u32    -- 13 of 14 sampled sdk bodies
+
+Both are puns and differ only in width. The translator handles the double case;
+the float case needs `{ float f; uint32_t u; }` plus the truncation above.
+
 ## The shapes to support, in order of frequency
 
 1. **`fmov <Xd>, <Dn>` / `fmov <Dd>, <Dn>`** — bit pun, union-backed. 30 bodies.
