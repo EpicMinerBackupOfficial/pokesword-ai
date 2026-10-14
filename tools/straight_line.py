@@ -448,6 +448,8 @@ def _rw(v):
     if k in ("sel", "cset"):
         return v[5] if k == "sel" else v[3]
     if k == "fpun":
+        if v[3] == "float":
+            return "uint32_t" if v[2] == "to_int" else "float"
         return "uint64_t" if v[2] == "to_int" else "double"
     if k == "fpneg":
         return "double"
@@ -768,7 +770,7 @@ class StraightLine:
         #         ->  fmov x0, d0          (main@0x66f480, measured)
         #     u64 f2(uint64_t a0){ return a0; }
         #         ->  (nothing; a0 is already in x0)
-        fp_args = {}
+        fp_slots = {}   # FP register index -> C type, resolved at emit time
 
         def index_expr(index, ext, scale, base_id):
             """Address contribution of an index register, as a C expression.
@@ -2040,13 +2042,38 @@ class StraightLine:
                         # The operands are MIXED: `fmov x0, d0` has an integer
                         # destination and an FP source. Requiring both to be FP
                         # rejected every real fmov.
-                        _sfp = _s[:1] in ("d", "q")
-                        _dfp = _d[:1] in ("d", "q")
+                        # "s" belongs here. Checking only ("d","q") classified
+                        # every SINGLE-precision pun as neither-FP and fell
+                        # through to the reject -- which is all 13 of the sampled
+                        # sdk bodies, since `fmov w1, s0` is the float form.
+                        _sfp = _s[:1] in ("d", "q", "s")
+                        _dfp = _d[:1] in ("d", "q", "s")
                         if _sfp and not _dfp and _si is not None and _si <= 7:
-                            # integer view of an FP argument
-                            fp_args[_si] = "double"
-                            used_args.add(_si)
-                            state[_d] = ("fpun", _si, "to_int")
+                            # Integer view of an FP argument.
+                            #
+                            # WIDTH MATTERS: `s0` is a float and `d0` is a double,
+                            # and they pun to different widths. Treating `fmov w1,
+                            # s0` as the double pun declared a0 `double`, which is
+                            # a different function -- and 13 of the 14 sampled sdk
+                            # bodies are the float form.
+                            # THE FP REGISTER NUMBER IS NOT THE ARGUMENT
+                            # NUMBER. AArch64 passes integer arguments in x0..x7
+                            # and float arguments in s0..s7 / d0..d7, so for
+                            #     f(void *a0, void *a1, float a2)
+                            # the float is parameter 2 but arrives in s0. Keying
+                            # fp_args by the FP register made it parameter 0,
+                            # colliding with a0, and the pun rendered as a1.
+                            #
+                            # FP parameters follow every integer parameter in the
+                            # C signature, so the mapping is resolved at emit time
+                            # once the integer argument set is known.
+                            _ft = "float" if _s[:1] == "s" else "double"
+                            fp_slots[_si] = _ft
+                            # An INTEGER destination must use wreg(): `w1` and `x1` are one register and
+                            # state is keyed by the wide name. Writing state["w1"] put
+                            # the pun in a slot nothing reads, so the call still
+                            # passed the integer argument and the pun vanished.
+                            state[wreg(_d)] = ("fpun", _si, "to_int", _ft)
                             continue
                         if _dfp and not _sfp and _di is not None and _di <= 7:
                             # FP view of an integer argument
@@ -2128,6 +2155,16 @@ class StraightLine:
 
         self._pinned = pinned
         # `_emit` is a separate method, as with the pinned set.
+        # Integer parameters come first in the signature, so FP parameter k
+        # is C parameter (max integer index + 1 + k), numbered by FP slot.
+        _imax = max(used_args) if used_args else -1
+        fp_args = {}
+        for _k in sorted(fp_slots):
+            fp_args[_imax + 1 + _k] = fp_slots[_k]
+        # Every FP slot is a parameter whether or not a pun used it.
+        for _k in sorted(fp_slots):
+            used_args.add(_imax + 1 + _k)
+        self._fp_slotmap = {k: _imax + 1 + k for k in sorted(fp_slots)}
         self._fp_args = fp_args
         self._late_synth = late_synth
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
@@ -2394,15 +2431,24 @@ class StraightLine:
             #     ((union { double d; uint64_t u; }){ .d = a0 }).u
             #
             # Measured, clang 5.0.1 -O3: emits exactly `fmov x0, d0`.
-            _n = val[1]
+            # val[1] is the FP SLOT, not the parameter index.
+            _n = getattr(self, "_fp_slotmap", {}).get(val[1], val[1])
             if val[2] == "to_int":
+                if val[3] == "float":
+                    return ("uint32_t",
+                            "((union { float f; uint32_t u; })"
+                            "{ .f = a%d }).u" % _n)
                 return ("uint64_t",
                         "((union { double d; uint64_t u; }){ .d = a%d }).u" % _n)
+            if val[3] == "float":
+                return ("float",
+                        "((union { float f; uint32_t u; }){ .u = a%d }).f" % _n)
             return ("double",
                     "((union { double d; uint64_t u; }){ .u = a%d }).d" % _n)
         if kind == "fpneg":
             # `fneg d0, d0` is unary minus on the FP argument.
-            return ("double", "(-a%d)" % val[1])
+            _n = getattr(self, "_fp_slotmap", {}).get(val[1], val[1])
+            return ("double", "(-a%d)" % _n)
         raise Bail("unknown value kind %r" % (kind,))
 
     def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
