@@ -1225,8 +1225,24 @@ class StraightLine:
                 state[wreg(dst)] = ("load", n, off, w, signed)
                 continue
 
-            if mn in STORES and len(ops) == 2:
+            if mn in STORES and len(ops) in (2, 3):
+                # `str x8, [x0], #8` is a WRITEBACK store: store to [x0], then
+                # x0 += 8. Three operands, so it fell straight through the
+                # two-operand case and every one was declined as
+                # "unhandled instruction 'str'". 80 call bodies, and 401
+                # writeback stores in main alone.
+                #
+                # The C that produces it, measured on clang 5.0.1 -O3:
+                #
+                #     *p = v; p += 1;        with p LIVE afterwards
+                #
+                # gives `str x1, [x0], #8`. Without a later use of p the
+                # increment is dead and Clang emits a plain `str x1, [x0]`, so
+                # the base increment has to survive -- which it does here,
+                # because the increment is applied to `state` and the body keeps
+                # going.
                 src, mem = ops[0], ops[1]
+                writeback = parse_imm(ops[2]) if len(ops) == 3 else None
                 base, index, ext, scale, off = parse_mem_idx(mem)
                 if base is None:
                     base, off = mem_reg_offset(mem, state)
@@ -1278,6 +1294,34 @@ class StraightLine:
                     stmts.append((w, n, off, state[wreg(src)], ie))
                 else:
                     stmts.append((w, n, off, state[wreg(src)]))
+                    # WRITEBACK: `[x0], #8` also advances the base. Applied after the store
+
+                    # so the value stored is the PRE-increment one.
+
+                    if writeback:
+
+                        _bv = state.get(wreg(base))
+
+                        if _bv is None:
+
+                            _bn = arg_reg(base)
+
+                            used_args.add(_bn)
+
+                            ptr_args.add(_bn)
+
+                            _bv = ("addr", _bn, 0)
+
+                        if _bv[0] == "addr":
+
+                            state[wreg(base)] = ("addr", _bv[1], _bv[2] + writeback)
+
+                        else:
+
+                            state[wreg(base)] = ("expr", "+", _bv,
+
+                                                ("imm", writeback, _rw(_bv)), _rw(_bv))
+
                 continue
 
             if mn == "mov" and len(ops) == 2:
@@ -2077,8 +2121,10 @@ class StraightLine:
                             continue
                         if _dfp and not _sfp and _di is not None and _di <= 7:
                             # FP view of an integer argument
-                            fp_args[_di] = "double"
-                            used_args.add(_di)
+                            # fp_slots, not fp_args: the parameter index is
+                            # resolved at emit time, and this branch predates
+                            # that rename.
+                            fp_slots[_di] = "double"
                             state[_d] = ("fpun", _di, "to_fp")
                             continue
                 raise Bail("unsupported %s form %r" % (mn, i.op_str))
