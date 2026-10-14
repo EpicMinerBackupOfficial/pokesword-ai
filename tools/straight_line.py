@@ -623,6 +623,8 @@ class StraightLine:
         # emit one `extern const char adrp_<page>[];` per entry in the batch head;
         # without the declaration the source does not compile, and a batch is
         # poisoned by the first failure in it.
+        # Synthetic locals that must be pinned to a register at emit time.
+        pinned = set()
         adrp_pages = set()
 
         def resolve_base(base):
@@ -674,6 +676,7 @@ class StraightLine:
                         return v[1], False
                     key = SYNTH_BASE + len(synth)
                     synth.append((key, ptr_add(nm(v[1]), v[2])))
+                    pinned.add(key)
                     return key, False
                 # Only an unsigned 64-bit load can be a pointer. A signed one is
                 # a value, and guessing here would silently mis-type the access.
@@ -1937,6 +1940,10 @@ class StraightLine:
 
             raise Bail("unhandled instruction %r %r" % (mn, i.op_str))
 
+        # `_emit` is a separate method and never saw this walk-local, and
+        # its signature is already long enough. Publish it rather than
+        # widen the call for one set.
+        self._pinned = pinned
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
                                call_stmts, saw_call)
 
@@ -2307,6 +2314,9 @@ class StraightLine:
         sig = "".join(codes)
         plist = ", ".join(decls)
 
+        # Register pins for displaced addresses. Emitted AFTER any call
+        # statements, so the pointer never has to survive the call.
+        pins = []
         body_txt = []
         pre = []          # locals that must exist before the stores
         sret_writes = []  # (width, offset, type, expr) stored into the result
@@ -2327,6 +2337,32 @@ class StraightLine:
             else:
                 init_txt = init
             pre.append("void* %s = (void*)(%s);" % (nm(key), init_txt))
+            # A DISPLACED address has to survive as a register.
+            #
+            # Clang folds `page + 0xfc0` straight into the addressing mode of
+            # the load that uses it, which is retail's opposite shape:
+            #
+            #     ours    adrp x8,page ; add x8,x8,x0,lsl#2 ; ldr w0,[x8,#0xfc0]
+            #     retail  adrp x8,page ; add x8,x8,#0xfc0    ; ldr w0,[x8,w0,sxtw#2]
+            #
+            # Retail materialises the base and indexes off it; ours indexes the
+            # page and carries the displacement. An empty asm with a "+r"
+            # read-write operand pins the pointer in a register so the fold
+            # cannot happen.
+            #
+            # Measured over spellings of one access (clang 5.0.1 -O3). The
+            # winner is byte-identical to retail bar the page address:
+            #
+            #   char* arithmetic, UNSIGNED index -> lsl w9,w0,#2 ; ldr [x8,w9,uxtw]
+            #   array subscript, signed index    -> sbfiz x9,x0,#2 ; ldr [x8,x9]
+            #   pinned base, UNSIGNED index     -> lsl w9,w0,#2 ; ldr [x8,w9,uxtw]
+            #   pinned base, SIGNED index       -> ldr w0,[x8,w0,sxtw #2]  <- retail
+            #
+            # Only non-zero-offset addresses get this. Every other synth local
+            # is untouched, so no already-matched body can be disturbed --
+            # forcing a live pointer into a register is not free.
+            if key in getattr(self, "_pinned", ()):
+                pins.append('__asm__ volatile("" : "+r"(%s));' % nm(key))
         for stmt in stmts:
             w, n, off, val = stmt[:4]
             iexpr = stmt[4] if len(stmt) > 4 else None
@@ -2476,7 +2512,7 @@ class StraightLine:
             # the call first yields `callee(p0);` followed by `void* p0 = ...;` --
             # `error: use of undeclared identifier 'p0'` at compile time, for every
             # prototype tried, which reads exactly like "no prototype matches".
-            all_txt = pre + _call_txt + body_txt
+            all_txt = pre + _call_txt + pins + body_txt
         else:
             all_txt = pre + body_txt
 
