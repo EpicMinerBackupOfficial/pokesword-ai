@@ -139,24 +139,39 @@ def main():
     # checked. A blocked Python process and a working one are indistinguishable by
     # pid.
     #
-    # What distinguishes them is that a working one rewrites its state file every
-    # tick. The interval is 60s and a tick takes roughly 60-90s end to end
-    # (compile, link, verify), so 5 minutes is comfortably past "still working on
-    # one tick" and well inside "wedged". The threshold is fixed rather than
-    # relative to the previous reading: a check that only fails on the *second*
-    # bad sample is a check that misses the first.
+    # What distinguishes them is that a working one rewrites its state file.
     #
-    # Note the asymmetry -- STALLED is reported even when every process is alive,
-    # because that is exactly the case that used to pass.
-    STALL_SECONDS = 300
+    # The threshold must clear the loop's OWN designed maximum interval, not a
+    # round number. keepalive backs off exponentially when a tick gains nothing:
+    #
+    #     sleep_s = min(a.max_interval, a.interval * (2 ** min(idle - 1, 4)))
+    #
+    # with --max-interval defaulting to 1800 and --interval to 60, so a healthy
+    # exhausted loop ticks every 960s. The first version of this check used 300
+    # and therefore called the loop STALLED at 677s while it was doing exactly
+    # what it was designed to do -- ping.log recorded "no gain in 36 ticks;
+    # backing off to 960s" at the moment the check cried wolf.
+    #
+    # A check that reports a healthy system as broken gets ignored, which is how
+    # the original liveness-only check failed in the first place. Twice the
+    # ceiling is the smallest threshold that cannot do that.
+    #
+    # Note the asymmetry that is kept -- STALLED is still reported when every
+    # process is alive, because that is precisely the case the original missed.
+    STALL_SECONDS = 3600
     if state_age is None:
         verdict = "loop has NO STATE FILE -- not running"
     elif state_age > STALL_SECONDS:
-        verdict = ("loop is STALLED -- no tick for %ds (threshold %ds); "
-                   "processes may well all be alive"
+        verdict = ("loop is STALLED -- no tick for %ds (threshold %ds, 2x the "
+                   "1800s backoff ceiling); processes may well all be alive"
                    % (int(state_age), STALL_SECONDS))
     else:
+        # Under the ceiling, but a long gap may still be the designed backoff
+        # rather than a tick in progress. Say which, so the number is readable.
         verdict = "loop is ticking (%ds since last state write)" % int(state_age)
+        if state_age > 300:
+            verdict += (" -- past a normal tick; likely the exhausted-generator "
+                        "backoff (up to 960s), not a stall")
 
     if faults is not None and faults > 3000:
         verdict += " -- but the MACHINE is paging, not the loop"
