@@ -53,13 +53,41 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, "work")
 SESSION_FILE = os.path.join(WORK, "ping_session.txt")
 LOCK = os.path.join(WORK, "wake.lock")
+
+# Where find_cli() looked last time it failed. Reported, so a dead wake loop
+# says WHERE it looked instead of just not running.
+LAST_CLI_SEARCH = []
 STATE = os.path.join(WORK, "wake_state.json")
 
+# Resolved at RUN TIME, never hardcoded to a version.
+#
+# These two lists used to name two exact versions under
+# %APPDATA%\ai.opencode.desktop\cli\<version>\. The desktop app now ships the
+# CLI at %LOCALAPPDATA%\Programs\@opencodedesktop\resources\opencode-cli.exe,
+# so the hardcoded list stopped resolving, find_cli() returned None, and the
+# wake loop died with:
+#
+#     FileNotFoundError: [WinError 2] The system cannot find the file specified
+#
+# after 23 successful beats -- which is why the session had to be pinged by hand
+# for the next nineteen hours while the decomp loop and the heartbeat chain both
+# reported healthy. A pinned path is a bug with a release cycle.
 CLI_CANDIDATES = [
+    # Current desktop layout.
+    os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",
+                 "@opencodedesktop", "resources", "opencode-cli.exe"),
+    # Per-user versioned layout, for older installs.
     os.path.join(os.environ.get("APPDATA", ""), "ai.opencode.desktop", "cli",
                  "2.0.26", "opencode-cli.exe"),
     os.path.join(os.environ.get("APPDATA", ""), "ai.opencode.desktop", "cli",
                  "2.0.27", "opencode-cli.exe"),
+]
+
+# Directory roots scanned newest-first for a versioned CLI.
+CLI_ROOTS = [
+    os.path.join(os.environ.get("APPDATA", ""), "ai.opencode.desktop", "cli"),
+    os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs",
+                 "@opencodedesktop", "resources"),
 ]
 
 DEFAULT_PROMPT = (
@@ -74,16 +102,34 @@ DEFAULT_PROMPT = (
 
 
 def find_cli():
+    """Newest CLI found, or None with the searched roots recorded.
+
+    `LAST_CLI_SEARCH` is kept because a silent None is exactly what made this
+    failure invisible for nineteen hours: the loop died, the file it wrote said
+    `last_rc: 0` from the previous successful beat, and nothing recorded that the
+    binary had moved.
+    """
+    global LAST_CLI_SEARCH
     for p in CLI_CANDIDATES:
         if os.path.exists(p):
+            LAST_CLI_SEARCH = [p]
             return p
-    found = os.path.join(os.environ.get("APPDATA", ""), "ai.opencode.desktop",
-                         "cli")
-    if os.path.isdir(found):
-        for ver in sorted(os.listdir(found), reverse=True):
-            p = os.path.join(found, ver, "opencode-cli.exe")
+    searched = []
+    for root in CLI_ROOTS:
+        searched.append(root)
+        if not os.path.isdir(root):
+            continue
+        for ver in sorted(os.listdir(root), reverse=True):
+            p = os.path.join(root, ver, "opencode-cli.exe")
             if os.path.exists(p):
+                LAST_CLI_SEARCH = searched
                 return p
+            # Some layouts put the exe directly in the root.
+            direct = os.path.join(root, "opencode-cli.exe")
+            if os.path.exists(direct):
+                LAST_CLI_SEARCH = searched
+                return direct
+    LAST_CLI_SEARCH = searched
     return None
 
 
