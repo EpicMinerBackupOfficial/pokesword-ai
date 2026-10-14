@@ -624,6 +624,9 @@ class StraightLine:
         # without the declaration the source does not compile, and a batch is
         # poisoned by the first failure in it.
         # Synthetic locals that must be pinned to a register at emit time.
+        # Register destinations written by a pair load whose second half may be
+        # dead: (reg, base_id, offset, width).
+        pair_seconds = []
         pinned = set()
         adrp_pages = set()
 
@@ -720,7 +723,19 @@ class StraightLine:
                 # `imm` is deliberately excluded: a bare immediate as a base
                 # would be an absolute address, and the cast would hide a
                 # misparse rather than express anything real.
-                if v[0] in ("arg", "argval", "expr", "shift", "load"):
+                # `local` is a CALL RESULT, and a call result that is dereferenced is
+                # exactly as much a pointer as a loaded one. Leaving it out made
+                # every non-void prototype untranslatable for a body shaped:
+                #
+                #     ldr x0, [x0, #0x50] ; bl F ; ldp x8, x1, [x0]
+                #                                ^-- x0 is the RETURN here
+                #
+                # with the return modelled, the `ldp` base is a local and the
+                # body refused with "memory base 'x0' holds a local, not a
+                # pointer" -- for every non-void prototype, which is every
+                # prototype the body actually needs. Measured on
+                # main@0x2aa630: 7 translatable variants, all ret=void.
+                if v[0] in ("arg", "argval", "expr", "shift", "load", "local"):
                     key = SYNTH_BASE + len(synth)
                     synth.append((key, v))
                     synth_of[r] = key
@@ -1120,11 +1135,31 @@ class StraightLine:
                 # AAPCS64 pair loads always use consecutive registers, so the second
                 # element sits at the next element of the same width. Taking `w`
                 # from `access_width` is what makes a 32-bit pair step by 4 and not
+                n_pair_base = n
                 # 8; hardcoding 8 would mis-model every `ldp w` body.
                 state[wreg(d1)] = ("load", n, off, w, signed)
+                # Record the second destination so a DEAD one can be pinned once the whole
+                # body has been seen. `ldp x8, x1, [x0]` writes two registers; when the
+                # second is never read again Clang deletes that half and emits `ldr` where
+                # retail has `ldp`. Measured, clang 5.0.1 -O3, one compile, four spellings:
+                #
+                #   both loaded, second unused -> ldr x0, [x0]
+                #   second pinned by "+r"     -> ldp x8, x9, [x0]   <- retail's shape
+                #
+                # Liveness is not knowable mid-walk, so this records candidates only.
+                pair_seconds.append((wreg(d2), n_pair_base, off + w, w))
                 state[wreg(d2)] = ("load", n, off + w, w, signed)
                 continue
 
+            # Pair-load second destinations, so a DEAD one can be pinned once the whole
+            # body has been seen. `ldp x8, x1, [x0]` writes two registers; when the
+            # second is never read again Clang deletes that half and emits `ldr` where
+            # retail has `ldp`. Measured, clang 5.0.1 -O3, one compile, four spellings:
+            #
+            #   both loaded, second unused -> ldr x0, [x0]
+            #   second pinned by "+r"     -> ldp x8, x9, [x0]   <- retail's shape
+            #
+            # Liveness is not knowable mid-walk, so this records candidates only.
             if mn in LOADS and len(ops) == 2:
                 dst = ops[0]
                 base, index, ext, scale, off = parse_mem_idx(ops[1])
@@ -1943,6 +1978,37 @@ class StraightLine:
         # `_emit` is a separate method and never saw this walk-local, and
         # its signature is already long enough. Publish it rather than
         # widen the call for one set.
+        # Pin the dead half of every pair load, now that the whole body is known.
+        #
+        # A second destination is dead when no instruction READS it. Appearing as a
+        # destination does not count as a read -- including being the second
+        # destination of its own `ldp`. Only dead halves are pinned: pinning a live
+        # one is redundant, and a redundant load is not free.
+        for _d2, _base2, _off2, _w2 in pair_seconds:
+            _live = False
+            for _ins in insns:
+                _ops = [_o.strip() for _o in _ins.op_str.split(',')] \
+                    if _ins.op_str else []
+                if len(_ops) < 2:
+                    continue
+                # Operand position is NOT uniform: `ldp x8, x1, [x0]` is
+                # dest, dest, src, so ops[1] is a DESTINATION. Counting
+                # ops[1:] as sources made every pair half look live and
+                # silently disabled the entire mechanism.
+                _src = (_ops[2:] if _ins.mnemonic in PAIR_LOADS
+                        or _ins.mnemonic in PAIR_STORES else _ops[1:])
+                if _d2 in _src:
+                    _live = True
+                    break
+            if _live:
+                continue
+            _v = state.get(_d2)
+            if _v is None or _v[0] != 'load':
+                continue
+            _key = SYNTH_BASE + len(synth)
+            synth.append((_key, '(void *)(*(uint64_t *)(%s))'
+                          % ptr_add(nm(_base2), _off2)))
+            pinned.add(_key)
         self._pinned = pinned
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
                                call_stmts, saw_call)
