@@ -71,3 +71,58 @@ The remaining blockers are untouched populations rather than scheduling question
     fcvt                     64
 
 Those are the better use of the next beat.
+## Two more causes eliminated: compiler flags, and a stack local
+
+### 5. Compiler flags
+
+The harness builds with `-O3 -fPIC -mcpu=cortex-a57+fp+simd+crypto+crc
+-fno-strict-aliasing -fno-exceptions -fno-rtti`, and `decomp/docs/flag_fidelity.md`
+records 26 bodies registered on the strength of a different flag set, so drift was
+a reasonable suspect. It is not:
+
+    -O3                                             mov add fmov orr mov mov bl and ldp ret
+    -O3 -fPIC                                        mov add fmov orr mov mov bl and ldp ret
+    -O3 -mcpu=cortex-a57+fp+simd+crypto+crc           mov fmov add orr mov mov bl and ldp ret
+    -O3 -fPIC -mcpu=cortex-a57+fp+simd+crypto+crc    mov fmov add orr mov mov bl and ldp ret
+    -O3 -O2                                          mov add fmov orr mov mov bl and ldp ret
+    -O3 -fno-omit-frame-pointer                      mov add fmov orr mov mov bl and ldp ret
+    -O3 -mno-omit-leaf-frame-pointer                 mov add fmov orr mov mov bl and ldp ret
+
+`-mcpu` shuffles `add`/`fmov` and nothing else changes. None produces retail's
+order.
+
+### 6. A stack local that forces a real frame
+
+`mov x29, sp` in the prologue implies a frame pointer live from entry, which a
+volatile local does produce -- but it produces a DIFFERENT frame, not retail's:
+
+    sub sp, sp, #32 ; ... ; stp x29,x30,[sp,#16] ; add x29,sp,#16 ; ... ; add sp,sp,#32
+
+against retail's `stp x29,x30,[sp,#-0x10]! ; mov x29,sp ; ... ; ldp ; ldp ; ret`.
+And `mov x8,x1` / `mov x2,x8` survives all of it.
+
+## Seven eliminated, and where that leaves it
+
+1. frame barrier position (3 placements, byte-identical)
+2. argument evaluation order
+3. the pun as a named local
+4. direct call versus cast (byte-identical to each other)
+5. compiler flags (7 combinations)
+6. a stack local forcing a frame
+7. the `orr`/`mov w3,#3` "difference" is not one -- same encoding, alias printed
+
+The translator generates the measured, correct spelling of this body. Clang 5.0.1
+schedules it differently under every spelling and flag set tried, so something
+about the original source is still unrecovered -- and it is not any of the seven
+things above.
+
+**What this means for spending effort.** This body, and the population shaped like
+it, has consumed seven experiments with no match. The other open populations
+(SIMD 160, fcvt 64, movi 48, smulh 46) are blocked on a *type*, which is a
+different and better-understood problem: `uint64x2_t` reproduces `movi` exactly
+when it is simply written down. A NEON type in the declaration path is a
+well-defined piece of work with a known answer; this scheduling question has
+demonstrated seven wrong answers and no right one.
+
+So: do the NEON type next, and leave the scheduler alone until something suggests
+what the original source was.
