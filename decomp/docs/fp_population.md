@@ -243,3 +243,50 @@ The earlier work widened what translates from 1941 candidates to 3131. All 1190
 new bodies translate and none match. That is a real widening of the reachable set
 and it produced nothing, which is worth stating plainly rather than quoting the
 candidate count as progress.
+
+## The q-pair-store recipe, measured
+
+The recipe for `movi v0.2d, #0 ; stp q0, q0, [x0]`, found this beat:
+
+    struct Q2 { uint64x2_t a, b; };
+    uint64x2_t v = {0, 0};
+    *(struct Q2*)sink = (struct Q2){v, v};      <-- forces v into a register
+    *(struct Q2*)a0  = (struct Q2){v, v};
+    g(a0);
+
+compiles to exactly:
+
+    adrp x8 ; ldr x8,[x8] ; movi v0.2d, #0 ; stp q0,q0,[x8] ; stp q0,q0,[x0] ; bl
+
+Three things were each necessary, and each was found by removing it:
+
+  * **A 32-byte struct, not a 16-byte store.** `*(uint64x2_t*)a0 = v` gives
+    `str q0, [x0]`. `stp q0, q0` is the SAME register stored twice, 32 bytes, so
+    the C has to be a two-field struct.
+  * **The vector forced into a register.** With only `*(struct Q2*)a0 = ...`,
+    Clang folds the zero to `stp xzr, xzr`. Storing the same struct through a
+    GLOBAL first is what survives, because then the value cannot be folded away.
+  * **Both stores are needed for the right register.** `+w` on a tied operand is
+    rejected outright by Clang 5.0.1 ("don't know how to handle tied indirect
+    register inputs"), and `=w` output-only alone produced `str q0, [x0]` with no
+    `movi` at all -- the barrier was not enough on its own.
+
+So the pin is a real store to a global, not an asm constraint. That is a different
+mechanism from the dead-`ldp`-half fix, which used a `+r` barrier successfully --
+because `+w` cannot be tied in this Clang, and a store to memory can.
+
+## What implementing it needs
+
+1. A `struct Q2 { uint64x2_t a, b; }` typedef in MH.PREAMBLE, next to the
+   existing `#include <arm_neon.h>` that is already there.
+2. A global to pin through -- but a global store is an extra instruction, so it
+   cannot be part of the body. It has to be emitted outside the compared region,
+   which means the pinning store belongs in the harness's batch head, not in the
+   generated function. That is a structural change to how candidates are compiled,
+   not a change to the translator.
+3. The pair-store handler gains a q-register case that stores a Q2 rather than two
+   scalars.
+
+Step 2 is the one that matters and it is not small. The pin has to exist in the TU
+without appearing in the compared function, which is what the `+r` barriers avoid
+by being free-standing statements rather than stores.
