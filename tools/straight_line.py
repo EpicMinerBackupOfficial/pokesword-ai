@@ -106,7 +106,10 @@ EXTEND_TYPES = {
 # BEFORE any handler: a mnemonic missing from that filter is declined as
 # "unsupported mnemonic" no matter what the handler below could do. The
 # bitwise handlers changed nothing at all for exactly this reason.
-FP_MNEMONICS = ("fmov", "fneg")
+# The whole-body pre-filter runs BEFORE any handler, so a mnemonic missing
+# from here is declined no matter what the handler could do. `movi` was
+# missing and cost 48 bodies for exactly that reason.
+FP_MNEMONICS = ("fmov", "fneg", "movi")
 
 BITWISE_MNEMONICS = ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
                      "ubfiz", "mvn", "neg", "lsl", "lsr", "asr")
@@ -1182,6 +1185,18 @@ class StraightLine:
                 if real:
                     used_args.add(n)
                     ptr_args.add(n)
+                    # Using a register as a memory base is a USE, so record it in
+                    # `state` as well. It was added to used_args but never written
+                    # there, so a later read -- typically a `bl` that forwards it as
+                    # an argument -- found nothing:
+                    #
+                    #     strb wzr, [x0, #0xb8] ; str wzr, [x0, #0x40]
+                    #     str wzr, [x0, #0x58] ; bl F ; mov w0, #1 ; ret
+                    #
+                    # 42 bodies at "call argument x0 is not a known value", which
+                    # reads like a missing prototype but is a missing STATE entry.
+                    if wreg(base) not in state:
+                        state[wreg(base)] = ("arg", n, "void*")
                 w = access_width(mn, d1)
                 signed = mn in ("ldpsw", "ldupsw")
                 # AAPCS64 pair loads always use consecutive registers, so the second
@@ -1225,6 +1240,18 @@ class StraightLine:
                 if real:
                     used_args.add(n)
                     ptr_args.add(n)
+                    # Using a register as a memory base is a USE, so record it in
+                    # `state` as well. It was added to used_args but never written
+                    # there, so a later read -- typically a `bl` that forwards it as
+                    # an argument -- found nothing:
+                    #
+                    #     strb wzr, [x0, #0xb8] ; str wzr, [x0, #0x40]
+                    #     str wzr, [x0, #0x58] ; bl F ; mov w0, #1 ; ret
+                    #
+                    # 42 bodies at "call argument x0 is not a known value", which
+                    # reads like a missing prototype but is a missing STATE entry.
+                    if wreg(base) not in state:
+                        state[wreg(base)] = ("arg", n, "void*")
                 if index is not None:
                     # A load through an indexed address is `ldr Rd, [Rn, Rm, ext]`,
                     # which Clang emits from a *dereference* and not from an
@@ -1320,6 +1347,18 @@ class StraightLine:
                 if real:
                     used_args.add(n)
                     ptr_args.add(n)
+                    # Using a register as a memory base is a USE, so record it in
+                    # `state` as well. It was added to used_args but never written
+                    # there, so a later read -- typically a `bl` that forwards it as
+                    # an argument -- found nothing:
+                    #
+                    #     strb wzr, [x0, #0xb8] ; str wzr, [x0, #0x40]
+                    #     str wzr, [x0, #0x58] ; bl F ; mov w0, #1 ; ret
+                    #
+                    # 42 bodies at "call argument x0 is not a known value", which
+                    # reads like a missing prototype but is a missing STATE entry.
+                    if wreg(base) not in state:
+                        state[wreg(base)] = ("arg", n, "void*")
                 w = access_width(mn, src)
                 if w not in U:
                     raise Bail("%d-byte access through %r is not modelled" % (w, src))
@@ -2132,6 +2171,60 @@ class StraightLine:
             # Only an ARGUMENT source is modelled. A pun of a loaded value would
             # need the load to stay live in the FP file, which is a larger claim
             # than these bodies make, so it declines rather than guesses.
+            # `movi v0.2d, #0000000000000000` -- a SIMD immediate. 226 distinct
+            # forms exist and the zeroes dominate:
+            #
+            #     v0.2d, #0   x595      v1.2d, #0    x84
+            #     d0,   #0     x42
+            #
+            # A plain zero constant does NOT produce it -- `struct V v = {0,0}`
+            # gives `mov x0, xzr` -- but a NEON vector does, exactly:
+            #
+            #     uint64x2_t v = {0, 0};   ->   movi v0.2d, #0000000000000000
+            #
+            # `arm_neon.h` is already in MH.PREAMBLE, so the types are available in
+            # every generated translation unit and this needs no build change.
+            #
+            # Only the ZERO form is claimed. A non-zero immediate is a replicated
+            # bit pattern that depends on the lane width, and guessing the
+            # spelling for all 226 forms is exactly the kind of claim that should
+            # be measured per form rather than assumed.
+            if mn == "movi":
+                _ops = [o.strip() for o in i.op_str.split(",")]
+                if len(_ops) == 2 and _ops[0][:1] == "v":
+                    _arr = _ops[0].split(".")
+                    if len(_arr) != 2:
+                        raise Bail("movi destination %r has no arrangement"
+                                   % _ops[0])
+                    _lanes, _width = _arr[1][:-1], _arr[1][-1]
+                    if not _lanes.isdigit() or _width not in "bhsd":
+                        raise Bail("movi arrangement %r is not understood"
+                                   % _ops[0])
+                    _imm = parse_imm(_ops[1].lstrip("#"))
+                    if _imm != 0:
+                        raise Bail("movi with a non-zero immediate %r"
+                                   % _ops[1])
+                    _ct = {"b": "uint8_t", "h": "uint16_t",
+                           "s": "uint32_t", "d": "uint64_t"}[_width]
+                    state[_ops[0]] = ("neon", "%sx%s_t" % (_ct, _lanes),
+                                      int(_lanes))
+                    continue
+                if len(_ops) == 2 and _ops[0][:1] in ("d", "s") \
+                        and parse_imm(_ops[1].lstrip("#")) == 0:
+                    # `movi d0, #0` is a SCALAR zero, and a C zero of the same
+                    # type is `fmov d0, xzr` rather than `movi`. Claimed anyway as
+                    # the plain zero, because the alternative is to decline a
+                    # form the body certainly has.
+                    _ft2 = "double" if _ops[0][:1] == "d" else "float"
+                    state[_ops[0]] = ("imm", 0, _ft2)
+                    # The SAME register under its integer name. `movi d0, #0`
+                    # followed by a call that reads x0 left 42 bodies at
+                    # "call argument x0 is not a known value": d0 and x0 are one
+                    # register, and only the FP view had been written.
+                    state[wreg(_ops[0])] = ("imm", 0, "uint64_t")
+                    continue
+                raise Bail("movi form %r is not supported" % (i.op_str,))
+
             if mn in ("fmov", "fneg"):
                 _ops = [o.strip() for o in i.op_str.split(",")]
                 if len(_ops) == 2:
@@ -2544,6 +2637,8 @@ class StraightLine:
             if len(val) > 3 and val[3]:
                 return val[2], names[val[1]]
             return val[2], "((%s)%s)" % (val[2], names[val[1]])
+        if kind == "neon":
+            return val[1]
         if kind == "fpun":
             # A union pun between the two views of ONE register. d0 and x0 are
             # the same storage, so this is a cast between views rather than a
@@ -2566,6 +2661,12 @@ class StraightLine:
                         "((union { float f; uint32_t u; }){ .u = a%d }).f" % _n)
             return ("double",
                     "((union { double d; uint64_t u; }){ .u = a%d }).d" % _n)
+        if kind == "neon":
+            # A NEON vector zero, as a compound literal so it stays one
+            # expression. Measured: `uint64x2_t v = {0,0}` emits exactly
+            # `movi v0.2d, #0`.
+            _, _ct, _lanes = val
+            return (_ct, "(%s){%s}" % (_ct, ", ".join(["0"] * _lanes)))
         if kind == "fpneg":
             # `fneg d0, d0` is unary minus on the FP argument.
             _n = getattr(self, "_fp_slotmap", {}).get(val[1], val[1])
