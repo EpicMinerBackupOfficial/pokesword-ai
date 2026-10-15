@@ -103,5 +103,47 @@ list threaded through `_emit`, and a wrapper emitted at the join. The `if (p)`
 condition comes from the register the `cbz` tests, which for this shape is always
 a value the walk has already loaded.
 
-821 bodies for this shape alone, and the same mechanism extends to the wider
-10,396-body conditional population.
+## Size -- and a correction
+
+The first count of this shape was 821, and it was wrong in the same way the
+blocker counts were: it was a FILTER CLASS, not a population. 821 is every
+unmatched body with one call, one conditional branch, a `ret` and no
+`adrp`/`adr`/`blr`. Only 123 of those branch to the `ret`:
+
+    branch target
+      targets the ret            123
+      targets insn 9             112
+      targets insn 10             60
+      targets insn 8              50
+      targets insn 12             49
+      targets insn 7              49
+
+The other 698 branch INTO THE MIDDLE, so the guarded block is followed by more
+code rather than the epilogue. That is a different shape and the minimal
+implementation does not reach it.
+
+Of the 123:
+
+      cbz     81     \
+      tbz      6      >  88 test a single register, no `cmp` needed
+      tbnz     1     /
+      b.ne    21     \
+      b.hi     7      >  35 branch on a flag, so the C needs a `cmp` and
+      b.lt     3       >    COND_OPS coverage
+      b.eq     2      /
+      b.ls     2      /
+
+So the first implementation is worth **88 bodies**, and 35 more follow once the
+compare family is handled. All 88 are the `sub_2c1470` shape measured above.
+
+## The mistake, recorded
+
+I quoted 821 as "this shape" one beat after establishing that quoting a counter
+without looking at what it counts is how the blocker populations were wrong
+twice already. The habit is the defect, not the number: a count is not a
+population until you have checked what the counted things have in common.
+Measured the same day, in the same session, and still wrong.
+
+88 bodies is 0.06% of the figure. That is worth having and it is not worth a
+risky structural change to a translator holding 32,532 matches. The right order
+is: measure the C, bank the recipe, then change the walk.
