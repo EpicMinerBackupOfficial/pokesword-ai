@@ -1307,6 +1307,57 @@ class StraightLine:
                 # memory operand. Reading the memory as a register reached
                 # `arg_reg('[x0]')` and raised -- 42 bodies at "operand
                 # '[x0]' is not an argument register".
+                # `stp q0, q0, [x0]` -- the 128-bit PAIR store, 32 of them.
+                #
+                # This needs the vector type, and the value has to SURVIVE
+                # optimisation: Clang folds a known-zero vector to a pair of zero
+                # REGISTERS and emits `stp xzr, xzr`, losing both the `movi` that
+                # materialised it and the q-register form. `arm_neon.h` is already
+                # in MH.PREAMBLE so the type costs nothing; the pin is the work.
+                #
+                # The pin cannot be `asm volatile("" : "+w"(v))`. Clang 5.0.1
+                # rejects it outright -- "inline asm not supported yet: don't know
+                # how to handle tied indirect register inputs" -- and `"+w"` IS the
+                # NEON constraint, so this is the compiler, not the spelling.
+                # Separate in/out operands are NOT tied and are accepted:
+                #
+                #     uint64x2_t v = {0,0};
+                #     __asm__ volatile("" : "=w"(v) : "w"(v));
+                #     *(struct Q2*)a0 = (struct Q2){v, v};
+                #
+                # measured byte-identical to the retail
+                # `movi v0.2d, #0 ; stp q0, q0, [x0]`, with no extra instructions.
+                # `"=w"` output-only alone gave `str q0, [x0]` and NO `movi`, so
+                # both operands are needed -- but neither of them needs a store to
+                # a global to pin through, which is what the first measurement here
+                # concluded. That conclusion was wrong.
+                _vregs = []
+                for _r in (_ps1, ops[1]):
+                    if access_width(mn, _r) != 16:
+                        break
+                    _vregs.append(_r)
+                if len(_vregs) == 2:
+                    _vv = []
+                    for _r in _vregs:
+                        # `movi` keys state by its FULL spelling -- `v0.2d` -- while
+                        # the store names the register `q0`. Without the translation
+                        # between the two the lookup always misses and every body
+                        # would be rendered as a plain zero vector.
+                        # `reg_num` only accepts x/w, so it returns None for
+                        # `q0` and the lookup never reached the `movi` that wrote
+                        # it. Reading the digit directly is what connects the two
+                        # spellings of one register.
+                        _qm = re.fullmatch(r"[a-z](\d+)", _r)
+                        _rn = int(_qm.group(1)) if _qm else None
+                        _key = ("v%d.2d" % _rn if _rn is not None
+                                else wreg(_r))
+                        # No load can produce a q value -- `ldr q0` is refused by
+                        # `w not in U` on the single-access path -- so anything not
+                        # written by a `movi` is the zero vector.
+                        _vv.append(state.get(_key) or state.get(wreg(_r))
+                                   or ("neon", "uint64x2_t", 2))
+                    stmts.append(("qpair", _pn, _po, _vv[0], _vv[1]))
+                    continue
                 for _k, _r in enumerate((_ps1, ops[1])):
                     _w = access_width(mn, _r)
                     if _w not in U:
@@ -1364,6 +1415,21 @@ class StraightLine:
                     if wreg(base) not in state:
                         state[wreg(base)] = ("arg", n, "void*")
                 w = access_width(mn, src)
+                if w == 16:
+                    # `str q0, [x0]` -- a 128-bit SINGLE store, same vector type
+                    # and same pin as the q-pair store above, one field instead of
+                    # two. `U` has no 16-byte entry because a bare `uint64x2_t`
+                    # cannot be named by a pointer cast without the vector type,
+                    # which is exactly what this is for.
+                    _qm = re.fullmatch(r"[a-z](\d+)", src)
+                    _rn = int(_qm.group(1)) if _qm else None
+                    _key = ("v%d.2d" % _rn if _rn is not None else wreg(src))
+                    _vv = (state.get(_key) or state.get(wreg(src))
+                           or ("neon", "uint64x2_t", 2))
+                    if n == SRET_ID:
+                        raise Bail("128-bit store through the sret register")
+                    stmts.append(("qstore", n, off, _vv))
+                    continue
                 if w not in U:
                     raise Bail("%d-byte access through %r is not modelled" % (w, src))
                 if wreg(src) not in state:
@@ -2210,7 +2276,7 @@ class StraightLine:
                                    % _ops[1])
                     _ct = {"b": "uint8_t", "h": "uint16_t",
                            "s": "uint32_t", "d": "uint64_t"}[_width]
-                    state[_ops[0]] = ("neon", "%sx%s_t" % (_ct, _lanes),
+                    state[_ops[0]] = ("neon", "%sx%s_t" % (_ct[:-2], _lanes),
                                       int(_lanes))
                     continue
                 if len(_ops) == 2 and _ops[0][:1] in ("d", "s") \
@@ -2641,8 +2707,6 @@ class StraightLine:
             if len(val) > 3 and val[3]:
                 return val[2], names[val[1]]
             return val[2], "((%s)%s)" % (val[2], names[val[1]])
-        if kind == "neon":
-            return val[1]
         if kind == "fpun":
             # A union pun between the two views of ONE register. d0 and x0 are
             # the same storage, so this is a cast between views rather than a
@@ -2846,6 +2910,41 @@ class StraightLine:
             if key in getattr(self, "_pinned", ()):
                 pins.append('__asm__ volatile("" : "+r"(%s));' % nm(key))
         for stmt in stmts:
+            if stmt[0] == "qstore":
+                # See the q-pair store below for the measurement. One field.
+                _, n, off, v = stmt
+                _ct, _ex = self._render(v, names)
+                body_txt.append("%s vq0 = %s;" % (_ct, _ex))
+                body_txt.append('__asm__ volatile("" : "=w"(vq0) : "w"(vq0));')
+                body_txt.append("*(%s*)(%s) = vq0;" % (_ct, ptr_add(names[n], off)))
+                continue
+            if stmt[0] == "qpair":
+                # `stp q0, q0, [x0]` -- see the pair-store handler for the
+                # measurement. The two operands usually RENDER THE SAME, because
+                # retail stores one register twice, so they share a single local:
+                # two locals of the same value would materialise two `movi`s.
+                _, n, off, v1, v2 = stmt
+                if n == SRET_ID:
+                    raise Bail("128-bit pair store through the sret register")
+                _seen = []
+                _names = []
+                for _v in (v1, v2):
+                    _ct, _ex = self._render(_v, names)
+                    _sig = (_ct, _ex)
+                    if _sig in _seen:
+                        _names.append(_names[_seen.index(_sig)])
+                        continue
+                    _ln = "vq%d" % len(_seen)
+                    _seen.append(_sig)
+                    _names.append(_ln)
+                    body_txt.append("%s %s = %s;" % (_ct, _ln, _ex))
+                    # The pin. See the handler for why the operands are separate
+                    # rather than tied -- Clang 5.0.1 cannot tie a vector.
+                    body_txt.append(
+                        '__asm__ volatile("" : "=w"(%s) : "w"(%s));' % (_ln, _ln))
+                body_txt.append("*(struct Q2*)(%s) = (struct Q2){%s};"
+                                % (ptr_add(names[n], off), ", ".join(_names)))
+                continue
             w, n, off, val = stmt[:4]
             iexpr = stmt[4] if len(stmt) > 4 else None
             ct, expr = self._render(val, names)

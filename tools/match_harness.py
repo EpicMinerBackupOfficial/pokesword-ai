@@ -443,6 +443,10 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+/* A 32-byte aggregate of two NEON vectors. `stp q0, q0, [x0]` is ONE register
+ * stored twice, so the C has to be a two-field struct -- a 16-byte store emits
+ * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
+struct Q2 { uint64x2_t a, b; };
 """
 
 
