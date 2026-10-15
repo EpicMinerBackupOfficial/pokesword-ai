@@ -14,8 +14,9 @@
  * Generated file -- re-run tools/decomp_project.py to regenerate.
  */
 
-/* Self-contained: a bare-metal aarch64-none-elf target has no
- * <stdint.h> under -nostdinc++. */
+/* Self-contained preamble: a bare-metal aarch64-none-elf target has no
+ * <stdint.h> under -nostdinc++, and a decomp translation unit should not depend
+ * on a hosted C library anyway. */
 #include <arm_neon.h>
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -26,6 +27,11 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+/* A 32-byte aggregate of two NEON vectors. `stp q0, q0, [x0]` is ONE register
+ * stored twice, so the C has to be a two-field struct -- a 16-byte store emits
+ * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
+struct Q2 { uint64x2_t a, b; };
+
 
 // sub_1476d30  (orig 0x1476d30, copy2)
 void main_f_1476d30(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }

@@ -1,4 +1,4 @@
-/* sdk -- 309 functions verified to match the original.
+/* sdk -- 310 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -14,8 +14,9 @@
  * Generated file -- re-run tools/decomp_project.py to regenerate.
  */
 
-/* Self-contained: a bare-metal aarch64-none-elf target has no
- * <stdint.h> under -nostdinc++. */
+/* Self-contained preamble: a bare-metal aarch64-none-elf target has no
+ * <stdint.h> under -nostdinc++, and a decomp translation unit should not depend
+ * on a hosted C library anyway. */
 #include <arm_neon.h>
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
@@ -26,6 +27,11 @@ typedef signed short int16_t;
 typedef signed int int32_t;
 typedef signed long int64_t;
 typedef unsigned long uintptr_t;
+/* A 32-byte aggregate of two NEON vectors. `stp q0, q0, [x0]` is ONE register
+ * stored twice, so the C has to be a two-field struct -- a 16-byte store emits
+ * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
+struct Q2 { uint64x2_t a, b; };
+
 
 // sub_453840  (orig 0x453840, straight)
 uint64_t sdk_f_453840() { return 0; }
@@ -1177,6 +1183,18 @@ uint32_t sdk_f_507400() {
 extern void callee_50f730();
 uint32_t sdk_f_507438() {
     callee_50f730();
+    uint32_t r0 = 0;
+    asm volatile("");
+    return r0;
+}
+
+// sub_507450  (orig 0x507450, call)
+extern void callee_510410();
+uint32_t sdk_f_507450(void* a0) {
+    uint64x2_t vq0 = (uint64x2_t){0, 0};
+    __asm__ volatile("" : "=w"(vq0) : "w"(vq0));
+    *(struct Q2*)((char*)(a0)) = (struct Q2){vq0, vq0};
+    uint64_t f_507450__r0 = ((uint64_t (*)(void))&callee_510410)();
     uint32_t r0 = 0;
     asm volatile("");
     return r0;

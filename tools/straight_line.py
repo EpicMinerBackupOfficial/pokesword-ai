@@ -1356,7 +1356,8 @@ class StraightLine:
                         # written by a `movi` is the zero vector.
                         _vv.append(state.get(_key) or state.get(wreg(_r))
                                    or ("neon", "uint64x2_t", 2))
-                    stmts.append(("qpair", _pn, _po, _vv[0], _vv[1]))
+                    stmts.append(("qpair", _pn, _po, _vv[0], _vv[1],
+                                  not call_stmts))
                     continue
                 for _k, _r in enumerate((_ps1, ops[1])):
                     _w = access_width(mn, _r)
@@ -1428,7 +1429,12 @@ class StraightLine:
                            or ("neon", "uint64x2_t", 2))
                     if n == SRET_ID:
                         raise Bail("128-bit store through the sret register")
-                    stmts.append(("qstore", n, off, _vv))
+                    # Calls are hoisted above every other statement in `_emit`
+                    # (`pre + _call_txt + pins + body_txt`), so a store that the
+                    # original emits BEFORE its call has to go in `pre` or it
+                    # lands after the call and the order is wrong. `call_stmts` is
+                    # populated in walk order, so it answers that question here.
+                    stmts.append(("qstore", n, off, _vv, not call_stmts))
                     continue
                 if w not in U:
                     raise Bail("%d-byte access through %r is not modelled" % (w, src))
@@ -2912,18 +2918,21 @@ class StraightLine:
         for stmt in stmts:
             if stmt[0] == "qstore":
                 # See the q-pair store below for the measurement. One field.
-                _, n, off, v = stmt
+                _, n, off, v, _early = stmt
+                _sink = pre if _early else body_txt
                 _ct, _ex = self._render(v, names)
-                body_txt.append("%s vq0 = %s;" % (_ct, _ex))
-                body_txt.append('__asm__ volatile("" : "=w"(vq0) : "w"(vq0));')
-                body_txt.append("*(%s*)(%s) = vq0;" % (_ct, ptr_add(names[n], off)))
+                _sink.append("%s vq0 = %s;" % (_ct, _ex))
+                _sink.append('__asm__ volatile("" : "=w"(vq0) : "w"(vq0));')
+                _sink.append("*(%s*)(%s) = vq0;"
+                             % (_ct, ptr_add(names[n], off)))
                 continue
             if stmt[0] == "qpair":
                 # `stp q0, q0, [x0]` -- see the pair-store handler for the
                 # measurement. The two operands usually RENDER THE SAME, because
                 # retail stores one register twice, so they share a single local:
                 # two locals of the same value would materialise two `movi`s.
-                _, n, off, v1, v2 = stmt
+                _, n, off, v1, v2, _early = stmt
+                _sink = pre if _early else body_txt
                 if n == SRET_ID:
                     raise Bail("128-bit pair store through the sret register")
                 _seen = []
@@ -2937,13 +2946,13 @@ class StraightLine:
                     _ln = "vq%d" % len(_seen)
                     _seen.append(_sig)
                     _names.append(_ln)
-                    body_txt.append("%s %s = %s;" % (_ct, _ln, _ex))
+                    _sink.append("%s %s = %s;" % (_ct, _ln, _ex))
                     # The pin. See the handler for why the operands are separate
                     # rather than tied -- Clang 5.0.1 cannot tie a vector.
-                    body_txt.append(
+                    _sink.append(
                         '__asm__ volatile("" : "=w"(%s) : "w"(%s));' % (_ln, _ln))
-                body_txt.append("*(struct Q2*)(%s) = (struct Q2){%s};"
-                                % (ptr_add(names[n], off), ", ".join(_names)))
+                _sink.append("*(struct Q2*)(%s) = (struct Q2){%s};"
+                             % (ptr_add(names[n], off), ", ".join(_names)))
                 continue
             w, n, off, val = stmt[:4]
             iexpr = stmt[4] if len(stmt) > 4 else None

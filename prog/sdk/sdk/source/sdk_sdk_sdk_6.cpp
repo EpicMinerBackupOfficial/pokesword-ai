@@ -2328,7 +2328,7 @@ void sub_5073b0() { /* 0x5073b0 */ }
 // sub_507400: implemented in prog/matched/sdk/
 void sub_507418() { /* 0x507418 */ }
 // sub_507438: implemented in prog/matched/sdk/
-void sub_507450() { /* 0x507450 */ }
+// sub_507450: implemented in prog/matched/sdk/
 // sub_507470: implemented in prog/matched/sdk/
 // sub_507488: implemented in prog/matched/sdk/
 // sub_5074a0: implemented in prog/matched/sdk/

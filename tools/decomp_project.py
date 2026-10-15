@@ -21,6 +21,21 @@ import os
 import re
 import sys
 
+# The preamble is shared with the matching harness, NOT copied here.
+#
+# These were two independent copies of the same text, so a type added for a
+# new register class reached one and not the other: `struct Q2` went into
+# match_harness.PREAMBLE, every candidate compiled and verified against
+# retail, and then the prog build failed with
+#
+#     error: variable has incomplete type 'struct Q2'
+#
+# Nothing in the harness noticed, because the harness is where the type was
+# added -- the copy that verifies is the copy that was edited. Two copies of
+# a contract is one copy too many.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import match_harness as _mh
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, "work")
 DATA = os.path.join(ROOT, "data")
@@ -693,19 +708,8 @@ def emit_matched(mod, matched, defname=None, emittable=None):
                     " *\n"
                     " * Generated file -- re-run tools/decomp_project.py to regenerate.\n"
                     " */\n\n"
-                    "/* Self-contained: a bare-metal aarch64-none-elf target has no\n"
-                    " * <stdint.h> under -nostdinc++. */\n"
-                    "#include <arm_neon.h>\n"
-                    "typedef unsigned char uint8_t;\n"
-                    "typedef unsigned short uint16_t;\n"
-                    "typedef unsigned int uint32_t;\n"
-                    "typedef unsigned long uint64_t;\n"
-                    "typedef signed char int8_t;\n"
-                    "typedef signed short int16_t;\n"
-                    "typedef signed int int32_t;\n"
-                    "typedef signed long int64_t;\n"
-                    "typedef unsigned long uintptr_t;\n\n"
-                    % (mod, len(chunk), mod))
+                    "%s\n\n"
+                    % (mod, len(chunk), mod, _mh.PREAMBLE))
 
             # Destinations this chunk calls, declared up front.
             protos = []

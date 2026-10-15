@@ -88290,6 +88290,22 @@
    "sig": "Pvmm",
    "size": 32,
    "src": "extern void callee_527980();\nuint64_t f_379ce0(void* a0, uint64_t a1, uint64_t a2) {\n    void* p0 = (void*)((uintptr_t)(a0));\n    uint64_t f_379ce0__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t))&callee_527980)(((uintptr_t)(a0)), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(((uint64_t)a2))), ((uintptr_t)(*(uint64_t*)((char*)(a0) + 24))), ((uintptr_t)(*(uint32_t*)((char*)(p0) + 32))));\n    uint64_t r0 = (f_379ce0__r0) & (4294967295);\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 5272656,
+   "call_args": 0,
+   "call_ret": "uint64_t",
+   "callee": "callee_510410",
+   "callee_synthetic": true,
+   "ident": "f_507450",
+   "module": "sdk",
+   "name": "sub_507450",
+   "new_insns": 8,
+   "orig_insns": 8,
+   "shape": "call",
+   "sig": "Pv",
+   "size": 32,
+   "src": "extern void callee_510410();\nuint32_t f_507450(void* a0) {\n    uint64x2_t vq0 = (uint64x2_t){0, 0};\n    __asm__ volatile(\"\" : \"=w\"(vq0) : \"w\"(vq0));\n    *(struct Q2*)((char*)(a0)) = (struct Q2){vq0, vq0};\n    uint64_t f_507450__r0 = ((uint64_t (*)(void))&callee_510410)();\n    uint32_t r0 = 0;\n    asm volatile(\"\");\n    return r0;\n}\n"
   }
  ],
  "module": "sdk",
