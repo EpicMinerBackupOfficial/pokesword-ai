@@ -91,7 +91,7 @@ CLI_ROOTS = [
 ]
 
 DEFAULT_PROMPT = (
-    "Continue the Pokemon Sword static recomp. Run "
+    "Continue the Pokemon Sword decomp. Run "
     "`python tools/health_check.py` first, then `python tools/match_progress.py`. "
     "If the figure is unchanged from the last beat, the generators are exhausted: "
     "look for a new reachable population instead of re-running the old generators. "

@@ -1225,6 +1225,47 @@ class StraightLine:
                 state[wreg(dst)] = ("load", n, off, w, signed)
                 continue
 
+            if mn in PAIR_STORES and len(ops) in (2, 3):
+                # `stp xzr, xzr, [x0]` -- a PAIR store. PAIR_STORES named it but
+                # nothing handled it, so all 78 bodies were declined as
+                # "unhandled instruction 'stp'".
+                #
+                # It is two stores at off and off+width, and Clang merges adjacent
+                # stores back into the pair, so emitting them separately reproduces
+                # the single instruction. Measured, clang 5.0.1 -O3 -- all three of
+                #
+                #     *(struct Z*)p = (struct Z){0,0};
+                #     *(u64*)p = 0; *((u64*)p + 1) = 0;
+                #     u64 z[2] = {0,0}; *(u64*)p = z[0]; *((u64*)p+1) = z[1];
+                #
+                # produce exactly `stp xzr, xzr, [x0]`.
+                # `stp Rd1, Rd2, [Rn]`: TWO registers then the memory operand.
+                # Reading the memory from ops[1] took the second register and
+                # failed with "pair-store operand 'xzr' is not a memory form".
+                _ps1 = ops[0]
+                _pb, _pi, _pe, _psc, _po = parse_mem_idx(ops[2])
+                if _pb is None:
+                    raise Bail("pair-store operand %r is not a memory form"
+                               % (ops[2],))
+                _pn, _preal = resolve_base(_pb)
+                if _preal:
+                    used_args.add(_pn)
+                    ptr_args.add(_pn)
+                for _k, _r in enumerate((_ps1, ops[2])):
+                    _w = access_width(mn, _r)
+                    if _w not in U:
+                        raise Bail("%d-byte pair store is not modelled" % _w)
+                    if _r in ("xzr", "wzr"):
+                        state[_r] = ("imm", 0, U[_w])
+                    elif wreg(_r) not in state:
+                        # An incoming argument used only as a store source is
+                        # still a parameter, exactly as on the single-store path.
+                        _pa = arg_reg(_r)
+                        used_args.add(_pa)
+                        state[wreg(_r)] = ("arg", _pa, U[_w])
+                    stmts.append((_w, _pn, _po + _k * _w, state[wreg(_r)]))
+                continue
+
             if mn in STORES and len(ops) in (2, 3):
                 # `str x8, [x0], #8` is a WRITEBACK store: store to [x0], then
                 # x0 += 8. Three operands, so it fell straight through the
