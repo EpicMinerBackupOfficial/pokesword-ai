@@ -19560,6 +19560,22 @@
    "sig": "Pvj",
    "size": 40,
    "src": "extern void sub_65420();\nuint32_t f_1134f0(void* a0, uint32_t a1) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 8));\n    uint64_t f_1134f0__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_65420)(((uintptr_t)(*(uint64_t*)((char*)(p0) + 552))), ((uintptr_t)(7)), ((uintptr_t)(((uint32_t)a1))));\n    void* p1 = (void*)((uintptr_t)(f_1134f0__r0));\n    uint32_t r0 = *(uint32_t*)((char*)(p1) + 24);\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 908288,
+   "call_args": 2,
+   "call_ret": "uint64_t",
+   "callee": "sub_3870",
+   "callee_synthetic": false,
+   "ident": "f_ddc00",
+   "module": "subsdk1",
+   "name": "sub_ddc00",
+   "new_insns": 11,
+   "orig_insns": 11,
+   "shape": "call",
+   "sig": "Pv",
+   "size": 44,
+   "src": "extern void sub_3870();\nuint64_t f_ddc00(void* a0) {\n    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 8));\n    uint64_t f_ddc00__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&sub_3870)(((uintptr_t)(48)), ((uintptr_t)(*(uint64_t*)((char*)(p0) + 16))));\n    void* p1 = (void*)((uintptr_t)(f_ddc00__r0));\n    *(uint64_t*)((char*)(p1) + 32) = 0;\n    *(uint64_t*)((char*)(p1) + 40) = 0;\n    *(uint64_t*)((char*)(p1) + 16) = 0;\n    *(uint64_t*)((char*)(p1) + 24) = 0;\n    *(uint64_t*)((char*)(p1)) = 0;\n    *(uint64_t*)((char*)(p1) + 8) = 0;\n    uint64_t r0 = f_ddc00__r0;\n    asm volatile(\"\");\n    return r0;\n}\n"
   }
  ],
  "module": "subsdk1",

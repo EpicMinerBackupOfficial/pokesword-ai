@@ -2474,7 +2474,7 @@ void sub_dda40() { /* 0xdda40 */ }
 void sub_ddb10() { /* 0xddb10 */ }
 void sub_ddb80() { /* 0xddb80 */ }
 void sub_ddbd0() { /* 0xddbd0 */ }
-void sub_ddc00() { /* 0xddc00 */ }
+// sub_ddc00: implemented in prog/matched/subsdk1/
 void sub_ddc30() { /* 0xddc30 */ }
 void sub_ddc90() { /* 0xddc90 */ }
 void sub_ddcc0() { /* 0xddcc0 */ }

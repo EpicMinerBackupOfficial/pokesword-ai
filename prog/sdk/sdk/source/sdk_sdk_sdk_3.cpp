@@ -3248,7 +3248,7 @@ void sub_304180() { /* 0x304180 */ }
 void sub_3042f0() { /* 0x3042f0 */ }
 void sub_304310() { /* 0x304310 */ }
 void sub_304580() { /* 0x304580 */ }
-void sub_304c40() { /* 0x304c40 */ }
+// sub_304c40: implemented in prog/matched/sdk/
 void sub_304c70() { /* 0x304c70 */ }
 void sub_304d60() { /* 0x304d60 */ }
 void sub_305010() { /* 0x305010 */ }

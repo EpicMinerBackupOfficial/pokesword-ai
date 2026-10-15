@@ -1,4 +1,4 @@
-/* subsdk1 -- 1516 functions verified to match the original.
+/* subsdk1 -- 1517 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -1680,6 +1680,23 @@ void subsdk1_f_ddaf0(void* a0, uint32_t a1, uint32_t a2) {
     *(uint8_t*)((char*)(a0) + 24) = (uint8_t)((((uint32_t)a1)) & (1));
     *(uint8_t*)((char*)(a0) + 25) = (uint8_t)((((uint32_t)a2)) & (1));
     *(uint64_t*)((char*)(a0) + 16) = 0;
+}
+
+// sub_ddc00  (orig 0xddc00, call)
+extern void sub_3870();
+uint64_t subsdk1_f_ddc00(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 8));
+    uint64_t f_ddc00__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&sub_3870)(((uintptr_t)(48)), ((uintptr_t)(*(uint64_t*)((char*)(p0) + 16))));
+    void* p1 = (void*)((uintptr_t)(f_ddc00__r0));
+    *(uint64_t*)((char*)(p1) + 32) = 0;
+    *(uint64_t*)((char*)(p1) + 40) = 0;
+    *(uint64_t*)((char*)(p1) + 16) = 0;
+    *(uint64_t*)((char*)(p1) + 24) = 0;
+    *(uint64_t*)((char*)(p1)) = 0;
+    *(uint64_t*)((char*)(p1) + 8) = 0;
+    uint64_t r0 = f_ddc00__r0;
+    asm volatile("");
+    return r0;
 }
 
 // sub_de2a0  (orig 0xde2a0, setter)

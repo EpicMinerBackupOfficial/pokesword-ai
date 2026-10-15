@@ -2845,7 +2845,7 @@ void sub_379980() { /* 0x379980 */ }
 void sub_379a80() { /* 0x379a80 */ }
 void sub_379b80() { /* 0x379b80 */ }
 void sub_379c30() { /* 0x379c30 */ }
-void sub_379ce0() { /* 0x379ce0 */ }
+// sub_379ce0: implemented in prog/matched/sdk/
 void sub_379d00() { /* 0x379d00 */ }
 void sub_379e70() { /* 0x379e70 */ }
 void sub_379f40_sdk_379f40() { /* 0x379f40 */ }

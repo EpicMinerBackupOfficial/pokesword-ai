@@ -1303,7 +1303,11 @@ class StraightLine:
                 if _preal:
                     used_args.add(_pn)
                     ptr_args.add(_pn)
-                for _k, _r in enumerate((_ps1, ops[2])):
+                # ops[0] and ops[1] are the two REGISTERS; ops[2] is the
+                # memory operand. Reading the memory as a register reached
+                # `arg_reg('[x0]')` and raised -- 42 bodies at "operand
+                # '[x0]' is not an argument register".
+                for _k, _r in enumerate((_ps1, ops[1])):
                     _w = access_width(mn, _r)
                     if _w not in U:
                         raise Bail("%d-byte pair store is not modelled" % _w)

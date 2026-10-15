@@ -2489,7 +2489,7 @@
 0x00000000000ddb10,sub_ddb10,100,_ZN7subsdk19sub_ddb10Ev!
 0x00000000000ddb80,sub_ddb80,80,_ZN7subsdk19sub_ddb80Ev!
 0x00000000000ddbd0,sub_ddbd0,36,_ZN7subsdk19sub_ddbd0Ev!
-0x00000000000ddc00,sub_ddc00,44,_ZN7subsdk19sub_ddc00Ev!
+0x00000000000ddc00,sub_ddc00,44,_Z15subsdk1_f_ddc00Pv
 0x00000000000ddc30,sub_ddc30,96,_ZN7subsdk19sub_ddc30Ev!
 0x00000000000ddc90,sub_ddc90,40,_ZN7subsdk19sub_ddc90Ev!
 0x00000000000ddcc0,sub_ddcc0,20,_ZN7subsdk19sub_ddcc0Ev!

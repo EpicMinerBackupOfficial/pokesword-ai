@@ -6061,6 +6061,19 @@ bool main_f_71b210(uint64_t unused0, void* a1) { return (uint32_t)(*(uint32_t*)(
 // sub_71b220  (orig 0x71b220, getter)
 uint32_t main_f_71b220(uint64_t unused0, void* a1) { return *(uint32_t*)((char*)(a1) + 8); }
 
+// sub_71b6d0  (orig 0x71b6d0, call)
+extern void sub_c70();
+uint64_t main_f_71b6d0() {
+    uint64_t f_71b6d0__r0 = ((uint64_t (*)(uintptr_t))&sub_c70)(((uintptr_t)(24)));
+    void* p0 = (void*)((uintptr_t)(f_71b6d0__r0));
+    *(uint64_t*)((char*)(p0) + 8) = 0;
+    *(uint64_t*)((char*)(p0) + 16) = 0;
+    *(uint64_t*)((char*)(p0)) = 0;
+    uint64_t r0 = f_71b6d0__r0;
+    asm volatile("");
+    return r0;
+}
+
 // sub_71b700  (orig 0x71b700, mov_ret)
 uint64_t main_f_71b700(uint64_t a0, uint64_t a1) { return a1; }
 
@@ -7144,7 +7157,4 @@ uint64_t main_f_7d0b80(void* a0) { return *(uint64_t*)((char*)(a0) + 240); }
 
 // sub_7d0b90  (orig 0x7d0b90, getter)
 uint64_t main_f_7d0b90(void* a0) { return *(uint64_t*)((char*)(a0) + 240); }
-
-// sub_7d0ba0  (orig 0x7d0ba0, getter)
-uint64_t main_f_7d0ba0(void* a0) { return *(uint64_t*)((char*)(a0) + 592); }
 

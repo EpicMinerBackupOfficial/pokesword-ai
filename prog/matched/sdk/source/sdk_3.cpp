@@ -11376,6 +11376,15 @@ void sdk_f_3025a0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 12) = a1; 
 // sub_3025b0  (orig 0x3025b0, setter)
 void sdk_f_3025b0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 40) = a1; }
 
+// sub_304c40  (orig 0x304c40, call)
+extern void sub_305580();
+uint32_t sdk_f_304c40(uint64_t a0, uint64_t a1, uint64_t unused2, void* a3) {
+    uint64_t f_304c40__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_305580)(((uintptr_t)(a3)), ((uintptr_t)((((uint64_t)a0)) - (*(uint64_t*)((char*)(a3) + 8)))), ((uintptr_t)((((uint64_t)a1)) - (*(uint64_t*)((char*)(a3) + 8)))));
+    uint32_t r0 = 1;
+    asm volatile("");
+    return r0;
+}
+
 // sub_305730  (orig 0x305730, straight)
 uint32_t sdk_f_305730(uint64_t unused0, uint64_t unused1, uint64_t unused2, void* a3) {
     uint32_t k0 = 1;
@@ -12123,14 +12132,6 @@ void sdk_f_31a1c0() {}
 extern void callee_523470();
 uint64_t sdk_f_31a320(uint64_t a0, uint64_t a1) {
     uint64_t r0 = (((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&callee_523470)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(21)))) & (4294967295);
-    asm volatile("");
-    return r0;
-}
-
-// sub_31a8d0  (orig 0x31a8d0, call)
-extern void callee_523200();
-uint64_t sdk_f_31a8d0() {
-    uint64_t r0 = (((uint64_t (*)(void))&callee_523200)()) & (4294967295);
     asm volatile("");
     return r0;
 }

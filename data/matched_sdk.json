@@ -88258,6 +88258,38 @@
    "sig": "mPv",
    "size": 28,
    "src": "extern void callee_527130();\nuint64_t f_363a70(uint64_t a0, void* a1) {\n    uint64_t f_363a70__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&callee_527130)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)((char*)(a1) + 4)));\n    uint64_t r0 = (f_363a70__r0) + (12);\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 3165248,
+   "call_args": 3,
+   "call_ret": "uint64_t",
+   "callee": "sub_305580",
+   "callee_synthetic": false,
+   "ident": "f_304c40",
+   "module": "sdk",
+   "name": "sub_304c40",
+   "new_insns": 11,
+   "orig_insns": 11,
+   "shape": "call",
+   "sig": "mmmPv",
+   "size": 44,
+   "src": "extern void sub_305580();\nuint32_t f_304c40(uint64_t a0, uint64_t a1, uint64_t unused2, void* a3) {\n    uint64_t f_304c40__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&sub_305580)(((uintptr_t)(a3)), ((uintptr_t)((((uint64_t)a0)) - (*(uint64_t*)((char*)(a3) + 8)))), ((uintptr_t)((((uint64_t)a1)) - (*(uint64_t*)((char*)(a3) + 8)))));\n    uint32_t r0 = 1;\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 3644640,
+   "call_args": 5,
+   "call_ret": "uint64_t",
+   "callee": "callee_527980",
+   "callee_synthetic": true,
+   "ident": "f_379ce0",
+   "module": "sdk",
+   "name": "sub_379ce0",
+   "new_insns": 8,
+   "orig_insns": 8,
+   "shape": "call",
+   "sig": "Pvmm",
+   "size": 32,
+   "src": "extern void callee_527980();\nuint64_t f_379ce0(void* a0, uint64_t a1, uint64_t a2) {\n    void* p0 = (void*)((uintptr_t)(a0));\n    uint64_t f_379ce0__r0 = ((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t, uintptr_t, uintptr_t))&callee_527980)(((uintptr_t)(a0)), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(((uint64_t)a2))), ((uintptr_t)(*(uint64_t*)((char*)(a0) + 24))), ((uintptr_t)(*(uint32_t*)((char*)(p0) + 32))));\n    uint64_t r0 = (f_379ce0__r0) & (4294967295);\n    asm volatile(\"\");\n    return r0;\n}\n"
   }
  ],
  "module": "sdk",

@@ -300746,6 +300746,22 @@
    "sig": "Pv",
    "size": 28,
    "src": "extern void sub_1687070();\nuint64_t f_169a440(void* a0) {\n    uint32_t f_169a440__r0 = ((uint32_t (*)(uintptr_t))&sub_1687070)(((uintptr_t)((char*)(a0) + 8)));\n    uint64_t r0 = (f_169a440__r0) + (1);\n    asm volatile(\"\");\n    return r0;\n}\n"
+  },
+  {
+   "addr": 7452368,
+   "call_args": 1,
+   "call_ret": "uint64_t",
+   "callee": "sub_c70",
+   "callee_synthetic": false,
+   "ident": "f_71b6d0",
+   "module": "main",
+   "name": "sub_71b6d0",
+   "new_insns": 8,
+   "orig_insns": 8,
+   "shape": "call",
+   "sig": "v",
+   "size": 32,
+   "src": "extern void sub_c70();\nuint64_t f_71b6d0() {\n    uint64_t f_71b6d0__r0 = ((uint64_t (*)(uintptr_t))&sub_c70)(((uintptr_t)(24)));\n    void* p0 = (void*)((uintptr_t)(f_71b6d0__r0));\n    *(uint64_t*)((char*)(p0) + 8) = 0;\n    *(uint64_t*)((char*)(p0) + 16) = 0;\n    *(uint64_t*)((char*)(p0)) = 0;\n    uint64_t r0 = f_71b6d0__r0;\n    asm volatile(\"\");\n    return r0;\n}\n"
   }
  ],
  "module": "main",
