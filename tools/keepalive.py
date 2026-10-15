@@ -368,8 +368,34 @@ HARVEST_SEMANTIC = [
 
 
 def run(cmd, timeout=3600):
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", cwd=ROOT, timeout=timeout,
-                     **NOWINDOW)
+    """Run `cmd`, returning (rc, combined output).
+
+    TimeoutExpired is caught HERE rather than by the tick's handler. It was
+    observed as
+
+        subprocess.TimeoutExpired: [... gen_struct_copy.py --apply] timed out
+        after -33602.04809950001 seconds
+
+    A NEGATIVE timeout, which a fresh call with timeout=3600 cannot produce.
+    Python's subprocess builds its deadline from `time.monotonic()`, which on
+    Windows is `GetTickCount64` and does not advance while the machine is
+    suspended; the deadline therefore lands in the past when the process resumes
+    and every call fails instantly.
+
+    So the number is meaningless and the real failure is "this call was
+    interrupted", which is exactly what the harvest slice should report and move
+    on from. Letting it propagate took the loop down for ten hours.
+    """
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", cwd=ROOT,
+                           timeout=timeout, **NOWINDOW)
+    except subprocess.TimeoutExpired as e:
+        got = (e.output or b"")
+        if isinstance(got, bytes):
+            got = got.decode("utf-8", "replace")
+        return -1, ("TIMEOUT after %s (%s): %s"
+                    % (timeout, type(e).__name__, (got or "")[-400:]))
     return r.returncode, (r.stdout + "" + r.stderr)
 
 
