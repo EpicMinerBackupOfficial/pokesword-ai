@@ -89,6 +89,13 @@ EXTEND_TYPES = {
     "sxtb": ("int8_t",   "a"),
     "uxth": ("uint16_t", "t"),
     "sxth": ("int16_t",  "s"),
+    # `asr` is the arithmetic shift RIGHT. It belongs here because the bitwise
+    # block gates its third operand on this table, and 46 bodies were declined
+    # as "bic/and extend 'asr #31' is not supported". The type pair is only
+    # consulted for INDEX extends, and `asr` never appears as one, so listing it
+    # here is safe; the shift renderer gives it the signed type of the operand
+    # width instead.
+    "asr":  ("int32_t",  "i"),
 }
 # Bitwise and bitfield value instructions, all handled by one block below.
 # They are listed separately from the `add`/`mov`/`sub` group because they are
@@ -863,12 +870,30 @@ class StraightLine:
                 _shifted = None
                 if len(ops) == 3:
                     _parts = ops[2].split()
-                    if _parts[0] != "lsl" or len(_parts) != 2:
-                        raise Bail("%s extend %r is not supported" % (mn, ops[2]))
+                    # `asr` is an extend like `lsl`, not a separate shift pass.
+                    # It is the arithmetic shift right, and it is overwhelmingly
+                    # one of two idioms -- 595 forms in the four modules:
+                    #
+                    #   add x0, x8, x9, asr #1      x + (y >> 1)          ~250
+                    #   bic w8, w8, w8, asr #31     w & ~((i32)w >> 31)   ~100
+                    #   and w0, w0, w0, asr #31     w &  ((i32)w >> 31)    ~26
+                    #
+                    # Measured, clang 5.0.1 -O3, each exact:
+                    #
+                    #   x + (u64)((i64)y >> 1)   -> add x0, x0, x1, asr #1
+                    #   x &  ((i32)x >> 31)      -> and w0, w0, w0, asr #31
+                    #   x & ~(u32)((i32)x >> 31) -> bic w0, w0, w0, asr #31
+                    #
+                    # Note `(u64)((i64)y >> 1)` and NOT `(u64)y >> 1`: the
+                    # unsigned shift gives `lsr` and a separate add, which is two
+                    # instructions instead of one fused extend.
+                    if _parts[0] not in ("lsl", "asr") or len(_parts) != 2:
+                        raise Bail("%s extend %r is not supported"
+                                   % (mn, ops[2]))
                     _sh = parse_imm(_parts[1])
                     if _sh is None:
                         raise Bail("%s shift %r is not a literal" % (mn, _parts[1]))
-                    _shifted = (ops[1], _sh)
+                    _shifted = (ops[1], _sh, _parts[0])
                 elif len(ops) != 2:
                     raise Bail("%s with %d operands is not modelled" % (mn, len(ops)))
                 _a = state.get(wreg(ops[0]))
@@ -2374,6 +2399,14 @@ class StraightLine:
             if ext_op == "lsl":
                 # Parenthesise the operand; see the `expr` shift arm.
                 return _c2, "((%s) << %d)" % (_e2, shift)
+            if ext_op == "asr":
+                # The signed type of the SAME width: a 32-bit operand shifts as
+                # int32_t, a 64-bit one as int64_t. Widening first would change
+                # the instruction back.
+                _w = 32 if _c2 in ("uint32_t", "int32_t", "uint16_t",
+                                   "int16_t", "uint8_t", "int8_t") else 64
+                return ("int%d_t" % _w,
+                        "(((int%d_t)(%s)) >> %d)" % (_w, _e2, shift))
             if ext_op == "uxtw":
                 return _c2, "((uint32_t)(%s))" % _e2
             return _c2, "((int32_t)(%s))" % _e2
