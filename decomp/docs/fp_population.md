@@ -191,3 +191,55 @@ path rather than a new value kind in the walk. 48 call bodies.
 
 All four need either a NEON type or a floating-point conversion. None is a missing
 mnemonic handler, and each is now scoped by measurement rather than guesswork.
+
+## `stp q0, q0, [x0]`: the vector form, and why a zero vector will not hold it
+
+The 16-byte pair store needs the vector TYPE, and arm_neon.h is already in the
+preamble, so the type is available. The blocker is that Clang will not emit the
+register form for a known-zero vector:
+
+    sub_507450 (32 bytes)
+      movi  v0.2d, #0000000000000000
+      stp   q0, q0, [x0]
+      bl    #0x510410
+      mov   w0, wzr
+      ret
+
+Measured, clang 5.0.1 with the harness flags:
+
+    uint64x2_t v = {0,0};  asm volatile("");  g(a0);
+        ->  the vector is unused and is deleted entirely; no stp at all
+    uint64x2_t v = {0,0};  asm volatile("");  *(uint64x2_t*)a0 = v;  g(a0);
+        ->  stp xzr, xzr, [x0]      NOT stp q0, q0, [x0]
+
+So the zero vector folds to a pair of zero REGISTERS, and the `movi` that
+materialises it in the vector file disappears with it.
+
+This is the SAME defect as the dead half of an `ldp` and the fix is the same
+shape -- an empty `asm` with a `"+w"` constraint on the vector, which cannot be
+folded because Clang does not know what the barrier did to it. The "+w" form is
+the NEON register constraint; "+r" would be the general-purpose file and is a
+different register entirely.
+
+Two spellings already tried and rejected:
+
+  * `asm volatile("" : "+w"(v))` -- "inline asm not supported yet: don't know how
+    to handle tied indirect register inputs". The constraint is right; Clang 5.0.1
+    cannot express a tied vector operand in inline asm.
+  * making the vector non-constant -- changes the instruction, so it is not a
+    solution to a body whose value really is zero.
+
+That leaves forcing it from the C side -- an `asm volatile` with an output vector
+and no input, or a store through a pointer Clang cannot see through. Both are
+worth one measurement each, and neither has been tried.
+
+## The straight-line population is genuinely exhausted
+
+    sl_register --limit 100000
+      main 2118, sdk 589, subsdk0 212, subsdk1 212 candidates
+      TOTAL 0 verified of 3131
+
+The earlier work widened what translates from 1941 candidates to 3131. All 1190
+new bodies translate and none match. That is a real widening of the reachable set
+and it produced nothing, which is worth stating plainly rather than quoting the
+candidate count as progress.
