@@ -157,3 +157,37 @@ translator ought to do.
 ordinary integer value, and refusing arithmetic on one for the sake of a missing
 list entry was costing the whole population. `local` is now accepted in both the
 two-operand and three-operand forms.
+## movi: a NEON vector initialiser, not a zero constant
+
+226 distinct `movi` forms exist; the dominant ones are zeroes, and overwhelmingly
+SIMD:
+
+    v0.2d, #0000000000000000   x595
+    v1.2d, #0000000000000000    x84
+    d0,   #0000000000000000      42
+
+A plain zero constant does NOT produce it. Measured, clang 5.0.1 -O3:
+
+    f64 z = 0.0;  asm volatile("" : "+w"(z));  return z;
+        ->  fmov d0, xzr          NOT movi d0, #0
+    struct V v = {0,0}; ... return v;
+        ->  mov x0, xzr           NOT movi v0.2d, #0
+
+A NEON vector does:
+
+    #include <arm_neon.h>
+    uint64x2_t v = {0, 0};   ->  movi v0.2d, #0000000000000000    (exact)
+
+So `movi` on a vector register needs a NEON type in the generated source, which is
+a bigger change than the other three blockers: it is a new type in the declaration
+path rather than a new value kind in the walk. 48 call bodies.
+
+## Where the remaining blockers stand
+
+    SIMD operands v0.16b   160    NEON type + a vector-typed operand
+    fcvt                    64    int<->float, needs rounding intrinsics
+    movi                    48    NEON type (above)
+    extend asr #31          46    one more entry in the extend table
+
+All four need either a NEON type or a floating-point conversion. None is a missing
+mnemonic handler, and each is now scoped by measurement rather than guesswork.
