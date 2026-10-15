@@ -510,7 +510,32 @@ def supervise(argv, restart_delay, max_delay,
                                "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
                                "at_epoch": time.time(),
                                "cmd": argv[1:]})
-            rc = child.wait()
+            # Wait for the child WITHOUT blocking the loop.
+            #
+            # This was `rc = child.wait()`. That returns only when the child
+            # EXITS, so the stamp written two lines above stayed frozen at spawn
+            # time for as long as tier 2 lived -- and tier 2 lives for hours. The
+            # module docstring says the watchdog "stamps ... every cycle" and the
+            # code did it exactly once, so `health_check.py` reported a
+            # progressively older watchdog age every beat (72,682s and climbing)
+            # and the only reading available was that tier 1 had stopped. It had
+            # not: the process was alive the whole time and the stamp was a lie by
+            # omission.
+            #
+            # A stamp that only moves on restart cannot answer "is this wedged",
+            # which is the one question the stamp exists to answer.
+            rc = None
+            while True:
+                rc = child.poll()
+                if rc is not None:
+                    break
+                time.sleep(min(5, max(1, interval)))
+                write_json(STAMP, {"watchdog_pid": os.getpid(),
+                                   "child_pid": child.pid,
+                                   "restarts": restarts,
+                                   "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                                   "at_epoch": time.time(),
+                                   "cmd": argv[1:]})
             up = time.time() - t0
             restarts += 1
             log("watchdog: tier-2 exited rc=%s after %.0fs; restart #%d in %ds"

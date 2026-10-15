@@ -75,3 +75,64 @@ push cycles running, and it self-healed a stale harvest lock left by a dead proc
 3. **A tier that supervises a tier that exits is not supervision.** If tier 2 can
    exit, tier 1 must relaunch it, and tier 1's own stamp is the only evidence that
    it is doing so.
+## Tier 1 stamped once, at spawn -- the 20-hour-old watchdog
+
+`health_check.py` has reported `watchdog age` climbing for many beats, last at
+72,682s, and it was carried as an unresolved anomaly. It is not an anomaly.
+
+`supervise()` wrote the stamp and then called `child.wait()`:
+
+    write_json(STAMP, {... "child_pid": child.pid ...})
+    rc = child.wait()
+
+`child.wait()` returns only when the child EXITS. Tier 2 lives for hours, so the
+stamp stayed frozen at spawn time for the entire life of the process. The module
+docstring says "The watchdog stamps `work/ping_watchdog.json` every cycle with its
+pid, the child pid, the restart count and a timestamp" -- the code did it exactly
+once. The process was alive the whole time; the stamp was wrong.
+
+A stamp that only moves on restart cannot answer the question it exists to
+answer. `--status` computes `age = now - stamp["at_epoch"]` and reports it as
+"stamp age", which read as "this tier stopped stamping" when the truth is "this
+tier stamped once and then waited". The distinction matters: the first says
+investigate the supervisor, the second says the supervisor's reporting is broken.
+It was the second, and only a process listing could tell them apart.
+
+Fixed by polling the child instead of blocking on it, re-stamping each pass:
+
+    rc = None
+    while True:
+        rc = child.poll()
+        if rc is not None:
+            break
+        time.sleep(min(5, max(1, interval)))
+        write_json(STAMP, {... "child_pid": child.pid ...})
+
+`--selftest` passes, including the relaunch branch, so the poll correctly
+detects child exit rather than looping forever:
+
+    child #1 pid 31188
+    killed child #1 on purpose
+    child #2 pid 28516 (relaunched)
+    SELFTEST PASSED
+
+### Not restarted on purpose
+
+The live tier-1 is still the old code; it adopts the fix on its next restart. I
+did not restart the chain to hurry this along. `ping_watchdog.py --stop` stops the
+WHOLE chain, and `wake.py --loop` is what pings this session -- the chain has
+already died four separate times for unrelated reasons, and taking down tier 4 to
+validate a reporting fix is a bad trade. The anomaly disappears when the process
+next restarts on its own.
+
+## adrp_register work directories collide
+
+`work = os.path.join(ROOT, "work", "adrpreg")` was a fixed path, and the code
+does `shutil.rmtree(work)` then `os.makedirs(work)`. Two concurrent runs race
+twice: one gets `FileExistsError`, and worse, one run can `rmtree` the directory
+the other is compiling in. One sweep died that way. The path is not in the
+traceback -- only the work directory it names is -- so it reads as a generator
+bug.
+
+Now `work/adrpreg_<pid>`, and the linked-ELF temp is `_adrpreg_linked_<pid>.elf`
+for the same reason.

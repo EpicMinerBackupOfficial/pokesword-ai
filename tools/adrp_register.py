@@ -155,7 +155,16 @@ def main():
 
     md = MH._md()
     mods = a.module or list(MODULES)
-    work = os.path.join(ROOT, "work", "adrpreg")
+    # Per-process, NOT a fixed path.
+    #
+    # This was `work/adrpreg` for every run, and the line below does
+    # `shutil.rmtree(work)` then `os.makedirs(work)`. Two concurrent runs
+    # therefore race twice over: one gets FileExistsError from makedirs,
+    # and worse, one run can rmtree the directory the OTHER is compiling
+    # in. One sweep died on the FileExistsError and the failure looks like
+    # a generator bug rather than a collision, because the path is not in
+    # the traceback -- only the work directory it names is.
+    work = os.path.join(ROOT, "work", "adrpreg_%d" % os.getpid())
     all_rows = []
     tally = collections.Counter()
 
@@ -503,7 +512,7 @@ def _at(linked, ident, sig, size):
     the exact mangled name is tried first and the fuzzy `[ident in name]` match is
     the fallback.
     """
-    tmp = os.path.join(ROOT, "work", "_adrpreg_linked.elf")
+    tmp = os.path.join(ROOT, "work", "_adrpreg_linked_%d.elf" % os.getpid())
     os.makedirs(os.path.dirname(tmp), exist_ok=True)
     io.open(tmp, "wb").write(linked)
     try:
