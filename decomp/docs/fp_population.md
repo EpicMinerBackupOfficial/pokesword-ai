@@ -290,3 +290,77 @@ because `+w` cannot be tied in this Clang, and a store to memory can.
 Step 2 is the one that matters and it is not small. The pin has to exist in the TU
 without appearing in the compared function, which is what the `+r` barriers avoid
 by being free-standing statements rather than stores.
+
+## The q-pair store, implemented -- and two bugs it uncovered
+
+`struct Q2` is in the preamble and the handler has a q-register case. Four bugs,
+in the order they surfaced:
+
+**1. A stub shadowed the real handler.** `_render` had
+
+    if kind == "neon":
+        return val[1]
+
+sitting ABOVE the branch that renders a NEON zero. It returned a bare string --
+the type name -- so unpacking it into `(ct, expr)` raised
+
+    ValueError: too many values to unpack (expected 2)
+
+which is what 12 characters in a two-slot unpack looks like. The branch below it
+had therefore **never run**: no value had ever reached it. A stub that returns
+the wrong shape does not look like a stub when it is unreachable.
+
+**2. The NEON type name was built from the scalar type.**
+
+    "%sx%s_t" % ("uint64_t", "2")   ->   uint64_tx2_t
+
+No header declares that. It has to be the STEM: `"%sx%s_t" % ("uint64", "2")`.
+
+**3. `reg_num` does not accept `q`.** Its pattern is `[xw](\d+)`, so `reg_num("q0")`
+is None and the lookup for the `movi` that wrote the vector always missed. The
+two spellings of one register -- `q0` in the store, `v0.2d` in the movi -- were
+never connected.
+
+**4. The preamble existed in TWO copies.** `match_harness.PREAMBLE` and the
+header `decomp_project.py` writes were independent copies of the same text. Q2
+went into the harness, every candidate compiled and **verified against retail**,
+and then the prog build failed:
+
+    error: variable has incomplete type 'struct Q2'
+
+Nothing in the matching path could have caught this, because the matching path is
+where the type was added. `decomp_project` now imports `MH.PREAMBLE`; there is
+one preamble.
+
+## Calls are hoisted, so the store has to go in `pre`
+
+`_emit` assembles
+
+    all_txt = pre + _call_txt + pins + body_txt
+
+Every call is emitted ABOVE every other statement, whatever the original did. So a
+body that stores and *then* calls cannot match unless its store is in `pre`. The
+q-store now records `not call_stmts` at walk time -- `call_stmts` fills in walk
+order, so that is the question "had the call happened yet" -- and emits into
+`pre` or `body_txt` accordingly.
+
+That is the difference between
+
+    mov x0,xzr ; bl ; movi v0.2d,#0 ; stp q0,q0,[x19]      not matching
+
+and retail's
+
+    movi v0.2d,#0 ; stp q0,q0,[x0] ; bl ; mov w0,wzr
+
+and it is what turned 0 verified into 1.
+
+## Reach
+
+    non-void prototypes reachable   526 -> 528
+    16-byte pair store not modelled  32 -> 0
+    16-byte single store not modelled -> 0
+
+Both vector-store blockers are gone. Of the bodies this reaches, 2 are store-
+before-call, which is why the ordering fix was worth making on its own: the
+population is small but the fix is general, and it will carry the `v0.16b`
+population when that arrives.
