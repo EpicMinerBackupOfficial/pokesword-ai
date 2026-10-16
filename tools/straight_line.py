@@ -909,10 +909,19 @@ class StraightLine:
                 # narrower load, a signed one, an argument -- is a value whose
                 # type the guard did not establish, and re-typing it here would
                 # silently change the access.
-                if _gval[0] == "load" and _gval[3] == 8 and not _gval[4]:
+                if _gval[0] == "load" and _gval[3] in U and not _gval[4]:
+                    # The load s OWN WIDTH, not 64 bits. Restricting this to an
+                    # unsigned 64-bit load left every `ldrb` guard with the
+                    # original defect -- the value stayed an inline expression,
+                    # Clang kept it in a scratch register, and the candidate grew
+                    # a `mov x0, xzr ; ret` tail the original does not have:
+                    #
+                    #   retail  ldr x0, [x0, #0x20] ; cbz x0, +N ; ... ; ret
+                    #   ours    ldr x8, [x0, #0x20] ; cbz x8, +N ; ... ; mov x0,xzr ; ret
+                    _gw = _gval[3]
                     _gkey = SYNTH_BASE + len(synth)
-                    synth.append((_gkey, "*(uint64_t *)(%s)"
-                                  % ptr_add(nm(_gval[1]), _gval[2])))
+                    synth.append((_gkey, "*(%s *)(%s)"
+                                  % (U[_gw], ptr_add(nm(_gval[1]), _gval[2]))))
                     # The type is what the DECLARATION says, not what the value
                     # would like to be.
                     #
