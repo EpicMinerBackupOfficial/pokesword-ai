@@ -147,3 +147,54 @@ Measured the same day, in the same session, and still wrong.
 88 bodies is 0.06% of the figure. That is worth having and it is not worth a
 risky structural change to a translator holding 32,532 matches. The right order
 is: measure the C, bank the recipe, then change the walk.
+
+
+## The 88 are not one template either
+
+Checked before implementing, having just been burned for quoting a filter class
+as a population. Sampling the first four of the 88 they all looked like
+`sub_2c1470` -- `ldr x0,[x0,#off]` / `cbz x0, ret` / frame / `bl` / `mov w0,#1` /
+frame / `ret` -- differing only in the offset and the callee. That was three
+bodies that agreed and it would have been enough to design against.
+
+    the 88: final block instruction
+       ldp x29, x30, [sp, #0x10]   70
+       cset w0, eq                  4
+       mov w0, #1                   3
+       cset w0, ne                  3
+       bl #0x2ed320                 2
+       lsr x0, x0, #0x20            1
+
+    the 88: the pre-branch instruction
+       ldr [x0                     27
+       ldrb [x0                    10
+       ldr [x0]                     3
+       mov #1                       2
+       tbz #0                       2
+       ldr [x1                      2
+
+Three findings, and the first is the important one:
+
+**1. 70 of the 88 have `ldp x29, x30, [sp, #0x10]` as the third-from-last
+instruction -- NOT the standard `ldp x29, x30, [sp], #N` epilogue.** It is
+non-writeback, so `frame_of` rejects these bodies for a second reason
+independent of the branch, and the frame form differs from the one `sub_2c1470`
+uses. Clang emits that form when the callee-saved pair is reloaded from a known
+slot rather than popped.
+
+**2. Only 3 of the 88 end the block with `mov w0, #1`.** Seven end with `cset`,
+which is a flag-derived result and means the block's return is a comparison, not
+a constant. The rest end with the call itself or a shift of its result. So "the
+block returns 1" -- the assumption the single measured body suggested -- holds
+for 3 of 88.
+
+**3. The pre-branch instruction is not always a pointer load.** 27 are
+`ldr [x0, ...]`, 10 are `ldrb` (a byte, so the guard is a byte being zero or
+non-zero and the C type is `unsigned char *`), and the rest are a bare
+register or a `mov`.
+
+So the implementation is a template with a parameterised return expression, a
+parameterised guard type, and two frame forms -- not one body with two
+constants. That is the difference between a change that would have worked on
+`sub_2c1470` and a change that works on 88, and it is only visible by counting
+the variants rather than reading the first example.
