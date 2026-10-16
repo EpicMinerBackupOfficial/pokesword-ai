@@ -2563,6 +2563,19 @@ class StraightLine:
         go through the same state the walk built rather than treating `s0` as an
         argument register. An unknown operand is an incoming argument.
         """
+        # An IMMEDIATE operand. `cmp x2, #0x168 ; b.hi` is the common shape here and
+        # `_guard_operand` assumed both operands were registers, so the literal
+        # fell through to `arg_reg("#0x168")` and raised
+        #
+        #     operand '#0x168' is not an argument register (x0-x7)
+        #
+        # for 14 guarded bodies. A message about an argument register, for a
+        # constant that is not a register at all.
+        _t = reg.strip()
+        if _t.startswith("#"):
+            _iv = parse_imm(_t.lstrip("#"))
+            if _iv is not None:
+                return ("imm", _iv, "uintptr_t")
         if reg in state:
             return state[reg]
         # `state` is keyed by the WIDENED register, so `w8` is stored as `x8`.
