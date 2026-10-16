@@ -27,3 +27,15 @@ guesses are wrong. Fixing these raises the mechanical shapes toward 100%.
 - Wire the 97k Ghidra bodies (real signatures + C) through the same verifier
 - Fix getter/setter x8 modeling
 - Update progress numbers from the emitted body registry
+
+## x8-declined bodies = human-level, not a mechanical gap
+
+The getter/setter candidates declined by the x8 guard (bases/values in x8+,
+the AArch64 indirect-result/IP0 register) turn out to be real middleweight
+functions, not simple accessors:
+- stack-frame zeroing bodies using `unaff_x29` (frame pointer)
+- no-return panic thunks into `thunk_FUN_017e8ef0`
+- hidden-`this` helpers reached by tail call
+
+These need per-function understanding (the AI-assisted path), not generator
+fixes. The guard prevents wrong answers; it does not hide matches.
