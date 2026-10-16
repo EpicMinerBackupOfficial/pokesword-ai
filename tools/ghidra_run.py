@@ -37,13 +37,12 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "work", "ghidra_out")
-PROJ = os.path.join(ROOT, "work", "ghidra_proj")
+PROJ = r"C:\Users\EpicM\ghidra_proj"
 SCRIPTS = os.path.join(ROOT, "tools", "ghidra", "scripts")
 
-# Ghidra 11.1.1 is used rather than 12.1.4 because it supports JDK 17, which is
-# the only JDK installed here.
-GHIDRA = r"C:\Users\charl\Downloads\ghidra_11.1.1_PUBLIC\support\analyzeHeadless.bat"
-JAVA_HOME = r"C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot"
+# Instance 12.1.4 with bundled JDK 21 on this machine.
+GHIDRA = r"C:\Users\EpicM\.abacusai-bot\bot-home\ghidra\ghidra_12.1.4_PUBLIC\support\analyzeHeadless.bat"
+JAVA_HOME = r"C:\Users\EpicM\.abacusai-bot\bot-home\jdk21\jdk-21.0.12.1+1"
 LANG = "AARCH64:LE:64:v8A"
 
 # Smallest first: a module that finishes proves the pipeline end to end before

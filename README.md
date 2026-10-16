@@ -268,3 +268,14 @@ graph; turning that into C++ that assembles identically is the per-function work
 - Deep `.prmb` data-table formats are left to the community
   `swordshield-data` project; the headers are identified and documented.
 
+
+---
+
+## AI-Assisted Fork Notice (pokesword-ai)
+
+This repository is an **AI-assisted fork** of [`charlieduzstuf/pokesword`](https://github.com/charlieduzstuf/pokesword), itself a decomp project for **Pokemon Sword (US, v0)** on Game Freak's "orion" engine.
+
+- Bodies and analysis in `analysis/` are produced with LLM + Ghidra assistance.
+- Naming/subsystem maps are **AI hypotheses**, not human-verified matches.
+- The upstream verified-match corpus is kept pristine; AI-claimed work lives in `analysis/` and is clearly labeled.
+- See [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) for full separation policy.
