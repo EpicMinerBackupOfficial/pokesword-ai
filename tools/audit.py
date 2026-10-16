@@ -195,7 +195,7 @@ def main():
              "only %d named; the rest need manual RE" % len(named))
 
     # ------------------------------------------------------- block coverage
-    section("2. Block coverage (every recomp block in exactly one function)")
+    section("2. Block coverage (every decomp block in exactly one function)")
     import bisect
     grand_blocks = 0
     for m in MODULES:
@@ -228,7 +228,7 @@ def main():
         ok = stubs <= 32
         check(ok, "module %s blocks covered" % m,
               "%d blocks, %d entry-stub below first function" % (len(blocks), stubs))
-    print("  info  %-58s %d" % ("total recomp blocks", grand_blocks))
+    print("  info  %-58s %d" % ("total decomp blocks", grand_blocks))
 
     # -------------------------------------------------------------- ELF
     section("3. Rebuilt ELF binaries")
