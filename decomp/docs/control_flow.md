@@ -198,3 +198,81 @@ parameterised guard type, and two frame forms -- not one body with two
 constants. That is the difference between a change that would have worked on
 `sub_2c1470` and a change that works on 88, and it is only visible by counting
 the variants rather than reading the first example.
+
+
+## The 70 are not a template, and that corrects the design
+
+    main sub_67bf70@0x67bf70   (12 instructions, the dominant-70 frame form)
+      ldrb  w8, [x0, #0x7c]
+      cbz   w8, #0x67bf9c            <- the ret
+      str   x19, [sp, #-0x20]!
+      stp   x29, x30, [sp, #0x10]
+      add   x29, sp, #0x10
+      mov   x19, x0
+      ldr   x0, [x0, #0x58]
+      bl    #0x67bfc0
+      strh  w0, [x19, #0x7a]
+      ldp   x29, x30, [sp, #0x10]
+      ldr   x19, [sp], #0x20
+      ret
+
+    main sub_7b4bb0@0x7b4bb0   (17 instructions)
+      ldr   x8, [x0, #0x5e0]
+      ldrb  w9, [x8, #0x58]
+      bfxil w9, w1, #0, #1
+      strb  w9, [x8, #0x58]
+      tbz   w1, #0, #0x7b4bf0        <- the ret
+      sub   sp, sp, #0x20
+      stp   x29, x30, [sp, #0x10]
+      add   x29, sp, #0x10
+      ldr   x0, [x0, #0x5e8]
+      add   x1, sp, #8                <- a stack SLOT
+      mov   w2, #1
+      mov   w3, wzr
+      str   xzr, [sp, #8]
+      bl    #0x14e6550
+      ldp   x29, x30, [sp, #0x10]
+      add   sp, sp, #0x20
+
+### Why the "four axes" framing was wrong, and what replaces it
+
+Last beat I concluded the 88 need "a template with a parameterised return
+expression, a parameterised guard type and two frame forms". Read as a design
+that says: hard-code the return, hard-code the guard type, handle two frames.
+That would have been the wrong implementation, and the reason is visible above.
+
+These are not bodies of one shape. They are **arbitrary straight-line function
+bodies with a guard branch at the top**, and the body is the part the translator
+already handles:
+
+  * the block's return is the CALL'S result (`bl` then `strh`, falling through
+    with x0), not a constant. So the "return expression" is not an axis to
+    hard-code -- it is `state["x0"]` at the end of the block, which the existing
+    walk has already computed.
+  * the guard is `ldrb` (a byte) in both examples, so the C type follows from
+    the load the walk already modelled, not from a hard-coded `void *`.
+  * the frame differs -- `str x19,[sp,#-0x20]!` / `stp x29,x30,[sp,#0x10]` /
+    `add x29,sp,#0x10` / `ldp x29,x30,[sp,#0x10]` / `ldr x19,[sp],#0x20` -- but
+    the translator does not emit frames at all. Clang does, from the C. So the
+    frame is not an axis either; it is an output to be allowed to come out
+    right.
+  * `mov x19, x0` is just Clang keeping a0 live across the call. The C needs
+    nothing for it.
+  * `add x1, sp, #8` and `str xzr, [sp, #8]` is a stack SLOT for an out
+    parameter. That is a real requirement, but it is a pre-existing one --
+    `frame_of` and the `sp` refusal already handle or decline it.
+
+So there is **one mechanism, not four axes**: reuse the existing walk for the
+block, wrap its rendered source in `if (<guard>) { ... }`, and emit the
+fallthrough return from `state["x0"]` as it stood before the block.
+
+What remains is plumbing, not semantics:
+
+  1. a `guard` argument to `translate()` -- default None, so every existing
+     caller is byte-identical
+  2. split the instruction list at the guard, walk both halves with shared
+     `state`/`used_args`
+  3. a second return value in `_emit`
+
+The default-None guard is the whole safety story: the 32,532 matched bodies
+never pass a guard, so they cannot be disturbed by any of it.
