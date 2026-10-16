@@ -587,14 +587,37 @@ class StraightLine:
     def __init__(self, insns):
         self.insns = insns
 
-    def translate(self, ident, calls=None):
+    def translate(self, ident, calls=None, guard=None):
+        """Translate the walked body into a C function.
+
+        `guard` is the index into `body` of a CONDITIONAL BRANCH whose target is
+        the trailing `ret` -- a guarded block. It is `None` for every existing
+        caller, and `None` means this function behaves exactly as it did before
+        the parameter existed. That is the entire safety story: none of the
+        verified bodies pass a guard, so none of them can be disturbed by any of
+        the guarded code below.
+
+        The walk stays a SINGLE pass. A guarded block's statements read values
+        the pre-block produced -- `ldr x0,[x0,#0x50] ; cbz x0,ret ; ... ; bl F`
+        has the block call the pointer the first instruction loaded -- so two
+        passes with two `state` dicts cannot express it. Instead the walk
+        snapshots `state` and the two list lengths when it reaches the guard, and
+        `_emit` partitions on those.
+
+        See decomp/docs/control_flow.md.
+        """
         insns = self.insns
         if not insns or insns[-1].mnemonic != "ret":
             raise Bail("body does not end in ret")
         body = insns[:-1]
         if not body or len(body) > MAX_INSNS:
             raise Bail("empty body, or %d instructions > MAX_INSNS=%d" % (len(body), MAX_INSNS))
-        for i in body:
+        for _pf, i in enumerate(body):
+            # The guard is the one instruction the pre-filter must let through:
+            # `cbz` is not in any accepted list, because COND_MNEMONICS is the
+            # SELECT family (csel/cset) and not the branch family.
+            if guard is not None and _pf == guard:
+                continue
             # This is a whole-body pre-filter, and it runs before any of the
             # per-instruction handlers below. Anything missing here is declined as
             # "unsupported mnemonic" no matter how much the handler underneath
@@ -845,7 +868,20 @@ class StraightLine:
 
         # Comparison flags: a pseudo-register, since no instruction names it.
         flags = None
-        for i in body:
+        # Guarded-block bookkeeping. All None unless `guard` was passed.
+        _gstate = None       # state as it stood BEFORE the guarded block
+        _gn_stmts = None     # len(stmts) at the guard
+        _gn_calls = None     # len(call_stmts) at the guard
+        _gval = None         # value tuple the guard tests
+        _gform = None        # "nz" -> block runs when the value is NON-zero
+        for _gi, i in enumerate(body):
+            if guard is not None and _gi == guard:
+                _gstate = dict(state)
+                _gn_stmts = len(stmts)
+                _gn_calls = len(call_stmts)
+                _gval, _gform = self._guard_test(i, state, used_args,
+                                                  idx_args, ptr_args)
+                continue
             mn = i.mnemonic
             ops = split_ops(i.op_str)
 
@@ -2450,7 +2486,48 @@ class StraightLine:
         self._fp_args = fp_args
         self._late_synth = late_synth
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
-                               call_stmts, saw_call)
+                               call_stmts, saw_call,
+                               block=(None if guard is None else
+                                      (_gstate, _gn_stmts, _gn_calls, _gval, _gform)))
+
+    def _guard_test(self, ins, state, used_args, idx_args, ptr_args):
+        """-> (value tuple, "nz"|"z") for a guarded block's condition.
+
+        The branch SKIPS the block when it is taken, so the C is the negation of
+        the branch test, and `_gform` records which way round that is:
+
+            cbz  Rd, ret     ->  if (Rd)            form "nz"
+            cbnz Rd, ret     ->  if (!(Rd))         form "z"
+            tbz  Rd, #b, ret ->  if (!((Rd) & 1<<b)) form "z"
+            tbnz Rd, #b, ret ->  if ((Rd) & 1<<b)    form "nz"
+
+        `tbz`/`tbnz` test a BIT, not the whole register, so the value is masked
+        and the mask is carried in the value tuple -- `imm` values render as a
+        literal, and masking is a `bitwise` value.
+        """
+        _o = [x.strip() for x in ins.op_str.split(",")]
+        mn = ins.mnemonic
+        if mn in ("cbz", "cbnz"):
+            reg, form, mask = _o[0], ("nz" if mn == "cbz" else "z"), None
+        elif mn in ("tbz", "tbnz"):
+            reg, form = _o[0], ("nz" if mn == "tbnz" else "z")
+            mask = parse_imm(_o[1].lstrip("#"))
+        else:
+            raise Bail("guard %r is not a single-register test" % (mn,))
+        if reg in ("xzr", "wzr"):
+            raise Bail("guard tests the zero register")
+        if wreg(reg) in state:
+            val = state[wreg(reg)]
+        else:
+            an = arg_reg(reg)
+            used_args.add(an)
+            val = ("arg", an, "uintptr_t")
+        if mask is not None:
+            # `expr` is the arithmetic/binary kind and renders `(a) & (b)` for any
+            # operator, so it carries the mask without a new value kind. There is
+            # no `bitwise` kind -- checked, not assumed.
+            val = ("expr", "&", val, ("imm", mask, "uintptr_t"), "uintptr_t")
+        return val, form
 
     @staticmethod
     def _value_arg(reg, used_args, idx_args, ptr_args=None):
@@ -2748,7 +2825,7 @@ class StraightLine:
         raise Bail("unknown value kind %r" % (kind,))
 
     def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
-              call_stmts=(), saw_call=False):
+              call_stmts=(), saw_call=False, block=None):
         """Render the walked body as a function.
 
         `call_stmts` arrives as (callee name, raw argument value tuples) because
@@ -2915,7 +2992,10 @@ class StraightLine:
             # forcing a live pointer into a register is not free.
             if key in getattr(self, "_pinned", ()):
                 pins.append('__asm__ volatile("" : "+r"(%s));' % nm(key))
-        for stmt in stmts:
+        _bcut = None          # (len(pre), len(body_txt)) where the block starts
+        for _si, stmt in enumerate(stmts):
+            if block and _si == block[1] and _bcut is None:
+                _bcut = (len(pre), len(body_txt))
             if stmt[0] == "qstore":
                 # See the q-pair store below for the measurement. One field.
                 _, n, off, v, _early = stmt
@@ -3083,7 +3163,10 @@ class StraightLine:
         # been built, is the first point where every argument name is known.
         if call_stmts:
             _call_txt = []
-            for _nm, _vals, _rt, _alias in call_stmts:
+            _ccut = 0             # where the block's calls start
+        for _ci, (_nm, _vals, _rt, _alias) in enumerate(call_stmts):
+            if block and _ci == block[2] and _ccut == 0:
+                _ccut = len(_call_txt)
                 # Through a cast of the callee's own address, for the same reason
                 # as the `call_n` arm: two bodies in one unit calling one callee
                 # with different arities would otherwise be two `extern` lines that
