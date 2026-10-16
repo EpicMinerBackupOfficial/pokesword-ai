@@ -428,3 +428,72 @@ local in the condition. Whether the callee then receives it depends on
 `prototype_order` offering an arity that matches, which it currently does not for
 this body -- so the two have to land together, and the arity floor is the
 narrower of the two problems.
+
+
+## The C now IS the recipe; the codegen still is not
+
+Three changes this beat, each from a named cause:
+
+**1. The guard's value gets a NAMED LOCAL.** Rendered inline it appeared twice --
+in the condition and as the callee's argument -- and as an expression Clang may
+leave in a scratch register. Only an unsigned 64-bit load is eligible, because
+anything else is a value whose type the guard did not establish.
+
+**2. The REGISTER is redefined, not just the condition.** The first attempt
+created the local for the `if` but the call argument still rendered the original
+load, because the argument is resolved from `state` when the walk reaches the
+`bl`:
+
+    void *p0 = (void *)(*(uint64_t *)((char *)(a0) + 80));
+    if (p0) { g((uintptr_t)(*(uint64_t *)((char *)(a0) + 80))); }   <- load twice
+
+Redefining `state` dropped the translatable variants from 99 to 33, which is the
+cost: a body whose later reads now resolve to a `void *` local is no longer
+expressible under every prototype, and those prototypes correctly drop out.
+
+**3. FRAME_ASM no longer lands inside the block.** It is `asm volatile("")`, it
+sits after a `return` so it is dead, and a side-effecting statement stops Clang
+merging the two return paths.
+
+The generated C is now, line for line:
+
+    uint32_t f_2c1470(void* a0) {
+        void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 80));
+        if (p0) {
+            ((void (*)(uintptr_t))&g_2c5fb0)(p0);
+            return 1;
+        }
+        return 0;
+    }
+
+which is the recipe that measured byte-identical:
+
+    void *p = *(void **)((char *)a0 + 0x50);
+    if (p) { g(p); return 1; }
+    return 0;
+
+**and it still does not match.** The two differences left are the same two:
+
+    retail  ldr x0, [x0, #0x50] ; cbz x0 -> +24 ; ... ; mov w0,#1 ; ldp ; ret
+    ours    ldr x8, [x0, #0x50] ; cbz x8 -> +28 ; ... ; mov w0,#1 ; ldp
+                                               ; mov w0, wzr ; ret
+
+So the C being right is not sufficient, and that is the finding worth having:
+three separate C-level defects, each with a named cause, each fixed, and the
+candidate still does not match. The remaining difference is a register CHOICE
+(x8 against x0) and a tail Clang is not merging, neither of which is visible in
+the source any more.
+
+Remaining suspects, in the order I would test them:
+
+  * `(void*)(expr)` versus `*(void **)addr`. A cast of a loaded value and a
+    dereference of a `void *` are the same value, but they are not the same
+    expression, and the register allocator does not have to agree.
+  * the call is cast through a function pointer, `((void (*)(uintptr_t))&g)(p0)`,
+    where the recipe calls `g(p)` directly. A direct call was byte-identical to
+    the cast in the FP case (`fp_scheduling.md`), but that was without a guard.
+  * `return 0;` materialises `mov w0, wzr` here and did not in the measurement,
+    which suggests the compiler is not tracking `p0 == 0` into the return
+    register. The measurement's local is `*(void **)(...)`; ours is
+    `(void *)(*(uint64_t *)(...))`. If the first is the answer, the fix is to
+    emit the dereference form rather than the cast form.
