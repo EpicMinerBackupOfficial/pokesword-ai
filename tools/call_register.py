@@ -195,18 +195,49 @@ def candidates_guarded(mod, reg, md, limit):
         # Nothing that passes a stack slot to a callee is removed -- `add x1, sp,
         # #8 ; str xzr, [sp, #8]` is an out-parameter and the C genuinely needs
         # it, so those bodies keep bailing on `sp`, correctly.
+        #
+        # The first version of this matched only `stp x29, x30, [sp, #-N]!` and
+        # `add/sub sp, sp, #N` -- the UNGUARDED frame form. A guarded body carries
+        # the WIDER one, and every pattern here missed it:
+        #
+        #     stp  x29, x30, [sp, #0x10]      non-writeback, no `#-`
+        #     add  x29, sp, #0x10              not `sp, sp`
+        #     ldr  x19, [sp], #0x20            post-index, does not end in `]`
+        #
+        # So 66 of the 106 sp-using bodies were not stack slots at all -- they
+        # were the frame the translator must never be handed, and the whole
+        # "a stack slot is not modelled" story was measuring the stripper's
+        # incompleteness rather than the population's.
+        #
+        # The test is now the SHAPE rather than a spelling: an sp-relative
+        # access that is part of saving or restoring registers, or that moves sp
+        # or x29. A genuine local -- an out-parameter, a spill -- is neither, and
+        # still declines.
+        def _is_frame(x):
+            _m, _o = x.mnemonic, x.op_str.strip()
+            if not (_o.startswith("[sp") or "[sp" in _o or _o.startswith("sp, ")
+                    or "sp, #" in _o or _o.startswith("x29, sp")):
+                return False
+            if _m in ("stp", "ldp") and _o.startswith("x29, x30, [sp"):
+                return True
+            if _m in ("str", "ldr") and _o.startswith("x") and "[sp" in _o:
+                # A callee-saved push/pop. A spill of an ordinary value through
+                # sp is not frame bookkeeping, so the register must be callee
+                # saved: x19-x28, x29, x30, or the frame pointer itself.
+                _r = _o.split(",")[0].strip()
+                _n = _r[1:]
+                return _n.isdigit() and int(_n) >= 19
+            if _m in ("sub", "add") and _o.startswith("sp, sp"):
+                return True
+            if _m == "add" and _o.startswith("x29, sp, #"):
+                return True
+            if _m == "mov" and _o in ("x29, sp", "sp, x29"):
+                return True
+            return False
+
         work = []
         for x in ins[:-1]:
-            _m, _o = x.mnemonic, x.op_str
-            _frame_pair = (x.mnemonic == "stp" and _o.startswith("x29, x30, [sp, #-")) \
-                or (x.mnemonic == "ldp" and _o.startswith("x29, x30, [sp"))
-            _frame_one = ((x.mnemonic == "str" and _o.startswith("x") and "[sp, #-" in _o)
-                          or (x.mnemonic == "ldr" and _o.startswith("x") and "[sp" in _o
-                              and _o.endswith("]")))
-            _frame_size = (x.mnemonic in ("sub", "add")
-                           and _o.startswith("sp, sp, #"))
-            _frame_mov = (x.mnemonic == "mov" and _o == "x29, sp")
-            if _frame_pair or _frame_one or _frame_size or _frame_mov:
+            if _is_frame(x):
                 continue
             work.append(x)
         out.append((addr, size, name, "f_%x" % addr,
