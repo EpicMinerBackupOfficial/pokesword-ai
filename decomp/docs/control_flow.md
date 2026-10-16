@@ -326,3 +326,66 @@ too slow to run twice.
 
 So the order stays: enumerate, measure the C, then change the walk. The first
 two are done.
+
+
+## LANDED: the guarded walk, and what it still gets wrong
+
+The path is built end to end and it compiles. `translate()` takes a `guard`
+(index of the branch in `body`, default `None`), the pre-filter lets that one
+instruction through, the walk snapshots `state` and the two list lengths when it
+reaches it, and `_emit` partitions on those into
+
+    <decls> <outer calls> <outer stores>
+    if (<cond>) { <inner calls> <inner stores> return <inner>; }
+    return <outer>;
+
+`candidates_guarded()` strips the frame from the block first -- only pure frame
+bookkeeping: the x29/x30 pair, a callee-saved push/pop, and the `sub/add sp`.
+Nothing that passes a stack slot to a callee is stripped, because that is a real
+out-parameter and those bodies keep bailing on `sp`, correctly.
+
+### 123 bodies, and where they go
+
+    13  translate
+    68  bail: memory base is sp -- a genuine stack slot, correctly declined
+    29  bail: guard 'b.ne'/'b.hi'/'b.eq' is not a single-register test
+     5  bail: fsub, bfxil -- unrelated
+
+97 variants compiled across the 13, **0 verify**. Both blockers below are in the
+C, not in the structure.
+
+### Defect 1: the fallthrough return re-loads instead of returning the constant
+
+    retail  ldr x0, [x0, #0x50] ; cbz x0 -> +24 ; ... ; mov w0,#1 ; ldp ; ret
+    ours    ldr x8, [x0, #0x50] ; cbz x8 -> +28 ; ... ; mov w0,#1 ; ldp
+                                               ; mov w0, wzr ; ret
+
+Two differences, one cause. The walk renders the fallthrough return as
+`return (uint32_t)(*(uint64_t*)((char*)(a0) + 80));` -- re-evaluating the load --
+so Clang materialises `mov w0, wzr` before `ret`. Retail's null path simply
+leaves x0 alone, because the load already put 0 there.
+
+The measured recipe that DOES work is the one from the top of this file:
+
+    void *p = *(void **)((char *)a0 + 0x50);
+    if (p) { g(p); return 1; }
+    return 0;
+
+A named local, and a CONSTANT fallthrough. `cbz` asserts the value is zero, so
+the fallthrough return is literally `0` and needs no load at all. The translator
+re-derives the load because it renders the return expression from `state` without
+consulting what the guard proved about it.
+
+### Defect 2: the load lands in x8, not x0
+
+    retail  ldr x0, [x0, #0x50]
+    ours    ldr x8, [x0, #0x50]
+
+The walk allocates a scratch register for the loaded value instead of letting it
+land in x0, which retail does because the load overwrites the incoming argument.
+This one is about register choice rather than semantics, and fixing defect 1
+removes the need for the value twice over -- with the local named and the
+fallthrough a constant, there is one load and Clang puts it where retail does.
+
+Defect 1 is the one to fix, and both point at the same place: the guard is
+treated as a branch to be skipped rather than as a fact about the value it tests.
