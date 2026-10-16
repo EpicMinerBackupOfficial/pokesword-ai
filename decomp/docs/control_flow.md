@@ -389,3 +389,42 @@ fallthrough a constant, there is one load and Clang puts it where retail does.
 
 Defect 1 is the one to fix, and both point at the same place: the guard is
 treated as a branch to be skipped rather than as a fact about the value it tests.
+
+
+## Defect 1 fixed; what is left is the NAMED LOCAL
+
+`cbz` proves the tested value is zero on the fallthrough, so the fallthrough
+return is now the constant rather than a re-evaluation of the load:
+
+    if (*(uint64_t*)((char*)(a0) + 80)) { ... return 1; }
+    return 0;
+
+Measured against the recipe at the top of this file, the generated C is now the
+right shape. It still does not match, and the remaining difference is one token:
+
+    MINE (now)                       RECIPE (byte-identical)
+    if (*(uint64_t*)((char*)(a0)+80))  void *p = *(void**)((char*)a0 + 0x50);
+    { ... return 1; }                   if (p) { g(p); return 1; }
+    return 0;                            return 0;
+
+Two consequences of the missing `p`, and they are the whole gap:
+
+1. **The callee never receives the pointer.** The generated call is
+   `g_2c5fb0()` with no argument, because the only prototypes `prototype_order`
+   offers for this body have `nargs = 0`. The recipe's `g(p)` needs a one-argument
+   prototype, and `callee_arg_floor` is not producing one here. So even with the
+   right shape there is nothing to pass.
+2. **The load is an expression, not a register.** With the value used once in the
+   condition Clang is free to put it in `x8`, which is what it does; with a named
+   local it is live in `x0` and that is what retail has.
+
+So the two remaining instructions -- `ldr x8` instead of `ldr x0`, and the
+`mov w0, wzr ; ret` tail -- are one cause: the guard's value is an inline
+expression, so it is neither passed to the callee nor pinned in a register.
+
+The fix is to synthesise a local for the guard's value at the guard point, the
+way the `synth` mechanism already does for displaced addresses, and use that
+local in the condition. Whether the callee then receives it depends on
+`prototype_order` offering an arity that matches, which it currently does not for
+this body -- so the two have to land together, and the arity floor is the
+narrower of the two problems.
