@@ -186,6 +186,22 @@ def tool(name):
     raise SystemExit("required tool not found: %s" % name)
 
 
+# Bare-metal include hygiene for clang 5.0.1 without a devkitA64 sysroot.
+# clang's resource stdint.h does #include_next to the host glibc stdint.h
+# (x86), which breaks aarch64 compiles. We -isystem our own stdint shim
+# (tools/stdint_shim) ahead of everything, then the clang resource dir so
+# arm_neon.h still resolves. Same compiler, same flags otherwise: this only
+# replaces the stdint the devkitA64 sysroot would have provided on CI.
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+SHIM_DIR = os.path.join(SCRIPTS_DIR, "stdint_shim")
+_RESOURCE_DIR = os.path.join(
+    os.path.dirname(LLVM_BIN), "lib", "clang", REQUIRED_CLANG, "include")
+if os.path.isdir(SHIM_DIR) and os.path.isdir(_RESOURCE_DIR):
+    EXTRA_INC = ["-nostdinc", "-isystem", SHIM_DIR, "-isystem", _RESOURCE_DIR]
+else:
+    EXTRA_INC = []
+
+
 def load_functions(module):
     rows = []
     with open(os.path.join(ROOT, "data", "functions.csv"), encoding="utf-8") as f:
@@ -542,6 +558,37 @@ def compile_batch(candidates, workdir, incdir=None, head=None):
         else:
             norm.append((first, second))
 
+    # The emitted sources in prog/matched are self-contained (they carry the
+    # preamble themselves: typedefs, struct Q2, extern decls). Prepending
+    # PREAMBLE again re-defines struct Q2. Detect that and compile as-is.
+    # When every candidate is self-contained (baked preamble) we must NOT
+    # prepend PREAMBLE, and each source must compile in its OWN TU: two baked
+    # sources in one TU still re-define Q2. verify_matches groups by file, but
+    # also batches many files per chunk. Detect baked per-source and compile
+    # them separately.
+    baked = any("#include <arm_neon.h>" in text for _n, text in norm)
+    # Self-contained emitted files carry the preamble themselves; compiling
+    # several baked sources into ONE TU re-defines struct Q2. Compile each
+    # source in its own TU and merge the relocatable objects with llvm-ar so
+    # the caller still gets a single object path; llvm-nm/objdump on a thin
+    # archive lists every member.
+    if baked:
+        objs = []
+        for i, (_n, text) in enumerate(norm):
+            one = os.path.join(workdir, "one_%d.cpp" % i)
+            with open(one, "w", encoding="utf-8") as f:
+                f.write(text)
+            o = os.path.join(workdir, "one_%d.o" % i)
+            cmd = [tool("clang++")] + CFLAGS + EXTRA_INC + ["-c", one, "-o", o]
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if r.returncode != 0 or not os.path.exists(o):
+                return None, r.stderr[:4000]
+            objs.append(o)
+        merged = os.path.join(workdir, "batch.o")
+        ar = [tool("llvm-ar")] + ["rcs", merged] + objs
+        if subprocess.run(ar).returncode != 0:
+            return None, "llvm-ar merge failed"
+        return merged, ""
     with open(src, "w", encoding="utf-8") as f:
         f.write(PREAMBLE)
         if head:
@@ -550,7 +597,7 @@ def compile_batch(candidates, workdir, incdir=None, head=None):
         for _n, text in norm:
             f.write(text)
             f.write("\n")
-    cmd = [tool("clang++")] + CFLAGS + ["-c", src, "-o", obj]
+    cmd = [tool("clang++")] + CFLAGS + EXTRA_INC + ["-c", src, "-o", obj]
     if incdir:
         cmd += ["-I", incdir]
     r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
