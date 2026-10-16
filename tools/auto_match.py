@@ -1727,7 +1727,10 @@ def gen_store_ret(ins, end, ident):
         return None
 
     width = access_width(i.mnemonic, src)
-    ct = U[width]
+    # A 16-byte NEON store (`str q0` / `stp q0`) has no width key in U; the
+    # simd lookup below resolves it (uint8x16_t). Only index U when the width
+    # is a scalar one, and let ctype_for handle the vector widths.
+    ct = U.get(width)
     simd = ctype_for(i.mnemonic, src)
     if simd is None:
         return None
