@@ -133,6 +133,64 @@ def candidates(mod, reg, md, limit):
     return out
 
 
+def candidates_guarded(mod, reg, md, limit):
+    """-> the GUARDED population: bodies declined for a conditional branch.
+
+    This is a SEPARATE enumerator, not a flag on `candidates()`. `candidates()`
+    rejects any body with a `BRANCH` mnemonic, and relaxing that in place would
+    change what the existing generator hands the translator -- and the translator
+    has no branch handler at all, so every one of them would arrive as a
+    "unsupported mnemonic 'cbz'". Enumerating them here instead makes the
+    population a first-class, re-runnable count rather than a figure derived by
+    hand, which is how 821 was quoted as "this shape" when only 123 branch to
+    the ret and only 88 of those need no `cmp`.
+
+    The shape, and why it is the only one listed:
+
+      * the body ends in `ret`
+      * exactly one conditional branch, whose target IS the `ret` -- so the
+        guarded block is followed by the epilogue and nothing else
+      * exactly one `bl`
+      * no `adrp`/`adr`/`blr`
+
+    The 698 bodies in the same class that branch INTO THE MIDDLE are excluded:
+    their block is followed by more code, which is a different shape.
+    """
+    blob = MH.text_blob(mod)
+    out = []
+    for addr, size, name, decomp in MH.load_functions(mod):
+        if (addr, size) in reg:
+            continue
+        code = blob[addr:addr + size]
+        if len(code) < 24:
+            continue
+        ins = list(md.disasm(code, addr))
+        if len(ins) < 8 or ins[-1].mnemonic != "ret":
+            continue
+        if any(x.mnemonic in ("adrp", "adr", "blr") for x in ins):
+            continue
+        bls = [k for k, x in enumerate(ins) if x.mnemonic == "bl"]
+        brs = [k for k, x in enumerate(ins)
+               if x.mnemonic in BRANCH and x.mnemonic != "ret"]
+        if len(bls) != 1 or len(brs) != 1:
+            continue
+        b = ins[brs[0]]
+        _o = [x.strip() for x in b.op_str.split(",")]
+        try:
+            tgt = int(_o[-1].lstrip("#"), 16)
+        except ValueError:
+            continue
+        if (tgt - addr) // 4 != len(ins) - 1:
+            continue
+        out.append((addr, size, name, "f_%x" % addr,
+                    int(ins[bls[0]].op_str.lstrip("#"), 16),
+                    list(ins[:-1]) + [_ret_insn(md)], len(ins),
+                    b.mnemonic, brs[0]))
+        if limit and limit > 0 and len(out) >= limit:
+            break
+    return out
+
+
 REG_RE = None
 
 
@@ -312,6 +370,11 @@ def main():
     ap.add_argument("--batch", type=int, default=BATCH)
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--guard", action="store_true",
+                    help="enumerate the GUARDED population (bodies declined for "
+                         "a conditional branch) and report it by mnemonic. The "
+                         "translator has no branch handler, so this COUNTS the "
+                         "population rather than trying to match it.")
     a = ap.parse_args()
 
     global _work_dir
@@ -319,6 +382,32 @@ def main():
     md = MH._md()
     mods = a.module or list(MODULES)
     all_rows = []
+
+    if a.guard:
+        # A separate enumerator because `candidates()` rejects BRANCH bodies and
+        # the translator declines them at the pre-filter with "unsupported
+        # mnemonic 'cbz'" -- COND_MNEMONICS is the SELECT family (csel/cset), not
+        # the branch family. Counting them is the useful part; the guarded
+        # translator path does not exist yet. See decomp/docs/control_flow.md.
+        by_mn = collections.Counter()
+        by_mod = collections.Counter()
+        n = 0
+        for mod in mods:
+            _reg = {(r["addr"], r["size"]) for r in json.load(io.open(
+                os.path.join(ROOT, "data", "matched_%s.json" % mod),
+                encoding="utf-8"))["matched"]}
+            _rows = candidates_guarded(mod, _reg, md, a.limit)
+            by_mod[mod] = len(_rows)
+            for _r in _rows:
+                by_mn[_r[7]] += 1
+            n += len(_rows)
+        print("guarded population: %d bodies" % n)
+        for k, v in by_mod.most_common():
+            print("  %-10s %4d" % (k, v))
+        print("  by guard mnemonic:")
+        for k, v in by_mn.most_common():
+            print("    %-8s %4d" % (k, v))
+        return 0
 
     try:
         for mod in mods:
