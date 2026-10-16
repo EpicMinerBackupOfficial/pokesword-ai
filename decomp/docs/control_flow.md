@@ -569,3 +569,44 @@ directions: **a measurement taken from a pipeline that can fail silently is not 
 measurement.** `compile_resilient` returning `[]` for "TU did not compile" and
 for "candidate matched nothing" is the same shape as the health check reading
 progress as liveness, and as the watchdog stamping once at spawn.
+
+
+## IT MATCHES. The last false negative was my own comparison harness.
+
+`MH.compare` takes Capstone objects. My scratch comparison script was passing it
+the output of `MH.normalise`, which is TUPLES. `compare` therefore could not read
+the operands and returned False for every candidate -- including ones that are
+byte-identical:
+
+        ('ldr', 'x0, [x0, #0x50]')          ==  ('ldr', 'x0, [x0, #0x50]')
+        ('cbz', 'x0 -> +24')                ==  ('cbz', 'x0 -> +24')
+        ('stp', 'x29, x30, [sp, #-0x10]!')  ==  ('stp', 'x29, x30, [sp, #-0x10]!')
+        ('mov', 'x29, sp')                  ==  ('mov', 'x29, sp')
+        ('bl', '<target>')                  ==  ('bl', '<target>')
+        ('mov', 'w0, #1')                   ==  ('mov', 'w0, #1')
+        ('ldp', 'x29, x30, [sp], #0x10')    ==  ('ldp', 'x29, x30, [sp], #0x10')
+        ('ret', '')                         ==  ('ret', '')
+
+8 against 8, every instruction, the branch displacement included. Re-run through
+the harness's own `compare` on raw disassembly:
+
+    main: 28 variants compiled
+    subsdk1: 4 variants compiled
+    TOTAL 32 variants, 32 MATCH
+
+    MATCH main sub_2c1470@0x2c1470  nargs=0 ret=uint64_t
+    MATCH main sub_2c1470@0x2c1470  nargs=2 ret=uint64_t
+    MATCH main sub_2c1470@0x2c1470  nargs=3 ret=uint64_t
+    MATCH main sub_675720@0x675720  nargs=0 ret=uint64_t
+
+So five beats of "0 verified" were two harness bugs, neither in the translator:
+a TU that failed to compile silently, and a comparison that could not read its
+own input. The translator was correct from the moment the guarded walk landed.
+
+`sdk` and `subsdk0` contributed 0 compiled variants -- their guarded bodies bail
+on a genuine stack slot -- so the population that can be registered is main plus
+subsdk1 for now.
+
+**Not yet registered.** Wiring the guarded population into `call_register` is the
+next step and it is a separate piece of work from making it match; the figure has
+not moved yet and will not until the full chain runs.
