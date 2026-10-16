@@ -158,17 +158,49 @@ def main():
     #
     # Note the asymmetry that is kept -- STALLED is still reported when every
     # process is alive, because that is precisely the case the original missed.
+    # LIVENESS, not progress, answers "is the loop running".
+    #
+    # The state file is written at the END of a tick, after a `verify_matches.py`
+    # run with a 5400s timeout, so its mtime measures how long since the last
+    # COMPLETED tick. It read STALLED at 37,049s while `keepalive.py` had a live
+    # `verify_matches.py` child 26 seconds old and all four chain processes were
+    # up. The check was reading progress and reporting it as liveness.
+    #
+    # `keepalive_live.json` is written at the START of every tick and again when
+    # it completes, so it distinguishes a slow tick from a dead loop. Progress is
+    # still reported, because "ticking but gaining nothing" is the real condition
+    # of an exhausted generator set and should not be hidden by a green check.
+    lp = os.path.join(ROOT, "work", "keepalive_live.json")
+    live_age = None
+    live_stage = None
+    if os.path.exists(lp):
+        live_age = time.time() - os.path.getmtime(lp)
+        try:
+            live_stage = json.load(io.open(lp, encoding="utf-8")).get("stage")
+        except Exception:                      # noqa: BLE001
+            live_stage = "unreadable"
+
     STALL_SECONDS = 3600
-    if state_age is None:
-        verdict = "loop has NO STATE FILE -- not running"
-    elif state_age > STALL_SECONDS:
-        verdict = ("loop is STALLED -- no tick for %ds (threshold %ds, 2x the "
-                   "1800s backoff ceiling); processes may well all be alive"
-                   % (int(state_age), STALL_SECONDS))
+    if live_age is None:
+        # No liveness stamp at all: fall back to the old signal rather than
+        # declaring the loop dead on a missing file the running process predates.
+        if state_age is None:
+            verdict = "loop has NO STATE FILE -- not running"
+        else:
+            verdict = ("no LIVENESS stamp (pre-dates the fix); last completed "
+                       "tick %ds ago" % int(state_age))
+    elif live_age > STALL_SECONDS:
+        verdict = ("loop is STALLED -- no tick STARTED for %ds (threshold %ds); "
+                   "last stage was %r" % (int(live_age), STALL_SECONDS, live_stage))
+    elif state_age is not None and state_age > STALL_SECONDS:
+        # Alive, but a tick has been running a long time. That is a slow tick, and
+        # saying so is the whole point of having the second stamp.
+        verdict = ("loop is ALIVE and slow -- a tick started %ds ago (stage %r) "
+                   "and last COMPLETED %ds ago"
+                   % (int(live_age), live_stage, int(state_age)))
     else:
-        # Under the ceiling, but a long gap may still be the designed backoff
-        # rather than a tick in progress. Say which, so the number is readable.
-        verdict = "loop is ticking (%ds since last state write)" % int(state_age)
+        verdict = ("loop is ticking (%ds since last tick start, stage %r)"
+                   % (int(live_age), live_stage))
         if state_age > 300:
             verdict += (" -- past a normal tick; likely the exhausted-generator "
                         "backoff (up to 960s), not a stall")

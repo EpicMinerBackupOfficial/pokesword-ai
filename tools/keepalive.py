@@ -57,6 +57,22 @@ import traceback
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES = ("main", "sdk", "subsdk0", "subsdk1")
 STATE = os.path.join(ROOT, "work", "keepalive_state.json")
+# A LIVENESS stamp, separate from the progress stamp above.
+#
+# `save_state` runs at the END of a tick, after `verify(module)`, which has a
+# 5400s subprocess timeout. So the progress stamp moves once per COMPLETED
+# tick, and a tick that is merely slow -- or a machine that was suspended --
+# leaves it frozen for hours. `health_check.py` reads that mtime to decide
+# whether the loop is alive, so it cannot tell "slow" from "dead".
+#
+# It read STALLED at 37,049s while `keepalive.py` had a live
+# `verify_matches.py` child 26 seconds old. All four processes were alive.
+# The check was not wrong about the evidence and was wrong about the
+# meaning: the evidence is progress, and the question was liveness.
+#
+# This file is written at the START of every tick and never depends on a
+# long operation completing.
+LIVENESS = os.path.join(ROOT, "work", "keepalive_live.json")
 
 # Windowless subprocesses.
 #
@@ -165,6 +181,18 @@ def load_state():
 def save_state(s):
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     json.dump(s, open(STATE, "w", encoding="utf-8"))
+
+
+def touch_liveness(stage):
+    """Record that a tick STARTED. Never blocked by, and never after, real work."""
+    try:
+        os.makedirs(os.path.dirname(LIVENESS), exist_ok=True)
+        json.dump({"stage": stage, "pid": os.getpid(),
+                   "at_epoch": time.time(),
+                   "at": time.strftime("%Y-%m-%dT%H:%M:%S")},
+                  open(LIVENESS, "w", encoding="utf-8"))
+    except OSError:
+        pass
 
 
 def verify(module):
@@ -617,6 +645,7 @@ def one_tick(a, st):
     mod = MODULES[st["module"] % len(MODULES)]
     st["module"] = (st["module"] + 1) % len(MODULES)
 
+    touch_liveness("verifying " + mod)
     v = verify(mod)
     print("verify %-8s %s" % (mod, v or "no verdict line"))
 
@@ -647,6 +676,7 @@ def one_tick(a, st):
                 print("  %-8s timeout" % m)
 
     save_state(st)
+    touch_liveness("tick complete")
     if not a.loop:
         print("\ntick complete. relaunch to continue the loop.")
     return 0
