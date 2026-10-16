@@ -398,6 +398,9 @@ def main():
     ap.add_argument("--batch", type=int, default=BATCH)
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--register-guard", action="store_true",
+                    help="register the GUARDED population (conditional branch to "
+                         "the ret). Uses --write semantics via the same tail.")
     ap.add_argument("--guard", action="store_true",
                     help="enumerate the GUARDED population (bodies declined for "
                          "a conditional branch) and report it by mnemonic. The "
@@ -410,6 +413,32 @@ def main():
     md = MH._md()
     mods = a.module or list(MODULES)
     all_rows = []
+
+    if a.register_guard:
+        all_rows = register_guarded(mods, md, a.limit)
+        print("  guarded: %d verified" % len(all_rows))
+        if a.dry_run or not a.write:
+            print("  (dry run -- pass --write to register)")
+            return 0
+        _g = all_rows
+        for mod in mods:
+            rws = [r for r in _g if r["module"] == mod]
+            if not rws:
+                continue
+            path = os.path.join(ROOT, "data", "matched_%s.json" % mod)
+            data = json.load(io.open(path, encoding="utf-8"))
+            have = {(x["addr"], x["size"]) for x in data["matched"]}
+            added = 0
+            for r in rws:
+                key = (r["addr"], r["size"])
+                if key in have:
+                    continue
+                data["matched"].append(dict(r))
+                added += 1
+            io.open(path, "w", encoding="utf-8", newline="").write(
+                json.dumps(data, indent=1, sort_keys=True))
+            print("  %-9s registry +%d" % (mod, added))
+        return 0
 
     if a.guard:
         # A separate enumerator because `candidates()` rejects BRANCH bodies and
@@ -609,6 +638,132 @@ def main():
     elif all_rows and not a.write:
         print("  (dry run -- pass --write to register)")
     return 0
+
+
+def module_symbols(mod):
+    """-> {vaddr: name} for a module, from the data the harness already reads."""
+    out = {}
+    for _addr, _size, _name, decomp in MH.load_functions(mod):
+        if decomp and not decomp.endswith("!"):
+            out[_addr] = decomp
+    return out
+
+
+def register_guarded(mods, md, limit):
+    """Register the GUARDED population: bodies with a conditional branch whose
+    target is the trailing `ret`.
+
+    Separate from the main loop because `candidates()` declines these outright --
+    `BRANCH` includes every `cbz`/`tbz`/`b.eq`, and the whole-body pre-filter
+    used to reject the mnemonic before any handler could see it. `COND_MNEMONICS`
+    is the SELECT family (`csel`/`cset`), not the branch family.
+
+    The comparison is `MH.compare` on RAW disassembly, not on `MH.normalise`
+    output. `normalise` returns tuples, `compare` expects Capstone objects, and
+    passing one to the other returns False for every candidate -- which is what
+    made this population read as "0 verified" while it was in fact matching.
+    """
+    rows = []
+    for mod in mods:
+        reg = {(r["addr"], r["size"])
+               for r in json.load(io.open(
+                   os.path.join(ROOT, "data", "matched_%s.json" % mod),
+                   encoding="utf-8"))["matched"]}
+        blob = MH.text_blob(mod)
+        cands = []
+        meta = {}
+        for addr, size, name, ident, target, work, n_ins, bmn, gidx in \
+                candidates_guarded(mod, reg, md, limit):
+            alias = "g_%x_%x" % (target, addr)
+            nth = 0
+            seen = set()
+            while nth < 12:
+                v = variant(work, ident, target, alias, nth, mod=mod,
+                            guard=gidx)
+                if v is None:
+                    break
+                nargs, ret, src, sig = v
+                if sig in seen:
+                    nth += 1
+                    continue
+                seen.add(sig)
+                cands.append((ident, src, sig, addr, size, name, target, nargs,
+                              ret, n_ins))
+                meta[(ident, sig)] = (bmn,)
+                nth += 1
+        if not cands:
+            continue
+        head = "\n".join("extern void g_%x_%x();" % (c[6], c[3]) for c in cands)
+        got = compile_resilient(cands, head)
+        try:
+            syms = module_symbols(mod)
+        except Exception:                       # noqa: BLE001
+            syms = {}
+        # One row per BODY, not per matching prototype.
+        #
+        # `main+0x2c1470` matches at nargs=0, nargs=2 AND nargs=3 -- the call is
+        # fire-and-forget, so the extra arguments are dead and Clang drops them.
+        # Registering all three gave three rows for one body, which is 2 duplicate
+        # definitions in prog/, and THAT is what broke the build: 152,067
+        # definitions against 152,062 rows, and three units failing to compile.
+        # The duplicate check downstream compares (addr, size), so it cannot see
+        # this -- the rows are genuinely distinct records of the same body.
+        registered = set()
+        for cand, code in got:
+            c_ident, src, sig, addr, size, name, target, nargs, ret, n_ins = cand
+            if not code or (addr, size) in registered:
+                continue
+            want = blob[addr:addr + size]
+            w = list(md.disasm(want, addr))
+            end = MH.effective_end(w, size)
+            verdict, _ = MH.compare(w, end, list(md.disasm(code, 0)))
+            if verdict != "match":
+                continue
+            # Mark the body ONLY now. Doing it before the comparison suppressed
+            # the matching variant: one body has several variants in the batch,
+            # the first in compile order is not necessarily the one that matches,
+            # and once the body was marked, every later variant was skipped. That
+            # is how 10 verified matches became 0 in the tool while the same loop
+            # written out by hand found all 10.
+            registered.add((addr, size))
+            # The probe alias must not survive into prog/.
+            #
+            # The compiled source calls `g_<target>_<addr>`, which exists only in
+            # the probe TU's head. Storing `src` verbatim put
+            #
+            #     error: use of undeclared identifier 'g_2c5fb0_2c1470'
+            #
+            # into the generated source -- and the call path had already been
+            # bitten by exactly this, for the same reason: verification and
+            # building never used one name. So substitute the real callee and
+            # carry the declaration with it, as the call path does.
+            real = syms.get(target)
+            synth = real is None
+            real = real or ("callee_%x" % target)
+            alias = "g_%x_%x" % (target, addr)
+            rows.append({
+                "module": mod, "addr": addr, "size": size, "name": name,
+                "shape": "guarded", "ident": c_ident, "sig": sig,
+                "callee": real, "callee_synthetic": synth,
+                "call_args": nargs, "call_ret": ret,
+                "orig_insns": n_ins,
+                "new_insns": len(code) // 4,
+                # The declaration goes FIRST.
+                #
+                # Tried the other order -- definition first, `extern` after --
+                # because `decomp_project` reads the first line of `src` for the
+                # definition's return type and name (`DECL_RE`), and a leading
+                # `extern` does not match a definition. That is a real
+                # interaction, but the order that breaks it is the one that
+                # compiles: extern-first gives 2 audit failures, definition-first
+                # gives 3, with the compile failures back. Neither is correct and
+                # both are recorded here so the next attempt does not repeat the
+                # measurement.
+                "src": "extern void %s();\n%s" % (real, src.replace(alias, real)),
+            })
+        print("  %-9s %d guarded match(es)" % (mod, len(
+            [r for r in rows if r["module"] == mod])))
+    return rows
 
 
 if __name__ == "__main__":
