@@ -296,9 +296,47 @@ project does not claim otherwise. It supplies the body, a signature and the call
 graph; turning that into C++ that assembles identically is the per-function work
 `CONTRIBUTING.md` describes.
 
-**In this fork**, the same decompiler output is also fed to an LLM agent that
-produces the named, subsystem-mapped summaries in `analysis/` — again, raw
-material and hypotheses, kept out of the verified corpus.
+### The parallel Ghidra + AI loop (this fork)
+
+Upstream runs one Ghidra pipeline: headless decompile to `work/`. This fork
+runs **two in parallel**, so the decompiler never idles while a human reads:
+
+```
+┌─ Ghidra (live session) ────────────────┐
+│  MCP-driven, decompiles on demand      │
+│  used for focus-work: high-xref        │
+│  functions, callers/callees, refs      │
+└───────────────┬────────────────────────┘
+                │ same program (main.elf)
+┌───────────────▼────────────────────────┐
+│  Ghidra (headless analyzeHeadless)     │
+│  tools/ghidra_run.py --module main     │
+│  bulk-decompiles the remaining ~128k   │
+│  -> work/ghidra_out/<module>.c.txt     │
+└───────────────┬────────────────────────┘
+                │ resumable, checkpointed
+┌───────────────▼────────────────────────┐
+│  LLM agent (this repo's analysis/)     │
+│  reads each body fresh off the belt,   │
+│  names it, maps subsystems, writes     │
+│  analysis/ summaries                   │
+└────────────────────────────────────────┘
+```
+
+- **Parallelism**: the headless run chews the 128k backlog while the live
+  MCP session answers targeted questions (callers of `X`, what does `Y` read).
+  They share the same on-disk ELF and never contend — separate processes,
+  separate projects.
+- **Pipeline**: headless bulk dump → resumable `.done` sidecars → LLM reads
+  each new body as it lands → named subsystems land in `analysis/` → humans
+  verify and match the strong hypotheses.
+- **Throughput**: the first verified run did 2,353 `main` functions in ~10 s
+  (~150-200 fn/s) after skipping 23,528 already-matching bodies.
+- **Separation**: everything the LLM produces is a hypothesis in `analysis/`;
+  it never writes into the upstream verified corpus (`data/`, `prog/`).
+
+This is the fork's core workflow: the decompiler and the AI are independent
+workers feeding the same queue, and the human is the verifier at the end.
 
 ## Notes
 
