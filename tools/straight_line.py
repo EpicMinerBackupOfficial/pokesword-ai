@@ -2565,6 +2565,15 @@ class StraightLine:
         """
         if reg in state:
             return state[reg]
+        # `state` is keyed by the WIDENED register, so `w8` is stored as `x8`.
+        # Looking up the raw spelling missed every 32-bit guard operand and fell
+        # through to `arg_reg("w8")`, which raises "operand 'w8' is not an
+        # argument register (x0-x7)" -- 17 guarded bodies, and a confusing message
+        # for what is really a widened key. `orr w8, w1, #2 ; cmp w8, #2 ;
+        # b.ne` writes x8, so the compare finds nothing.
+        _w = wreg(reg)
+        if _w in state:
+            return state[_w]
         if reg in ("xzr", "wzr"):
             return ("imm", 0, "uintptr_t")
         return ("arg", arg_reg(reg), "uintptr_t")
