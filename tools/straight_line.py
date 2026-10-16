@@ -3254,15 +3254,34 @@ class StraightLine:
             _gstate, _gn, _gc, _gval, _gform = block
             _gct, _gexpr = self._render(_gval, names)
             _cond = _gexpr if _gform == "nz" else "(!%s)" % _gexpr
-            _oret = _gstate.get("x0")
-            if _oret is None:
-                raise Bail("guarded body has no value for the fallthrough return")
-            _oct, _oexpr = self._render(_oret, names)
-            if _oct != rct:
-                # The fallthrough returns what the guard tested -- usually the
-                # pointer that was just loaded -- and a 32-bit body returning it
-                # needs the narrowing written out, or the wrong width is stored.
-                _oexpr = "(%s)(%s)" % (rct, _oexpr)
+            if _gform == "nz":
+                # `cbz`: the BLOCK runs when the value is non-zero, so the
+                # fallthrough runs when it is ZERO. The constant IS the fact the
+                # guard proved, and writing it out is what removes an instruction:
+                #
+                #   return (uint32_t)(*(uint64_t *)((char *)(a0) + 80));
+                #       -> ldr x8,[x0,#0x50] ; cbz x8,+N ; ... ; mov w0,wzr ; ret
+                #   return 0;
+                #       -> ldr x0,[x0,#0x50] ; cbz x0,+N ; ... ; ret
+                #
+                # Two instructions fixed at once. Re-evaluating the load forced
+                # Clang to materialise the zero, AND it needed the value in a
+                # scratch register because it had to keep it for the return.
+                # With one use, the register is free and the load lands in x0 as
+                # retail has it.
+                _oexpr = "0"
+            else:
+                # `cbnz`: the fallthrough runs when the value is NON-zero, so the
+                # value itself is the return and must be rendered.
+                _oret = _gstate.get("x0")
+                if _oret is None:
+                    raise Bail("guarded body has no value for the fallthrough "
+                               "return")
+                _oct, _oexpr = self._render(_oret, names)
+                if _oct != rct:
+                    # A 32-bit body returning the tested value needs the
+                    # narrowing written out, or the wrong width is stored.
+                    _oexpr = "(%s)(%s)" % (rct, _oexpr)
             if _bcut is None:
                 _bcut = (len(pre), len(body_txt))
             _ob = _bcut[1]
