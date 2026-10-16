@@ -902,7 +902,25 @@ class StraightLine:
                     _gkey = SYNTH_BASE + len(synth)
                     synth.append((_gkey, "*(uint64_t *)(%s)"
                                   % ptr_add(nm(_gval[1]), _gval[2])))
-                    _gval = ("local", nm(_gkey), "uintptr_t")
+                    # The type is what the DECLARATION says, not what the value
+                    # would like to be.
+                    #
+                    # A synth local is emitted as `void* <name> = ...;`, so
+                    # claiming `uintptr_t` here made `call_arg` believe no cast
+                    # was needed -- it only adds one when the rendered type is not
+                    # already `uintptr_t` -- and produced
+                    #
+                    #     ((void (*)(uintptr_t))&g)(p0);
+                    #     error: cannot initialize a parameter of type 'uintptr_t'
+                    #            with an lvalue of type 'void *'
+                    #
+                    # C++ has no implicit void* -> integer, so the whole translation
+                    # unit failed to compile. `compile_resilient` on a single
+                    # candidate returns [] for a failed TU, so the body simply
+                    # produced nothing -- which is what "0 verified" looked like
+                    # for four beats while the C was in fact one cast away from
+                    # correct.
+                    _gval = ("local", nm(_gkey), "void*")
                     # And REDEFINE the register, not just the condition. The
                     # call argument is resolved from `state` when the walk reaches
                     # the `bl`, and without this the condition used the local
