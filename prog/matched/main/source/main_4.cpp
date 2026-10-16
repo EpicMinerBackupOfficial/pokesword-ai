@@ -5667,6 +5667,17 @@ void main_f_2c0270(void* a0) { *(uint64_t*)((char*)(a0) + 160) = 0; *(uint32_t*)
 // sub_2c13d0  (orig 0x2c13d0, ret_only)
 void main_f_2c13d0() {}
 
+// sub_2c1470  (orig 0x2c1470, guarded)
+extern void callee_2c5fb0();
+uint32_t main_f_2c1470(void* a0, uint64_t a1) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 80));
+    if (p0) {
+        uint64_t f_2c1470__r0 = ((uint64_t (*)(uintptr_t, uintptr_t))&callee_2c5fb0)(((uintptr_t)(p0)), ((uintptr_t)(((uint64_t)a1))));
+        return 1;
+    }
+    return 0;
+}
+
 // sub_2c14b0  (orig 0x2c14b0, straight)
 void main_f_2c14b0(void* a0, void* a1, void* a2) {
     *(uint32_t*)((char*)(a1)) = *(uint32_t*)((char*)(a0) + 68);
@@ -9221,7 +9232,4 @@ uint32_t main_f_4fcb40(void* a0) { return *(uint32_t*)((char*)(a0) + 104); }
 
 // sub_4fcb50  (orig 0x4fcb50, getter)
 uint32_t main_f_4fcb50(void* a0) { return *(uint32_t*)((char*)(a0) + 96); }
-
-// sub_4fcb60  (orig 0x4fcb60, getter)
-uint64_t main_f_4fcb60(void* a0) { return *(uint64_t*)((char*)(a0) + 32); }
 

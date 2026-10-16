@@ -33,6 +33,21 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_ea3d50  (orig 0xea3d50, mov_ret)
+uint64_t main_f_ea3d50() { return 0; }
+
+// sub_ea3da0  (orig 0xea3da0, mov_ret)
+uint32_t main_f_ea3da0() { return 0; }
+
+// sub_ea3db0  (orig 0xea3db0, ret_only)
+void main_f_ea3db0() {}
+
+// sub_ea3dc0  (orig 0xea3dc0, ret_only)
+void main_f_ea3dc0() {}
+
+// sub_ea3dd0  (orig 0xea3dd0, mov_ret)
+uint32_t main_f_ea3dd0() { return 0; }
+
 // sub_ea3de0  (orig 0xea3de0, ret_only)
 void main_f_ea3de0() {}
 
@@ -7147,29 +7162,4 @@ void main_f_1094440(void* a0, void* a1) {
 
 // sub_10959f0  (orig 0x10959f0, ret_only)
 void main_f_10959f0() {}
-
-// sub_1095a00  (orig 0x1095a00, ret_only)
-void main_f_1095a00() {}
-
-// sub_1095a10  (orig 0x1095a10, ret_only)
-void main_f_1095a10() {}
-
-// sub_1095b80  (orig 0x1095b80, copy-chain-store)
-void main_f_1095b80(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
-}
-
-// sub_1095c50  (orig 0x1095c50, copy-chain-store)
-void main_f_1095c50(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
-}
-
-// sub_10975a0  (orig 0x10975a0, ret_only)
-void main_f_10975a0() {}
 

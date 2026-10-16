@@ -33,6 +33,25 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1476ce0  (orig 0x1476ce0, copy2)
+void main_f_1476ce0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1476cf0  (orig 0x1476cf0, copy2)
+void main_f_1476cf0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1476d00  (orig 0x1476d00, const-field-set-store)
+void main_f_1476d00(void* a0) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    uint32_t t1 = 3;
+    *(uint32_t*)((char*)(t0) + 1676) = (uint32_t)(t1);
+}
+
+// sub_1476d10  (orig 0x1476d10, ret_only)
+void main_f_1476d10() {}
+
+// sub_1476d20  (orig 0x1476d20, copy2)
+void main_f_1476d20(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
 // sub_1476d30  (orig 0x1476d30, copy2)
 void main_f_1476d30(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
@@ -7082,24 +7101,4 @@ void main_f_173ce90() {}
 
 // sub_173cfc0  (orig 0x173cfc0, setter)
 void main_f_173cfc0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 40) = a1; }
-
-// sub_173d030  (orig 0x173d030, ret_only)
-void main_f_173d030() {}
-
-// sub_173d1f0  (orig 0x173d1f0, straight)
-void main_f_173d1f0(void* a0) {
-    uint32_t k0 = 253;
-    *(uint64_t*)((char*)(a0) + 48) = 0;
-    *(uint64_t*)((char*)(a0) + 64) = 0;
-    *(uint8_t*)((char*)(a0) + 56) = (uint8_t)k0;
-}
-
-// sub_173d2d0  (orig 0x173d2d0, mov_ret)
-uint32_t main_f_173d2d0() { return 1; }
-
-// sub_173d2e0  (orig 0x173d2e0, ret_only)
-void main_f_173d2e0() {}
-
-// sub_173e230  (orig 0x173e230, ret_only)
-void main_f_173e230() {}
 

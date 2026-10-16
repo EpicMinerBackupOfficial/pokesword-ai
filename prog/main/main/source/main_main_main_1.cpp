@@ -3296,7 +3296,7 @@ void sub_2c1380() { /* 0x2c1380 */ }
 void sub_2c13e0() { /* 0x2c13e0 */ }
 void sub_2c1440() { /* 0x2c1440 */ }
 void sub_2c1460() { /* 0x2c1460 */ }
-void sub_2c1470() { /* 0x2c1470 */ }
+// sub_2c1470: implemented in prog/matched/main/
 void sub_2c1490() { /* 0x2c1490 */ }
 // sub_2c14b0: implemented in prog/matched/main/
 void sub_2c14d0() { /* 0x2c14d0 */ }

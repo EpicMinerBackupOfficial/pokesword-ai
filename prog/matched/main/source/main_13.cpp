@@ -1,4 +1,4 @@
-/* main -- 406 functions verified to match the original.
+/* main -- 411 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -32,6 +32,26 @@ typedef unsigned long uintptr_t;
  * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
 struct Q2 { uint64x2_t a, b; };
 
+
+// sub_173d030  (orig 0x173d030, ret_only)
+void main_f_173d030() {}
+
+// sub_173d1f0  (orig 0x173d1f0, straight)
+void main_f_173d1f0(void* a0) {
+    uint32_t k0 = 253;
+    *(uint64_t*)((char*)(a0) + 48) = 0;
+    *(uint64_t*)((char*)(a0) + 64) = 0;
+    *(uint8_t*)((char*)(a0) + 56) = (uint8_t)k0;
+}
+
+// sub_173d2d0  (orig 0x173d2d0, mov_ret)
+uint32_t main_f_173d2d0() { return 1; }
+
+// sub_173d2e0  (orig 0x173d2e0, ret_only)
+void main_f_173d2e0() {}
+
+// sub_173e230  (orig 0x173e230, ret_only)
+void main_f_173e230() {}
 
 // sub_173e5e0  (orig 0x173e5e0, getter)
 uint64_t main_f_173e5e0(void* a0) { return *(uint64_t*)((char*)(a0) + 64); }

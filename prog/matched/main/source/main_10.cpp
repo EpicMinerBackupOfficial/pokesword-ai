@@ -33,6 +33,31 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1095a00  (orig 0x1095a00, ret_only)
+void main_f_1095a00() {}
+
+// sub_1095a10  (orig 0x1095a10, ret_only)
+void main_f_1095a10() {}
+
+// sub_1095b80  (orig 0x1095b80, copy-chain-store)
+void main_f_1095b80(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_1095c50  (orig 0x1095c50, copy-chain-store)
+void main_f_1095c50(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_10975a0  (orig 0x10975a0, ret_only)
+void main_f_10975a0() {}
+
 // sub_10975b0  (orig 0x10975b0, ret_only)
 void main_f_10975b0() {}
 
@@ -7659,22 +7684,4 @@ void main_f_1268220(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 
 // sub_1268230  (orig 0x1268230, copy2)
 void main_f_1268230(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_12682d0  (orig 0x12682d0, ret_only)
-void main_f_12682d0() {}
-
-// sub_1268700  (orig 0x1268700, straight)
-void main_f_1268700(void* a0) {
-    uint32_t k0 = 1;
-    *(uint8_t*)((char*)(a0) + 962) = (uint8_t)k0;
-}
-
-// sub_1269800  (orig 0x1269800, ret_only)
-void main_f_1269800() {}
-
-// sub_126a9b0  (orig 0x126a9b0, getter)
-uint8_t main_f_126a9b0(void* a0) { return *(uint8_t*)((char*)(a0) + 2720); }
-
-// sub_126ac90  (orig 0x126ac90, getter)
-uint64_t main_f_126ac90(void* a0) { return *(uint64_t*)((char*)(a0) + 104); }
 

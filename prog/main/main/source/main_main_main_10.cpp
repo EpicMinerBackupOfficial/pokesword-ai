@@ -2716,7 +2716,7 @@ void L_co_top_detail_03() { /* 0xba86b0 */ }
 void L_co_top_detail_04() { /* 0xba8980 */ }
 void L_co_top_detail_05() { /* 0xba8b90 */ }
 void sub_ba8da0() { /* 0xba8da0 */ }
-void sub_ba8de0() { /* 0xba8de0 */ }
+// sub_ba8de0: implemented in prog/matched/main/
 void L_co_top_detail_00_2() { /* 0xba8e00 */ }
 void L_co_top_detail_00_3() { /* 0xba9170 */ }
 void L_co_top_detail_01_2() { /* 0xba94e0 */ }

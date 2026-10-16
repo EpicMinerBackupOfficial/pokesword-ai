@@ -33,6 +33,9 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_7d0b90  (orig 0x7d0b90, getter)
+uint64_t main_f_7d0b90(void* a0) { return *(uint64_t*)((char*)(a0) + 240); }
+
 // sub_7d0ba0  (orig 0x7d0ba0, getter)
 uint64_t main_f_7d0ba0(void* a0) { return *(uint64_t*)((char*)(a0) + 592); }
 
@@ -6961,7 +6964,4 @@ void main_f_921f80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*
 
 // sub_921f90  (orig 0x921f90, copy2)
 void main_f_921f90(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_922960  (orig 0x922960, getter)
-uint32_t main_f_922960(void* a0) { return *(uint32_t*)((char*)(a0) + 232); }
 

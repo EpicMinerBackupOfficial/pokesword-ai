@@ -659,3 +659,54 @@ One of the five does land -- 32,533 against a 32,532 baseline, audit green, with
 the guarded rows out of the registry. Whatever the counting defect is, it does
 not apply to that one, and the figure is measured by `match_progress` against the
 linked image rather than asserted here.
+
+
+## LANDED: 5 guarded bodies, and the bug was in the AUDIT
+
+32,533 -> 32,538, 21.39% -> 21.40%. `152,062 definitions vs 152,062 rows`.
+
+### The measurement that found it
+
+Two explanations had been measured and rejected first -- duplicate emission
+(each guarded function is defined exactly once) and the callee `extern` (the
+audit skips `extern`, and the call path emits one per call body without the count
+ever moving). The third was to diff the definition SET with and without the rows
+in, which names the extras instead of counting them:
+
+    with guarded: 32,539 definitions (+6)
+    NEW:  if
+          main_f_2c1470
+          main_f_ba8de0
+          main_f_e43c70
+          main_f_e83430
+          main_f_e83850
+
+**`if`.** A guarded body is the first thing in this project whose generated C
+contains control flow, and the audit's definition pattern is deliberately
+permissive -- three narrower ones each undercounted -- so it is
+`name ( params ) {` with a keyword where the return type goes. `if (p0) {`
+matched, once per guarded body, which is exactly the +5.
+
+So the generator was never emitting a second definition. The audit was counting
+a control-flow statement as one, and the two only diverge on bodies this project
+had not produced until now.
+
+The permissive pattern stays -- it is right, and the alternative is the
+undercounting this file's own history records. What changed is that the captured
+name is now rejected when it is a C keyword; a function cannot be named `if`.
+
+### What the arc cost to get here
+
+Five beats from "the C is one cast away" to banked, and four of the five defects
+were in the measurement rather than in the translator:
+
+  1. a TU that failed to compile, reported as `[]`
+  2. a comparison handed `normalise()` tuples by a function expecting Capstone
+  3. one row per matching prototype rather than per body
+  4. a body marked `registered` before its comparison, so 10 matches became 0
+  5. and finally the audit counting `if (...) {` as a definition
+
+Each was found by a measurement, and each was reported as a property of the
+decomp when it was a property of the harness. The standing lesson is now in this
+file four times from four directions: **a measurement from a pipeline that can
+fail silently, or succeed wrongly, is not a measurement.**

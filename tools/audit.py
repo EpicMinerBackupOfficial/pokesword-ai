@@ -17,6 +17,13 @@ import io
 import json
 import os
 import re
+
+# Identifiers that are followed by `( ... ) {` but are not definitions:
+# a function cannot be named `if`. See the note at the counting site.
+C_KEYWORDS = frozenset((
+    "if", "for", "while", "switch", "return", "catch", "sizeof",
+    "alignof", "decltype", "throw", "case", "do", "else", "goto",
+))
 import subprocess
 import time
 import sys
@@ -357,6 +364,27 @@ def main():
                 # What actually distinguishes a definition is the opening brace
                 # after a parameter list. `extern`, `//` and `/*` are excluded
                 # above because a declaration is not a definition.
+                #
+                # A CONTROL-FLOW STATEMENT has the same shape. `if (p0) {` is
+                # `name ( params ) {` with a keyword where the return type would
+                # be, and this pattern is deliberately permissive about everything
+                # before the signature, so it matched. One guarded body contributed
+                # exactly one spurious definition:
+                #
+                #   [FAIL] prog/ defines every function
+                #          152,067 definitions vs 152,062 rows
+                #
+                # -- a delta of five for five guarded bodies, none of which was
+                # actually the problem. Two earlier explanations were measured and
+                # rejected first (duplicate emission, and the callee `extern`);
+                # this one is the third, and it is in the audit rather than in the
+                # generator. The permissive pattern is still right -- three
+                # narrower ones each undercounted -- so the fix is to exclude the
+                # keywords, not to tighten the pattern.
+                m = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*\([^;]*\)\s*"
+                              r"(?:const\s*)?\{", line)
+                if m and m.group(1) in C_KEYWORDS:
+                    continue
                 decls += 1
     check(decls == len(rows), "prog/ defines every function",
           "%d definitions vs %d rows" % (decls, len(rows)))
