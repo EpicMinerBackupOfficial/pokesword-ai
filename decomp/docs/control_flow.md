@@ -497,3 +497,75 @@ Remaining suspects, in the order I would test them:
     register. The measurement's local is `*(void **)(...)`; ours is
     `(void *)(*(uint64_t *)(...))`. If the first is the answer, the fix is to
     emit the dereference form rather than the cast form.
+
+
+## The cast was never the problem: two suspects eliminated, and the real bug
+
+### Suspect 1, the cast form: ELIMINATED
+
+Three spellings of the local, compiled side by side:
+
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 80));   the generated one
+    void *p = *(void **)((char *)a0 + 80);                 the recipe
+
+All three produce `ldr x0, [x0, #80]` -- retail's register, not x8. A cast of a
+loaded value and a dereference of a `void *` are the same value, and Clang
+allocates them the same way.
+
+### Suspect 2, the call form: ELIMINATED
+
+Direct call, function-pointer cast with a `uintptr_t` argument, and cast with a
+`void *` argument. All three byte-identical to retail. Direct-vs-cast was already
+known equivalent in the FP case; it holds here too.
+
+### What the emitted source actually compiles to
+
+Taking the translator's exact output, the harness preamble, and the harness's
+K&R `extern void g_2c5fb0_2c1470();` head, and compiling it alone:
+
+    00 28 40 f9  ldr  x0, [x0, #80]
+    c0 00 00 b4  cbz  x0, #24
+    fd 7b bf a9  stp  x29, x30, [sp, #-16]!
+    fd 03 00 91  mov  x29, sp
+    00 00 00 94  bl   #0
+    e0 03 00 32  orr  w0, wzr, #0x1
+    fd 7b c1 a8  ldp  x29, x30, [sp], #16
+    c0 03 5f d6  ret
+
+**Retail's sequence, encodings included.** The C was right for four beats and the
+harness was reporting it as a mismatch.
+
+### The actual bug: a type claim the declaration does not back
+
+    error: cannot initialize a parameter of type 'uintptr_t' (aka 'unsigned long')
+           with an lvalue of type 'void *'
+        ((void (*)(uintptr_t))&g_2c5fb0_2c1470)(p0);
+
+C++ has no implicit `void *` -> integer, so the WHOLE translation unit failed.
+`compile_resilient` returns `[]` for a failed single-candidate TU, so the body
+simply produced nothing -- and "produced nothing" is exactly what "0 verified"
+looks like.
+
+The cause is a type claim the declaration does not back. A synth local is emitted
+as `void* <name> = ...;`, and the guard was registering it with the value tuple
+`("local", name, "uintptr_t")`. `call_arg` only adds a cast when the rendered
+type is not already `uintptr_t`, so it trusted the claim, omitted the cast, and
+produced ill-formed C++.
+
+Registering it as `void*` -- what the declaration actually says -- takes the
+translatable variants from **33 to 90**.
+
+### Why this is the most expensive bug of the arc, and it was not a codegen bug
+
+It is invisible from the C. The source looks correct to a reader and to a diff;
+it is the DECLARED type and the CLAIMED type that disagree, and only a compiler
+says so. Every measurement of the generated code was taken from a batch that had
+silently failed, so each round produced a plausible-looking instruction diff and
+a plausible-looking conclusion, and the conclusions were all wrong because the
+bytes were not the candidate's.
+
+The general lesson is the one this arc keeps arriving at from different
+directions: **a measurement taken from a pipeline that can fail silently is not a
+measurement.** `compile_resilient` returning `[]` for "TU did not compile" and
+for "candidate matched nothing" is the same shape as the health check reading
+progress as liveness, and as the watchdog stamping once at spawn.
