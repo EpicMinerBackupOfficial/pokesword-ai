@@ -1,4 +1,4 @@
-/* sdk -- 4 functions verified to match the original.
+/* sdk -- 5 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -32,6 +32,14 @@ typedef unsigned long uintptr_t;
  * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
 struct Q2 { uint64x2_t a, b; };
 
+
+// sub_3c40d0  (orig 0x3c40d0, call)
+extern void callee_529890();
+uint32_t sdk_f_3c40d0() {
+    uint32_t r0 = (((((uint32_t (*)(void))&callee_529890)() == 0)) ? (0) : (196611));
+    asm volatile("");
+    return r0;
+}
 
 // sub_3c4790  (orig 0x3c4790, mov_ret)
 uint32_t sdk_f_3c4790() { return 1; }

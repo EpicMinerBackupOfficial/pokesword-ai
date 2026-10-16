@@ -7,10 +7,10 @@ and they measure different things.
 
 ```
 total_code            38,172,368 bytes   (36.4 MB)
-matched_code             356,092 bytes
+matched_code             356,096 bytes
 matched_code_percent          0.56%   <-- decomp.dev's headline
 
-functions matched       32,532 / 152,062 = 21.39%   <-- this project's headline
+functions matched       32,533 / 152,062 = 21.39%   <-- this project's headline
 ```
 
 The 0.52% is not a bug and not a mis-parse. objdiff's `Measures` carries both,

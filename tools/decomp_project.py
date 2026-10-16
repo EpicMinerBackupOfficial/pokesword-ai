@@ -337,11 +337,22 @@ def decl_of(rec):
     """
     if not rec or not rec.get("src"):
         return None
-    head = rec["src"].strip().splitlines()[0]
-    m = DECL_RE.match(head)
-    if not m:
-        return None
-    return m.group("ret"), m.group("name"), m.group("params").strip()
+    # Scan for the DEFINITION head, rather than insisting on line 1.
+    #
+    # A guarded body's `src` opens with `extern void callee_2c5fb0();` -- the
+    # callee's declaration, which the call path also emits and which the prog
+    # build needs. Reading only line 1 did not match DECL_RE, `decl_of` returned
+    # None, and the row was then emitted a second time as a plain stub:
+    # 152,067 definitions against 152,062 rows, exactly one extra per guarded row.
+    #
+    # Both orderings were tried and both are wrong for a different reason --
+    # definition-first brings the compile failures back, because the generated
+    # stub for the callee then lands after its use. Scanning accepts either.
+    for head in rec["src"].strip().splitlines():
+        m = DECL_RE.match(head)
+        if m:
+            return m.group("ret"), m.group("name"), m.group("params").strip()
+    return None
 
 
 def tail_target_ok(rec, matched):

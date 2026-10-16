@@ -574,7 +574,6 @@ void sub_3bc5b0() { /* 0x3bc5b0 */ }
 void sub_3bc5c0() { /* 0x3bc5c0 */ }
 void sub_3bc660() { /* 0x3bc660 */ }
 void sub_3bc680() { /* 0x3bc680 */ }
-void sub_3bc6b0() { /* 0x3bc6b0 */ }
 void sub_3bc6f0() { /* 0x3bc6f0 */ }
 void sub_3bc7b0() { /* 0x3bc7b0 */ }
 void tegra_config() { /* 0x3bc810 */ }
@@ -684,7 +683,6 @@ void sub_3c3de0() { /* 0x3c3de0 */ }
 void sub_3c3ec0() { /* 0x3c3ec0 */ }
 // sub_3c3fe0: implemented in prog/matched/sdk/
 void sub_3c3ff0() { /* 0x3c3ff0 */ }
-// sub_3c40d0_sdk_3c40d0: implemented in prog/matched/sdk/
 void sub_3c4130() { /* 0x3c4130 */ }
 void sub_3c41b0() { /* 0x3c41b0 */ }
 void sub_3c4230() { /* 0x3c4230 */ }
@@ -4004,5 +4002,7 @@ void sub_47fb50() { /* 0x47fb50 */ }
 void sub_47fc68() { /* 0x47fc68 */ }
 void sub_47fd80() { /* 0x47fd80 */ }
 void sub_47fe98() { /* 0x47fe98 */ }
+void sub_47ffb0() { /* 0x47ffb0 */ }
+void sub_4800c8() { /* 0x4800c8 */ }
 
 }  // namespace sdk

@@ -7095,14 +7095,6 @@ uint32_t sdk_f_3c3fe0(void* a0, void* a1) {
     return 0;
 }
 
-// sub_3c40d0  (orig 0x3c40d0, call)
-extern void callee_529890();
-uint32_t sdk_f_3c40d0() {
-    uint32_t r0 = (((((uint32_t (*)(void))&callee_529890)() == 0)) ? (0) : (196611));
-    asm volatile("");
-    return r0;
-}
-
 // sub_3c4310  (orig 0x3c4310, strlit-ret)
 const char *sdk_f_3c4310() { static char g_f_3c4310[1]; __asm__ volatile("" ::: "memory"); return g_f_3c4310; }
 
@@ -10192,4 +10184,7 @@ void sdk_f_453830() {}
 
 // sub_453838  (orig 0x453838, ret_only)
 void sdk_f_453838() {}
+
+// sub_453840  (orig 0x453840, straight)
+uint64_t sdk_f_453840() { return 0; }
 
