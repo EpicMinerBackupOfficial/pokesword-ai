@@ -339,13 +339,22 @@ def gen_mov_ret(ins, end, ident):
             % (ct, ident, ", ".join(decls), sn), code * n)
 
 
+def _is_arg_reg(r):
+    """AArch64 general-argument registers. x8 is the indirect-result / IP0
+    register on the NX ABI and is never a real parameter; treating it as one
+    makes the generator emit `ldr x8, [sp]` (a stack-arg read) for bodies that
+    actually read through x8 as a pre-loaded pointer, which can never match.
+    Decline those instead of guessing."""
+    return bool(re.fullmatch(r"x[0-7]", r))
+
+
 def gen_load_ret(ins, end, ident):
     """`ldr{,...} xD, [xB, #o] ; ret` -- read a field."""
     i = ins[0]
     ops = ops_of(i)
     dst, mem = ops[0], ops[1]
     base, off = parse_mem(mem)
-    if base is None or base == "sp":
+    if base is None or base == "sp" or not _is_arg_reg(base):
         return None
     # `ldur`/`stur` are the unscaled-offset forms of `ldr`/`str`: same operation,
     # same addressing, immediate range -256..255 rather than a scaled 12-bit
@@ -1723,7 +1732,7 @@ def gen_store_ret(ins, end, ident):
         return None
     src, mem = ops[0], ops[1]
     base, off = parse_mem(mem)
-    if base is None or base == "sp":
+    if base is None or base == "sp" or not _is_arg_reg(base):
         return None
 
     width = access_width(i.mnemonic, src)
@@ -1773,7 +1782,10 @@ def gen_store_ret(ins, end, ident):
     if not src.startswith(("x", "w")):
         return None
     val = wreg(src)
-    if reg_num(val) is None:
+    if reg_num(val) is None or not _is_arg_reg(val):
+        # A value in x8+ cannot be modelled as an AArch64 parameter: build_params
+        # would emit a stack-arg load (`ldr x8, [sp]`) that never matches the
+        # original's register use. Decline rather than guess.
         return None
 
     decls, exprs, sig = build_params({base: ("void*", "P"), val: (ct, CODE[width])})
