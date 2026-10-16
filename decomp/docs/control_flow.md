@@ -610,3 +610,52 @@ subsdk1 for now.
 **Not yet registered.** Wiring the guarded population into `call_register` is the
 next step and it is a separate piece of work from making it match; the figure has
 not moved yet and will not until the full chain runs.
+
+
+## Registration: verified, and one generator defect still open
+
+`register_guarded()` + `--register-guard` verifies 5 bodies in main end to end --
+enumerate, translate, compile, `MH.compare` on raw disassembly, match. Three
+defects were found and fixed while landing it, all in the harness:
+
+  * one row per MATCHING PROTOTYPE rather than per body. `main+0x2c1470` matches
+    at nargs 0, 2 and 3 -- the call is fire-and-forget, so the extra arguments
+    are dead and Clang drops them.
+  * the body marked `registered` BEFORE the comparison, so the first variant in
+    compile order marked it and every later one was skipped. 10 verified matches
+    became 0 in the tool while the same loop written out by hand found all 10.
+  * the probe alias `g_<target>_<addr>` surviving into `prog/`, which produces
+    `error: use of undeclared identifier`. The call path had been bitten by
+    exactly this -- verification and building never used one name.
+
+### decl_of now scans
+
+`decl_of()` read only the first line of a row's `src`. A guarded `src` opens with
+`extern void callee_2c5fb0();`, which is not a definition, so `DECL_RE` did not
+match, `decl_of` returned None, and the row was emitted a second time as a plain
+stub. It now scans for the first line that matches, which is the right shape for
+the function: it asks what a line means, not where it is written.
+
+### The extra definition is still not explained
+
+The count did not move after that fix, so `decl_of` was not the cause. Measured
+twice, both recorded:
+
+  * **It is not duplication.** Scanning every main chunk source for the guarded
+    functions finds each defined exactly once -- `main_f_2c1470 @ main_4.cpp x1`,
+    `main_f_ba8de0 @ main_7.cpp x1`, `main_f_e43c70 @ main_8.cpp x1`,
+    `main_f_e83850 @ main_8.cpp x1`. A fifth, `main_f_e83430`, is not found at
+    all.
+  * **It is not the `extern`.** The audit explicitly skips lines starting with
+    `extern`, and the call path emits one `extern` per call body -- thousands of
+    them -- without the count ever moving.
+
+The delta is still exactly one per guarded row, and no candidate found accounts
+for it. Guessing a third explanation without a measurement would be the pattern
+this arc has been correcting all along, so the four bodies stay held back: an
+audit that fails is not a state to commit, and 4 bodies is 0.003% of the figure.
+
+One of the five does land -- 32,533 against a 32,532 baseline, audit green, with
+the guarded rows out of the registry. Whatever the counting defect is, it does
+not apply to that one, and the figure is measured by `match_progress` against the
+linked image rather than asserted here.
