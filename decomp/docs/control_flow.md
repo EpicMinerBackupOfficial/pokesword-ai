@@ -710,3 +710,70 @@ Each was found by a measurement, and each was reported as a property of the
 decomp when it was a property of the harness. The standing lesson is now in this
 file four times from four directions: **a measurement from a pipeline that can
 fail silently, or succeed wrongly, is not a measurement.**
+
+
+## The guard condition, completed
+
+Three classes of guard the `_guard_test` stub did not cover, all of them the same
+kind of mistake -- an assumption about the shape of the operand that the body did
+not honour.
+
+**1. A compare on the flags.** 29 of the 123 branch on flags rather than testing
+one register, and every one is an FP compare:
+
+    ldr  s1, [x0, #0x14]
+    ldr  s0, [x0, #0xc]
+    fcmp s0, s1
+    b.lt ret
+
+The condition is a direct comparison of two values the walk already holds, and
+the existing `expr` value kind renders it as `(a) < (b)`. The branch SKIPS the
+block, so the C is the NEGATION, and that inversion is the whole table:
+
+    b.eq  taken when ==   ->  if (a != b)
+    b.ne  taken when !=   ->  if (a == b)
+    b.lt  taken when <    ->  if (a >= b)
+    b.hi  taken when >    ->  if (a <= b)
+
+**2. `state` is keyed by the WIDENED register.** `orr w8, w1, #2 ; cmp w8, #2 ;
+b.ne` writes `x8`, and the lookup used the raw spelling `w8`, missed, and fell
+through to `arg_reg("w8")` -- "operand 'w8' is not an argument register (x0-x7)",
+17 bodies. A message about an argument register for a register the body had
+already written.
+
+**3. The other operand can be an immediate.** `cmp x2, #0x168 ; b.hi` is the most
+common shape in the whole set, and both operands were assumed to be registers, so
+the literal reached `arg_reg("#0x168")` -- an argument-register error about a
+constant that is not a register. 14 bodies.
+
+All three produced the same misleading message, which is what made them look like
+one defect. They were three, and the message named the wrong thing in each case.
+
+## Where the guarded population stands
+
+    123 guarded bodies
+     10  translate
+     95  memory base is sp -- a stack slot is not modelled
+      2  fsub
+      2  bfxil
+      2  sbfiz
+      1  guard 'b.eq' is not preceded by a compare
+      1  add/sub on an 'argval' value
+
+`sp` is now 95 of the 110 blocked, and it is the same refusal that gates much of
+the wider conditional population -- `resolve_base` raises "memory base is sp: a
+stack slot is not modelled" on any sp-relative access, which is a CORRECT refusal
+of an input the translator cannot yet express. The C for it is a local variable
+whose address is taken and passed:
+
+    uint64_t slot;
+    g(&slot);
+    use(slot);
+
+and Clang places it at a fixed sp offset by itself. So the next piece is not a
+handler but a new kind of synthetic local -- the address of a stack slot, which
+is the one local whose offset the original fixes rather than chooses. That is a
+bigger change than anything left in this file, and it is the last big class here.
+
+The three small ones (fsub, bfxil, sbfiz, two bodies each) are ordinary missing
+mnemonics and are worth 6 bodies between them.
