@@ -276,3 +276,53 @@ What remains is plumbing, not semantics:
 
 The default-None guard is the whole safety story: the 32,532 matched bodies
 never pass a guard, so they cannot be disturbed by any of it.
+
+
+## The population is now a tool, not a hand-derived number
+
+    python tools/call_register.py --guard
+
+    guarded population: 123 bodies
+      main         63
+      sdk          30
+      subsdk0      20
+      subsdk1      10
+      by guard mnemonic:
+        cbz        81
+        b.ne       21
+        b.hi        7
+        tbz         6
+        b.lt        3
+        b.eq        2
+        b.ls        2
+        tbnz        1
+
+`candidates_guarded()` is a SEPARATE enumerator, not a flag on `candidates()`.
+`candidates()` rejects any body with a `BRANCH` mnemonic; relaxing that in place
+would change what the existing generator hands the translator, and the
+translator has no branch handler at all, so every one would arrive as
+
+    unsupported mnemonic 'cbz'
+
+(`COND_MNEMONICS` is the SELECT family -- `csel`/`cset` -- not the branch family.)
+A separate enumerator means the existing generator is provably untouched, which
+is checkable: the register sweep after adding it returned the same counts and
+`audit.py` stayed green.
+
+It also reproduces 123 and the same mnemonic split as the hand count, which is
+the useful part: the figure no longer has to be re-derived each beat, and a
+future change to the filters that moves the number will be visible rather than
+buried in a commit message.
+
+## Where the implementation stands
+
+Blocked on `translate()` and `_emit()`, both of which hold every verified body.
+The design is settled and the minimum change is small -- record a snapshot of
+`state` and the two list lengths when the walk reaches the guard, then let
+`_emit` partition and nest -- but it cannot be verified safely inside a beat
+where the machine is paging, because a half-working translator is only
+distinguishable from a good one by a full register sweep, and that is the thing
+too slow to run twice.
+
+So the order stays: enumerate, measure the C, then change the walk. The first
+two are done.
