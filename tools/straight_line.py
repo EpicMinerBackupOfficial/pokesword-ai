@@ -279,6 +279,16 @@ def reg_num(op):
     return int(m.group(1)) if m else None
 
 
+# A conditional branch whose flags come from the instruction before it, mapped to
+# the comparison the C must contain -- the NEGATION of the branch test, because
+# the branch SKIPS the guarded block.
+CMP_GUARDS = {
+    "b.eq": "!=", "b.ne": "==",
+    "b.lt": ">=", "b.ge": "<", "b.gt": "<=", "b.le": ">",
+    "b.hi": "<=", "b.hs": "<", "b.lo": ">", "b.ls": ">=",
+}
+
+
 def wreg(op):
     """Widen a `wN` operand to its 64-bit `xN`; pass anything else through.
 
@@ -879,8 +889,9 @@ class StraightLine:
                 _gstate = dict(state)
                 _gn_stmts = len(stmts)
                 _gn_calls = len(call_stmts)
-                _gval, _gform = self._guard_test(i, state, used_args,
-                                                  idx_args, ptr_args)
+                _gval, _gform = self._guard_test(
+                    i, state, used_args, idx_args, ptr_args,
+                    prev=body[_gi - 1] if _gi else None)
                 # The guard's value needs a NAME.
                 #
                 # Rendered inline it appears twice -- once in the condition, once
@@ -2544,7 +2555,22 @@ class StraightLine:
                                block=(None if guard is None else
                                       (_gstate, _gn_stmts, _gn_calls, _gval, _gform)))
 
-    def _guard_test(self, ins, state, used_args, idx_args, ptr_args):
+    @staticmethod
+    def _guard_operand(reg, state, used_args):
+        """-> a value tuple for one operand of a guard's compare.
+
+        An FP slot is an FP parameter, not an integer one, so the lookup has to
+        go through the same state the walk built rather than treating `s0` as an
+        argument register. An unknown operand is an incoming argument.
+        """
+        if reg in state:
+            return state[reg]
+        if reg in ("xzr", "wzr"):
+            return ("imm", 0, "uintptr_t")
+        return ("arg", arg_reg(reg), "uintptr_t")
+
+    def _guard_test(self, ins, state, used_args, idx_args, ptr_args,
+                     prev=None):
         """-> (value tuple, "nz"|"z") for a guarded block's condition.
 
         The branch SKIPS the block when it is taken, so the C is the negation of
@@ -2561,6 +2587,36 @@ class StraightLine:
         """
         _o = [x.strip() for x in ins.op_str.split(",")]
         mn = ins.mnemonic
+        if mn in CMP_GUARDS:
+            # A CONDITIONAL branch on the flags set by the instruction before it.
+            #
+            # Every one of these in the guarded population is an FP compare --
+            # `fcmp s0, s1 ; b.lt` and `b.hi` -- so the condition is a direct
+            # comparison of two values the walk has already loaded, and the
+            # existing `expr` value kind renders it: `(a) < (b)`.
+            #
+            # The branch SKIPS the block, so the C is the NEGATION of the branch
+            # test. That inversion is the whole table:
+            #
+            #     b.eq  taken when ==      ->  if (a != b)
+            #     b.ne  taken when !=      ->  if (a == b)
+            #     b.lt  taken when <       ->  if (a >= b)
+            #     b.hi  taken when >       ->  if (a <= b)
+            #
+            # `hi`/`hs`/`lo`/`ls` are the UNSIGNED orderings, and on FP operands
+            # Clang would fold them to the same thing, but the spelling is kept
+            # as the integer meaning so an integer `cmp` reads correctly too.
+            if prev is None or prev.mnemonic not in ("fcmp", "cmp", "cmn"):
+                raise Bail("guard %r is not preceded by a compare" % (mn,))
+            _p = [x.strip() for x in prev.op_str.split(",")]
+            if len(_p) != 2:
+                raise Bail("compare %r is not two-operand" % (prev.op_str,))
+            op = CMP_GUARDS[mn]
+            a, b = _p
+            va = self._guard_operand(a, state, used_args)
+            vb = self._guard_operand(b, state, used_args)
+            ct = "double" if prev.mnemonic == "fcmp" else "uintptr_t"
+            return ("expr", op, va, vb, ct), "nz"
         if mn in ("cbz", "cbnz"):
             reg, form, mask = _o[0], ("nz" if mn == "cbz" else "z"), None
         elif mn in ("tbz", "tbnz"):
