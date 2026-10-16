@@ -881,6 +881,42 @@ class StraightLine:
                 _gn_calls = len(call_stmts)
                 _gval, _gform = self._guard_test(i, state, used_args,
                                                   idx_args, ptr_args)
+                # The guard's value needs a NAME.
+                #
+                # Rendered inline it appears twice -- once in the condition, once
+                # as the callee's argument -- and as an expression Clang is free
+                # to leave in a scratch register:
+                #
+                #     ldr x8, [x0, #0x50]          vs retail's  ldr x0, [x0, #0x50]
+                #
+                # A local is used twice, so it must be live in a register, and the
+                # register allocator puts it where retail has it. The same trick
+                # the `synth` mechanism already applies to a displaced address,
+                # for the same reason.
+                #
+                # Only an unsigned 64-bit LOAD is eligible. Anything else -- a
+                # narrower load, a signed one, an argument -- is a value whose
+                # type the guard did not establish, and re-typing it here would
+                # silently change the access.
+                if _gval[0] == "load" and _gval[3] == 8 and not _gval[4]:
+                    _gkey = SYNTH_BASE + len(synth)
+                    synth.append((_gkey, "*(uint64_t *)(%s)"
+                                  % ptr_add(nm(_gval[1]), _gval[2])))
+                    _gval = ("local", nm(_gkey), "uintptr_t")
+                    # And REDEFINE the register, not just the condition. The
+                    # call argument is resolved from `state` when the walk reaches
+                    # the `bl`, and without this the condition used the local
+                    # while the argument still rendered the original load:
+                    #
+                    #   void *p0 = *(uint64_t *)(... + 80);
+                    #   if (p0) { g((uintptr_t)(*(uint64_t *)(... + 80))); }
+                    #
+                    # -- the load twice, and Clang puts it in a scratch register
+                    # for exactly that reason. One use, one register, x0.
+                    _gr = i.op_str.split(",")[0].strip()
+                    _gm = re.fullmatch(r"[a-z](\d+)", _gr)
+                    if _gm:
+                        state[_gr[0] + _gm.group(1)] = _gval
                 continue
             mn = i.mnemonic
             ops = split_ops(i.op_str)
@@ -3292,8 +3328,14 @@ class StraightLine:
             for _l in _inner:
                 _lines.append("    " + _l)
             _lines.append("    return %s;" % rexpr)
-            if saw_call:
-                _lines.append(FRAME_ASM)
+            # NO FRAME_ASM inside the block.
+            #
+            # It is `asm volatile("")`, which exists only to order the `r0`
+            # binding in the flat path. Inside a guarded block it sits after a
+            # `return` -- dead code -- but it is a side-effecting statement, so
+            # Clang will not merge the two return paths, and the candidate keeps
+            # an extra `mov w0, wzr ; ret` the original does not have. The
+            # measured recipe for this shape contains no asm at all.
             _lines.append("}")
             _lines.append("return %s;" % _oexpr)
             return "%s %s(%s) {\n    %s\n}\n" % (
