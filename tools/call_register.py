@@ -182,9 +182,36 @@ def candidates_guarded(mod, reg, md, limit):
             continue
         if (tgt - addr) // 4 != len(ins) - 1:
             continue
+        # Strip the frame from the BLOCK.
+        #
+        # The translator must not be handed it: the pair handler reads `sp` as a
+        # memory base and declines with "memory base is sp: a stack slot is not
+        # modelled", which is a correct refusal of the wrong input -- the same
+        # reason `frame_of` strips a whole body. Here the frame sits INSIDE the
+        # guarded block, so it has to be stripped from the block.
+        #
+        # Only PURE frame bookkeeping is removed: the x29/x30 pair, a
+        # callee-saved push/pop, and the `sub/add sp` that reserves the frame.
+        # Nothing that passes a stack slot to a callee is removed -- `add x1, sp,
+        # #8 ; str xzr, [sp, #8]` is an out-parameter and the C genuinely needs
+        # it, so those bodies keep bailing on `sp`, correctly.
+        work = []
+        for x in ins[:-1]:
+            _m, _o = x.mnemonic, x.op_str
+            _frame_pair = (x.mnemonic == "stp" and _o.startswith("x29, x30, [sp, #-")) \
+                or (x.mnemonic == "ldp" and _o.startswith("x29, x30, [sp"))
+            _frame_one = ((x.mnemonic == "str" and _o.startswith("x") and "[sp, #-" in _o)
+                          or (x.mnemonic == "ldr" and _o.startswith("x") and "[sp" in _o
+                              and _o.endswith("]")))
+            _frame_size = (x.mnemonic in ("sub", "add")
+                           and _o.startswith("sp, sp, #"))
+            _frame_mov = (x.mnemonic == "mov" and _o == "x29, sp")
+            if _frame_pair or _frame_one or _frame_size or _frame_mov:
+                continue
+            work.append(x)
         out.append((addr, size, name, "f_%x" % addr,
                     int(ins[bls[0]].op_str.lstrip("#"), 16),
-                    list(ins[:-1]) + [_ret_insn(md)], len(ins),
+                    work + [_ret_insn(md)], len(ins),
                     b.mnemonic, brs[0]))
         if limit and limit > 0 and len(out) >= limit:
             break
@@ -296,7 +323,7 @@ def prototype_order(work, mod=None, target=None):
     return [(n, r) for n in range(0, MAXNARGS + 1) for r in RETS]
 
 
-def variant(work, ident, target, cname, nth, mod=None):
+def variant(work, ident, target, cname, nth, mod=None, guard=None):
     """The `nth` *translatable* prototype for one body, or None if there are fewer.
 
     "nth translatable", not "nth in the order". A prototype that `Bail`s is not a
@@ -314,7 +341,8 @@ def variant(work, ident, target, cname, nth, mod=None):
     for nargs, ret in prototype_order(work, mod, target):
         calls = {target: {"name": cname, "nargs": nargs, "ret": ret}}
         try:
-            src, sig = SL.StraightLine(work).translate(ident, calls=calls)
+            src, sig = SL.StraightLine(work).translate(ident, calls=calls,
+                                                       guard=guard)
         except SL.Bail:
             continue
         if seen == nth:

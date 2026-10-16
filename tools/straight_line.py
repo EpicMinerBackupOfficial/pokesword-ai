@@ -3235,6 +3235,50 @@ class StraightLine:
         # so this changes no symbol.
         if rct in ("int8_t", "int16_t"):
             rct = "int32_t"
+        if block is not None:
+            # A GUARDED BLOCK:
+            #
+            #     <decls> <outer calls> <outer stores>
+            #     if (<cond>) { <inner calls> <inner stores> return <inner>; }
+            #     return <outer>;
+            #
+            # `pre` and `pins` are deliberately NOT split. Both are fully
+            # populated before the store loop runs -- the synthetic pointers and
+            # their "+r" pins are emitted in the synth loop above -- so there is
+            # no cut to make, and hoisting a declaration or a register pin above
+            # an `if` is ordinary C. The pin is an empty asm whose only job is to
+            # stop Clang folding a displaced address into the addressing mode,
+            # and it does that wherever it sits.
+            if sret_writes:
+                raise Bail("guarded block writing through the sret register")
+            _gstate, _gn, _gc, _gval, _gform = block
+            _gct, _gexpr = self._render(_gval, names)
+            _cond = _gexpr if _gform == "nz" else "(!%s)" % _gexpr
+            _oret = _gstate.get("x0")
+            if _oret is None:
+                raise Bail("guarded body has no value for the fallthrough return")
+            _oct, _oexpr = self._render(_oret, names)
+            if _oct != rct:
+                # The fallthrough returns what the guard tested -- usually the
+                # pointer that was just loaded -- and a 32-bit body returning it
+                # needs the narrowing written out, or the wrong width is stored.
+                _oexpr = "(%s)(%s)" % (rct, _oexpr)
+            if _bcut is None:
+                _bcut = (len(pre), len(body_txt))
+            _ob = _bcut[1]
+            _outer = pre + _call_txt[:_ccut] + pins + body_txt[:_ob]
+            _inner = _call_txt[_ccut:] + body_txt[_ob:]
+            _lines = list(_outer)
+            _lines.append("if (%s) {" % _cond)
+            for _l in _inner:
+                _lines.append("    " + _l)
+            _lines.append("    return %s;" % rexpr)
+            if saw_call:
+                _lines.append(FRAME_ASM)
+            _lines.append("}")
+            _lines.append("return %s;" % _oexpr)
+            return "%s %s(%s) {\n    %s\n}\n" % (
+                rct, ident, plist, "\n    ".join(_lines)), sig
         if not all_txt and not saw_call:
             return "%s %s(%s) { return %s; }\n" % (
                 rct, ident, plist, rexpr), sig
