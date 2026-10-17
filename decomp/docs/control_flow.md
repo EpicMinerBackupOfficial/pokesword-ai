@@ -987,3 +987,75 @@ neither mnemonic blocks anything anywhere in the four modules. Zero new matches,
 because the populations behind them are the ones already measured exhausted --
 but the reachable set is larger and two bodies that could not be translated can
 now be, which is the precondition for any of the rest.
+
+
+## Why the guarded emitter drops the guard, root-caused
+
+`gen_guarded` asserts that the emitted source contains `if (`, and all 1,606
+bodies it classifies decline. That assertion is the right shape -- a guard that
+cannot show the thing it is generating is not finished -- but it is currently
+refusing 6,418 reachable bodies, so here is why, measured.
+
+Take `main+0x3dbed0`:
+
+    add  x8, x0, w1, uxtw #3
+    ldr  x8, [x8, #0x350]
+    cbz  x8, #0x3dbee0      <- the guard, skipping the block
+    strh w2, [x8, #0x8a]
+    ret
+
+which produced
+
+    void f_x(void* a0, uint32_t a1, uint64_t a2) {
+        void* p0 = ...; void* p1 = ...;
+        *(uint16_t *)((char *)p0 + 138) = (uint16_t)a2;      <- no `if`
+    }
+
+### The guard machinery is NOT broken
+
+Instrumenting `_emit` directly:
+
+    _emit called with block = tuple (5, ['dict','int','int','tuple','str'])
+    _gform = 'nz'   _gval = ('local', 'p1', 'void*')
+
+`block` arrives as a well-formed 5-tuple, `_guard_test` resolved the condition and
+its sense, and the guard index spaces agree (the pre-filter at line 653 and the
+walk at line 912 both enumerate `body = insns[:-1]`). Everything up to the emit is
+correct.
+
+### Two ordering faults, both invisible because every banked guarded body is a CALL body
+
+**1. The guarded emit sits after the `ret_val is None` early return.** This body
+never writes x0, so `ret_val is None`, so `_emit` returned the statements
+UNGUARDED and the test and both outcomes were deleted.
+
+**2. `_call_txt` and `_ccut` are only created `if call_stmts:`.** The guarded emit
+splices the call statements into the block, so it reads both. For a guarded body
+with no call -- the commonest guarded shape there is, a void setter behind a field
+test -- they do not exist.
+
+Neither could show, because **all five guarded bodies banked so far are call
+bodies**. They return a value, so they clear fault 1, and they make a call, so they
+clear fault 2. The population that trips both faults is the population that was
+never enumerated.
+
+### The move is NOT a block move, and that is the trap
+
+Moving the 69-line guarded block above the early return is the obvious fix and it
+does not work. The guarded emit reads `rct`, `rexpr`, `plist`, `sig`, `all_txt`,
+`_call_txt` and `_ccut` -- of which `rexpr` and `sig` are computed AFTER the
+`ret_val is None` return, and `_call_txt`/`_ccut` conditionally. So the block has
+to be placed after the return-type and narrowing work AND after the call rendering,
+and before both early returns, and `rexpr`/`sig` have to be computed before it
+rather than after.
+
+That is a real ordering change with seven dependencies. It was attempted and
+reverted in one beat rather than left half-applied: two dependency faults deep,
+with the repository green and `gen_guarded`'s assertion holding, is a better place
+to stop than a moved block that raises `UnboundLocalError`.
+
+### The assertion stays either way
+
+Until the emit is right, `gen_guarded` declines everything it classifies. Wrong C
+into `prog/` is worse than no C, and the figure does not move either way until the
+bytes match.
