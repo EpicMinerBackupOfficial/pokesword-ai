@@ -903,3 +903,57 @@ threshold, and the right filter is body size rather than frame shape. If it does
 not, the population is closed and the next 61 are not worth anything.
 
 That is the next measurement, and it is the last thing this population needs.
+
+
+## Shrink-wrapping does not fire for this target at all. The population is CLOSED.
+
+Built a function designed to make it profitable -- six calls, arithmetic on their
+results, and a deliberately rare guard, so the entry path is long and the frame
+is expensive:
+
+    u32 A(void *a0) {
+      u64 x1 = load(a0,1), x2 = load(a0,2), ... x6 = load(a0,6);
+      x1 += x2; x3 += x4; x5 += x6;
+      if ((x1 ^ x3 ^ x5) == 0x1234567) { void *self = a0; ... }
+      return 0;
+    }
+
+    0x00  stp x24, x23, [sp, #-64]!
+    0x04  stp x22, x21, [sp, #16]
+    0x08  stp x20, x19, [sp, #32]
+    0x0c  stp x29, x30, [sp, #48]
+    0x10  add x29, sp, #48
+    ...
+    0x90  b.ne #20            <- the ONLY conditional branch in the function
+
+Every frame save is before the only branch. Clang hoisted the whole prologue,
+five register pairs and all, past an entry path of six calls. It is not a cost
+threshold: with this much prologue and this much entry path, shrink-wrapping
+would pay enormously, and it still did not run.
+
+So the answer to the question is yes-if-reachable, no in fact: **this toolchain
+does not place a frame inside a branch for aarch64 at -O3 with the harness
+flags**, and the 61 bodies whose distinguishing feature is exactly that are not
+reachable. Not "not yet" -- measured, with the shape designed to trigger it, and
+it did not fire.
+
+### Where that leaves the guarded work
+
+    123 guarded bodies
+      5  banked
+      8  have no callee-saved frame; the guard skips it wholesale
+     61  need a frame inside a branch -- not reachable
+     35  need a genuine sp local (an out-parameter)
+      2+2+2  fsub, bfxil, sbfiz -- ordinary missing mnemonics
+
+The last line is still worth 6 bodies and is ordinary work. The 35 are a real
+feature -- a local whose address is taken, which the C is
+
+    uint64_t slot;  g(&slot);  use(slot);
+
+and which Clang places at a fixed sp offset by itself. The 61 are closed.
+
+Nine beats went into this population: one shape matched, and the rest are now
+known to be either ordinary work or outside what the compiler will emit. That is
+a worse outcome than a number suggests and a better one than five more beats of
+guessing would have been.
