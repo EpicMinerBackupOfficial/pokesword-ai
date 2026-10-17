@@ -364,3 +364,77 @@ Both vector-store blockers are gone. Of the bodies this reaches, 2 are store-
 before-call, which is why the ordering fix was worth making on its own: the
 population is small but the fix is general, and it will carry the `v0.16b`
 population when that arrives.
+
+
+## The NEON register swap, measured byte-identical
+
+The `v0.16b` blocker is 10 bodies, and all ten are one shape -- a swap of two
+NEON registers through a temporary:
+
+    bl   #0x52c880
+    fneg d1, d1
+    mov  v2.16b, v0.16b
+    mov  v0.16b, v1.16b
+    mov  v1.16b, v2.16b
+    ret
+
+### The C, measured
+
+    struct V2 { uint8x16_t a, b; };
+    struct V2 g(void);
+    struct V2 A(void) {
+      struct V2 s = g();
+      struct V2 t;
+      t.a = s.b;
+      t.b = s.a;
+      return t;
+    }
+
+compiles to
+
+    stp  x29, x30, [sp, #-16]!
+    mov  x29, sp
+    bl
+    mov  v2.16b, v0.16b
+    mov  v0.16b, v1.16b
+    mov  v1.16b, v2.16b
+    ldp  x29, x30, [sp], #16
+    ret
+
+Retail's three `mov`s, exactly, with no memory traffic. A struct of two vectors
+RETURNED BY VALUE is what puts the swap in registers: the two halves come back in
+v0 and v1 per the vector return convention, and exchanging them is three register
+moves.
+
+### Two measurements that were wrong first, and what they fixed
+
+**A proxy with two calls spills.** The first attempt called `g()` twice into two
+locals and read elements out of them:
+
+    bl ; str q0, [sp] ; bl ; umov w8, v0.b[0] ; ldr q0, [sp] ; ...
+
+which shares nothing with retail. The struct return is not decoration in the
+recipe -- it is the whole reason the swap stays in registers.
+
+**A scalar return folds the swap away.** The real body negates a `double` view and
+then swaps, so the negated half lands in v0. Written with a scalar return:
+
+    bl ; fneg d0, d1 ; umov w0, v0.b[3]
+
+Clang folds the exchange into the negation and emits `fneg d0, d1` where retail
+has `fneg d1, d1`. The difference between the two is precisely the swap, and it
+survives only if the struct is the return value.
+
+### What implementing it needs
+
+  1. `mov vd.16b, vn.16b` as a vector copy. The `movi` handler already writes
+     `("neon", ct, lanes)` values and `arm_neon.h` is in the preamble, so the
+     type and the local machinery exist -- what is missing is the copy.
+  2. A callee that returns a STRUCT. `prototype_order` only offers scalar return
+     types, and a 32-byte struct is returned in v0 and v1 rather than in x0. That
+     is the larger of the two, and it is the same shape the guarded work needed
+     and did not have.
+
+So this is not one handler. It is a handler plus a return-convention change, for
+10 bodies -- and worth re-measuring against the real bodies before starting,
+since the proxy above already caught two things a smaller test would not have.
