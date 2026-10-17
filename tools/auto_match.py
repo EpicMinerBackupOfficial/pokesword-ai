@@ -263,10 +263,45 @@ def gen_ret_only(ins, end, ident):
     return "void %s() {}\n" % ident, "v"
 
 
+def tail_arity(ins):
+    """How many argument registers does this prefix forward?
+
+    A tail call forwards x0..xN, so the arity is one past the highest argument
+    register the body MENTIONS -- written (computed) or merely read (inherited
+    from our own caller and passed straight through). Mentions both count:
+
+        add x2, x0, #0xec ; add x3, x0, #0xe8 ; mov w4, #1 ; b target
+
+    writes x2, x3, x4 and reads x0, so the highest argument register is x4 and
+    the call takes five. Reading only the WRITTEN registers would give three and
+    the incoming arguments would have nowhere to go.
+
+    Zero means the prefix mentions no argument register at all, so the call
+    takes none and the body is a thunk with a no-op prefix.
+    """
+    hi = -1
+    for i in ins:
+        for m in re.finditer(r"\b[wx]([0-9]|1[0-7])\b", i.op_str):
+            n = int(m.group(1))
+            if n <= 7:
+                hi = max(hi, n)
+    return hi + 1
+
+
 def branch_target(ins):
-    """Absolute target of a single unconditional `b`, or None."""
-    i = ins[0]
-    if i.mnemonic != "b":
+    """Absolute target of the body's unconditional `b`, or None.
+
+    The branch is the body's TERMINATOR: it is `ins[0]` for a pure thunk and
+    `ins[-1]` for a tail call with an argument-setup prefix. It is the same
+    instruction semantically in both -- the return -- so both are found here.
+    """
+    i = None
+    if ins:
+        if ins[0].mnemonic == "b":
+            i = ins[0]
+        elif len(ins) > 1 and ins[-1].mnemonic == "b":
+            i = ins[-1]
+    if i is None:
         return None
     t = i.op_str.strip()
     if not t.startswith("#"):
@@ -294,6 +329,24 @@ def gen_tailcall(ins, end, ident, ctx):
     # takes none. The prototype emitted by the caller must match, or the batch
     # fails to compile.
     n = ctx.get("nargs", 0)
+    # A PREFIX means the body COMPUTES its arguments, so `a0..an` cannot be
+    # forwarded unchanged -- the translator has to render the prefix, and the
+    # expressions it computes are what gets passed.
+    prefix = ctx.get("tail_prefix")
+    if prefix:
+        import straight_line
+        try:
+            out = straight_line.StraightLine(prefix).translate(ident, tail=(tname, n))
+        except straight_line.Bail:
+            return None
+        except Exception:
+            # A generator bug must never invent a body.
+            return None
+        src_txt = out[0] if isinstance(out, tuple) else out
+        sig = out[1] if isinstance(out, tuple) and len(out) > 1 else "v"
+        # A prefix tail call returns whatever the target returns -- uint64_t --
+        # never void, whatever the pure thunk's signature is.
+        return src_txt, (sig if isinstance(sig, str) and sig else "m" * n)
     if n == 0:
         return ("uint64_t %s() { return %s(); }\n" % (ident, tname), "v")
     params = ", ".join("uint64_t a%d" % k for k in range(n))
@@ -2609,6 +2662,28 @@ def shape_of(ins, end):
     # Pure tail-call thunk: the whole body is one `b <other function>`.
     if n == 1 and mn[0] == "b":
         return "tailcall"
+    # TAIL CALL WITH A PREFIX: a straight line that sets up argument registers
+    # and ends in `b <target>`.
+    #
+    #     add  x2, x0, #0xec
+    #     add  x3, x0, #0xe8
+    #     mov  w4, #1
+    #     b    target
+    #
+    # This was UNREACHABLE. `body` below is `mn[:-1]` only when the body ends in
+    # `ret`, so here it was the WHOLE list including the `b`, and `b` is not a
+    # straight-line mnemonic -- so the test failed and the body fell through to
+    # `branchy`. `branchy` has no generator that can express a prefix, so all
+    # 8,193 of these were silently declined. There are 61,774 bodies in
+    # `branchy` in main alone; this is the largest untouched class.
+    #
+    # The branch is the RETURN, not an instruction: the target does the
+    # returning, and Clang's tail-call optimisation reproduces the `b` from a
+    # plain `return target(...)`. Measured byte-identical.
+    if len(mn) >= 2 and mn[-1] == "b" and \
+            all(m in LOADS or m in STORES or m in ("add", "mov", "sub")
+                for m in mn[:-1]):
+        return "tailcall"
     # Anything else that is a straight line of loads/stores/adds/moves is
     # handled by the general translator. `ret` is the terminator and has to be
     # allowed, otherwise every straight-line body fails the test and is dropped
@@ -2686,8 +2761,23 @@ def collect(module, shapes, limit):
                 skipped[sh] += 1
                 continue
             taddr = starts[idx]
-            tname = "t_%s_%x" % (module, taddr)
-            ctx = {"tail_target": (tname, None), "nargs": 0,
+            # The prefix, if any -- the body minus the branch that terminates it.
+            pfx = list(ins[:end])
+            if pfx and pfx[-1].mnemonic == "b":
+                pfx = pfx[:-1]
+            nargs = tail_arity(pfx)
+            # PER-ARITY TARGET NAME. The target is declared in the batch head as
+            # `uint64_t t_x();`, and in C++ `()` means ZERO parameters -- so a
+            # five-argument call is ill-formed. Naming the arity into the symbol
+            # fixes that, and it also fixes the other half: two bodies tail-calling
+            # ONE destination with different arities would otherwise be two
+            # disagreeing declarations of the same name, which is a redefinition
+            # and kills the whole translation unit. One name per (target, arity).
+            tname = ("t_%s_%x" % (module, taddr) if nargs == 0
+                     else "t_%s_%x_%d" % (module, taddr, nargs))
+            ctx = {"tail_target": (tname, None), "nargs": nargs,
+                   "tail_prefix": pfx,
+                   "tail_ret": "m" if pfx else "v",
                    "tail_orig_name": names.get(taddr, "")}
             made = gen(ins, end, ident, ctx)
         else:
@@ -2726,6 +2816,12 @@ def collect(module, shapes, limit):
             rec["needs_proto"] = tname
             rec["tail_target_addr"] = taddr
             rec["tail_orig_name"] = names.get(taddr, "")
+            # Recorded so the build-time gate can tell a bare thunk from one with
+            # an argument-setup prefix, and so verification mangles the right
+            # return type: a prefixed tail call returns what its target returns,
+            # which is `uint64_t`, not `void`.
+            rec["tail_nargs"] = ctx.get("nargs", 0)
+            rec["tail_ret"] = ctx.get("tail_ret", "v")
         out.append(rec)
         if limit and len(out) >= limit:
             break
@@ -2744,7 +2840,23 @@ def verify(cands, batch, module):
             # then checked by name rather than ignored.
             protos = sorted({c["needs_proto"] for c in chunk
                              if c.get("needs_proto")})
-            head = "".join("uint64_t %s();\n" % p for p in protos)
+            # A prefixed tail call needs a prototype with the arity it forwards.
+            # The largest wins, so two bodies calling one destination with
+            # different arities still get ONE declaration per name.
+            pareto = {}
+            for c in chunk:
+                pn = c.get("needs_proto")
+                if pn:
+                    pareto[pn] = max(pareto.get(pn, 0), c.get("tail_nargs", 0))
+            decls = []
+            for p in protos:
+                na = pareto.get(p, 0)
+                if na:
+                    decls.append("uint64_t %s(%s);\n"
+                                 % (p, ", ".join(["uintptr_t"] * na)))
+                else:
+                    decls.append("uint64_t %s();\n" % p)
+            head = "".join(decls)
             # Isolate failures instead of abandoning the batch. One ill-formed candidate
             # was costing 2,884 sdk candidates in a single compile error, and
             # the visible symptom was `sdk` reporting no MATCH line at all --
@@ -2793,7 +2905,14 @@ def verify(cands, batch, module):
                     # rather than assumed. Relocations name mangled symbols, so
                     # the expected destination is mangled the same way.
                     mine_t = [relocs.get(mangled, {}).get(0)]
-                    orig_t = [MH.mangle(want, "v")] if want else []
+                    # A bare thunk returns void; a prefixed tail call returns
+                    # whatever its target returns, which is `uint64_t`. Mangling
+                    # it as void names a symbol the object does not define, the
+                    # relocation lookup misses, and the comparison silently
+                    # compares an empty branch list -- which matches nothing and
+                    # reads as "the generator is wrong".
+                    orig_t = ([MH.mangle(want, c.get("tail_ret") or "v")]
+                              if want else [])
                     v, why = MH.compare(orig, end, mine,
                                         orig_branches=orig_t,
                                         mine_branches=mine_t)

@@ -363,10 +363,24 @@ def tail_target_ok(rec, matched):
     have to receive and forward them, and its own recovered signature -- which is
     what was verified -- would no longer be the one compiled. Those are declined
     rather than emitted incorrectly, and stop being counted as matching.
+
+    A tail call WITH A PREFIX is a different thing and gets a different verdict:
+
+        add  x2, x0, #0xec
+        add  x3, x0, #0xe8
+        mov  w4, #1
+        b    target
+
+    It forwards arguments -- that is what the prefix FOR -- so refusing it
+    because the destination has parameters would refuse the only kind that can
+    possibly be right. The refusal exists to catch a bare thunk claiming
+    parameters it does not have, and a prefix is not claiming that.
     """
     t = rec.get("tail_target_addr")
     if t is None:
         return False
+    if int(rec.get("tail_nargs") or 0) > 0:
+        return True  # a prefix supplies the arguments it forwards
     dest = matched.get(t)
     if dest is None:
         return True  # a namespaced stub, declared as void()
