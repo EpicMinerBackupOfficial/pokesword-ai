@@ -1,4 +1,4 @@
-/* main -- 411 functions verified to match the original.
+/* main -- 420 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -32,6 +32,23 @@ typedef unsigned long uintptr_t;
  * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
 struct Q2 { uint64x2_t a, b; };
 
+
+// sub_173bd40  (orig 0x173bd40, copy-chain-store)
+void main_f_173bd40(void* a0) {
+    uint32_t t0 = *(uint32_t*)((char*)a0 + 12);
+    *(uint32_t*)((char*)a0 + 8) = (uint32_t)(t0);
+    __asm__ __volatile__("" ::: "memory");
+    *(uint32_t*)((char*)a0 + 16) = 0;
+}
+
+// sub_173c350  (orig 0x173c350, ret_only)
+void main_f_173c350() {}
+
+// sub_173ce90  (orig 0x173ce90, ret_only)
+void main_f_173ce90() {}
+
+// sub_173cfc0  (orig 0x173cfc0, setter)
+void main_f_173cfc0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 40) = a1; }
 
 // sub_173d030  (orig 0x173d030, ret_only)
 void main_f_173d030() {}
@@ -378,8 +395,48 @@ uint64_t main_f_17579a0(void* a0) { return *(uint64_t*)((char*)(a0) + 24); }
 // sub_1759430  (orig 0x1759430, ret_only)
 void main_f_1759430() {}
 
+// sub_175a3f0  (orig 0x175a3f0, guarded)
+uint64_t main_f_175a3f0(void* a0, uint32_t a1) {
+    if (a0) {
+        return ((*(uint64_t*)((char*)(a0) + 232) & (uint64_t)(((int64_t)(((int32_t)(((uint32_t)a1))))))) ? 1 : 0);
+    }
+    return 0;
+}
+
 // Closing_connection_ld  (orig 0x175a410, setter)
 void main_f_175a410(void* a0) { *(uint64_t*)((char*)(a0) + 16) = 0; }
+
+// sub_175cbe0  (orig 0x175cbe0, guarded)
+uint64_t main_f_175cbe0(void* a0) {
+    if (a0) {
+        return *(uint64_t*)((char*)(a0) + 344);
+    }
+    return 0;
+}
+
+// sub_175cbf0  (orig 0x175cbf0, guarded)
+uint64_t main_f_175cbf0(void* a0) {
+    if (a0) {
+        return *(uint64_t*)((char*)(a0) + 352);
+    }
+    return 0;
+}
+
+// sub_175cc00  (orig 0x175cc00, guarded)
+uint64_t main_f_175cc00(void* a0) {
+    if (a0) {
+        return *(uint64_t*)((char*)(a0) + 368);
+    }
+    return 0;
+}
+
+// sub_175cc10  (orig 0x175cc10, guarded)
+uint64_t main_f_175cc10(void* a0) {
+    if (a0) {
+        return *(uint64_t*)((char*)(a0) + 376);
+    }
+    return 0;
+}
 
 // Site_s_d_is_pipeline_blacklisted  (orig 0x175cc20, ptr_add)
 void* main_f_175cc20(void* a0) { return (char*)a0 + 384; }

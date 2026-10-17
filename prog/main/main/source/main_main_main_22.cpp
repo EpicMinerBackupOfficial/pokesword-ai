@@ -45,7 +45,7 @@ void Internal_error_clearing_splay_node_d() { /* 0x17598e0 */ }
 void Internal_error_clearing_splay_node_d_2() { /* 0x1759c80 */ }
 void Connection_ld_to_host_s_left_intact() { /* 0x1759d20 */ }
 void sub_1759fc0() { /* 0x1759fc0 */ }
-void sub_175a3f0() { /* 0x175a3f0 */ }
+// sub_175a3f0: implemented in prog/matched/main/
 // sub_175a410: implemented in prog/matched/main/
 void sub_175a420() { /* 0x175a420 */ }
 void sub_175a580() { /* 0x175a580 */ }
@@ -56,10 +56,10 @@ void sub_175c4b0() { /* 0x175c4b0 */ }
 void sub_175c540() { /* 0x175c540 */ }
 void sub_175c5e0() { /* 0x175c5e0 */ }
 void sub_175cba0() { /* 0x175cba0 */ }
-void sub_175cbe0() { /* 0x175cbe0 */ }
-void sub_175cbf0() { /* 0x175cbf0 */ }
-void sub_175cc00() { /* 0x175cc00 */ }
-void sub_175cc10() { /* 0x175cc10 */ }
+// sub_175cbe0: implemented in prog/matched/main/
+// sub_175cbf0: implemented in prog/matched/main/
+// sub_175cc00: implemented in prog/matched/main/
+// sub_175cc10: implemented in prog/matched/main/
 // sub_175cc20: implemented in prog/matched/main/
 // sub_175cc30: implemented in prog/matched/main/
 void sub_175cc40() { /* 0x175cc40 */ }

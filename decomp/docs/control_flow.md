@@ -1059,3 +1059,81 @@ to stop than a moved block that raises `UnboundLocalError`.
 Until the emit is right, `gen_guarded` declines everything it classifies. Wrong C
 into `prog/` is worse than no C, and the figure does not move either way until the
 bytes match.
+
+
+## The guarded emitter works: 1,606 classified, 155 generate, 9 match
+
+Three changes, and the fix was NOT the 69-line block move that was attempted and
+reverted. It was three small ones, because `rexpr` and `sig` are already computed
+before the guarded emit -- the only thing standing in the way was that a guarded
+body never got there.
+
+  1. `if ret_val is None:` -> `if ret_val is None and block is None:` so a guarded
+     body skips the void early return. Its statements were being emitted
+     unguarded, with the test and both outcomes deleted.
+  2. `rct, rexpr = "void", "0"` when `ret_val is None`, because that body now
+     reaches the render and `_render(None, ...)` would raise. The guarded emit
+     does not use them -- it renders its own return.
+  3. `_call_txt = []` and `_ccut = 0` before `if call_stmts:`, not only inside it.
+     The guarded emit splices the call statements into the block and reads both,
+     and a guarded body with NO CALL had neither -- an `UnboundLocalError`, which
+     was at least loud.
+
+  4. And then the obvious one: a void guarded body must not emit a trailing
+     `return;` as well as the one inside the `if`.
+
+    measured, main, shape guarded:
+
+        1606 classified (1451 generator declined)
+         155 generated
+           9 match = 5.81%   compile-error 39   mismatch 107
+
+`main+0x3dbed0` now produces the guard:
+
+    void f_x(void* a0, uint32_t a1, uint64_t a2) {
+        void* p0 = ...; void* p1 = ...;
+        if (p1) { *(uint16_t *)((char *)p0 + 138) = (uint16_t)a2; return; }
+    }
+
+against retail `add / ldr / cbz / strh / ret`.
+
+### The 107 mismatches, named
+
+Reading the miss list rather than counting it gives six distinct faults, and three
+of them are large enough to be worth the population:
+
+  * **THE GUARD'S SENSE IS INVERTED** -- `orig ('b.eq', '-> +12') vs new ('b.ne',
+    '-> +12')`, on at least six bodies in one sample. `_guard_test` records "nz"
+    or "z" for `cbz`/`cbnz`/`tbz`, but a `b.cond` after a `cmp` needs the
+    comparison's sense resolved too, and the negation is being applied wrongly.
+    This is the same class as the two MISS lines that read `b.eq` where retail has
+    `b.ne`, and it is a correctness bug in `_guard_test`, not a register choice.
+  * **BRANCH TARGET +4** -- `orig ('cbz', 'w8 -> +12') vs new ('cbz', 'w8 -> +16')`
+    is the single most common single line in the whole list. One instruction too
+    many in the guarded block.
+  * **`tst w2, #1` vs `and w9, w2, #1`** -- retail tests a bit with `tst` and
+    keeps no result; the C masks into a fresh register, so Clang must
+    materialise it.
+  * **`ldrsw x9, [x8]` vs `ldr w9, [x8]`** -- a sign-extending load became a
+    zero-extending one, so the width of the declared field is wrong.
+  * **`add x8, x0, x8` vs `add x8, x8, x0`** -- operand order, four bodies, all
+    the same shape.
+  * **`ldrh w9, [x0, #2]` vs `ldrh w8, ...`**, **`ldp x9, x10` vs `ldp x8, ...`**,
+    **`add x8, x0, w1, uxtb #2` vs `add x8, x0, ...`** -- register choice and the
+    `uxtb` extend spelling.
+
+### The 1,451 generator declines
+
+Almost all of them are the known one: `candidates_guarded` strips a frame from the
+block before translating, and `gen_guarded` does not, so every body with a
+prologue declines with `memory base is sp: a stack slot is not modelled`. That is
+a correct refusal of an input the translator cannot express, and the fix is to
+apply the same frame strip. It is mechanical and it is the next thing to do --
+it is most of the 1,451.
+
+### What is NOT fixed, and is the point of recording this
+
+9 of 155 is not a good yield, and it is not the 6,418. Three of the six faults
+above are correctness bugs in the guarded path rather than codegen luck, and the
+guard-sense inversion is the one that matters: it produces a body that tests the
+opposite condition, which is a wrong decompilation rather than a wrong encoding.

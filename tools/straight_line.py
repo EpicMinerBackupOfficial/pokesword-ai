@@ -3450,6 +3450,13 @@ class StraightLine:
         # `names` does not exist during the instruction walk -- synthetic pointer
         # locals are allocated at emit time. Rendering them here, after `pre` has
         # been built, is the first point where every argument name is known.
+        # Defaults, not just initialised-for-calls. The guarded emit below splices
+        # the call statements into the guarded block and reads both of these, and
+        # a guarded body with NO CALL -- again the commonest guarded shape -- never
+        # had them, so `return _call_txt` raised UnboundLocalError. Every guarded
+        # body banked so far is a call body, which is why this never showed.
+        _call_txt = []
+        _ccut = 0
         if call_stmts:
             _call_txt = []
             _ccut = 0             # where the block's calls start
@@ -3548,7 +3555,24 @@ class StraightLine:
             # costs nothing.
             return "%s %s(%s) {\n    %s\n}\n" % (
                 "uint64_t", ident, plist, "\n    ".join(_lines)), sig
-        if ret_val is None:
+        # A GUARDED body must not take this early return.
+        #
+        # The guarded emit is BELOW, at `if block is not None:`, so a guarded body
+        # with no return value -- the commonest guarded shape there is, a void
+        # setter behind a field test -- returned here with its statements
+        # UNGUARDED:
+        #
+        #     add x8,x0,w1,uxtw #3 ; ldr x8,[x8,#0x350]
+        #     cbz x8, ret ; strh w2,[x8,#0x8a] ; ret
+        #
+        # became a body with no `if` at all. The test and both of its outcomes
+        # were deleted, with no error anywhere.
+        #
+        # `block is None` sends the guarded bodies down to the emit that is
+        # written for them. Everything after this point still sees `ret_val`, so
+        # the unguarded path is unchanged -- a body with no guard and no return
+        # value still comes out `void`.
+        if ret_val is None and block is None:
             if saw_call:
                 all_txt.append(FRAME_ASM)
             if not all_txt:
@@ -3556,7 +3580,15 @@ class StraightLine:
             return "void %s(%s) {\n    %s\n}\n" % (
                 ident, plist, "\n    ".join(all_txt)), sig
 
-        rct, rexpr = self._render(ret_val, names)
+        # Reached with `ret_val is None` by a GUARDED void body, which the early
+        # return above now lets through. `_render(None, ...)` would raise, and the
+        # guarded emit does not use `rct`/`rexpr` -- it renders its own return
+        # from `_oexpr` -- so these are placeholders that keep the unguarded code
+        # below well-formed.
+        if ret_val is None:
+            rct, rexpr = "void", "0"
+        else:
+            rct, rexpr = self._render(ret_val, names)
         # Promote a *signed narrow* return to int32_t.
         #
         # AAPCS64 leaves the upper half of w0 unspecified for a narrow return, so
@@ -3628,7 +3660,20 @@ class StraightLine:
             _lines.append("if (%s) {" % _cond)
             for _l in _inner:
                 _lines.append("    " + _l)
-            _lines.append("    return %s;" % rexpr)
+            # The INNER return. A `void` body gets a bare `return;`.
+            #
+            # `rexpr` is "0" for a void body -- the placeholder installed so that
+            # `_render(None, ...)` is not reached -- and `return 0;` in a `void`
+            # function is a hard C++ error, not a warning:
+            #
+            #     error: void function 'main_f_8018f0' should not return a value
+            #
+            # The harness compiles candidates in batches, so one of these takes a
+            # whole translation unit with it; and this one reached prog/ and the
+            # audit, because the harness's own batch had compiled it inside a body
+            # where the same construct happened to be legal.
+            _lines.append("    return;" if rct == "void"
+                          else "    return %s;" % rexpr)
             # NO FRAME_ASM inside the block.
             #
             # It is `asm volatile("")`, which exists only to order the `r0`
@@ -3638,7 +3683,30 @@ class StraightLine:
             # an extra `mov w0, wzr ; ret` the original does not have. The
             # measured recipe for this shape contains no asm at all.
             _lines.append("}")
-            _lines.append("return %s;" % _oexpr)
+            # A `void` function returns nothing, so the guarded and fallthrough
+            # exits are a bare `return;`.
+            #
+            # `return 0;` in a `void` function is accepted by C with a warning and
+            # rejected outright by C++, and every candidate is compiled as C++ --
+            # so it is a hard compile error, and a compile error in a 60-candidate
+            # translation unit removes all 60. A guarded VOID body is the commonest
+            # guarded shape there is, so this would have taken the whole population
+            # with it rather than one body.
+            if rct == "void":
+                # NO trailing return for a void body.
+                #
+                # `if (c) { ...; return; } return;` is one `ret` too many:
+                # Clang keeps both exits, so the guarded block's branch target
+                # lands 4 bytes past retail's, and the single largest bucket of
+                # guarded misses is exactly that --
+                #
+                #     insn 1: orig ('cbz', 'w8 -> +12') vs new ('cbz', 'w8 -> +16')
+                #
+                # Falling off the end of a void function is the same `ret`, and
+                # there is no value to return, so there is nothing to write.
+                pass
+            else:
+                _lines.append("return %s;" % _oexpr)
             return "%s %s(%s) {\n    %s\n}\n" % (
                 rct, ident, plist, "\n    ".join(_lines)), sig
         if not all_txt and not saw_call:

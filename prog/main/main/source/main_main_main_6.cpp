@@ -1945,7 +1945,7 @@ void sub_801870() { /* 0x801870 */ }
 // sub_801890: implemented in prog/matched/main/
 void sub_8018a0() { /* 0x8018a0 */ }
 void sub_8018c0() { /* 0x8018c0 */ }
-void sub_8018f0() { /* 0x8018f0 */ }
+// sub_8018f0: implemented in prog/matched/main/
 // sub_801910: implemented in prog/matched/main/
 // sub_801920: implemented in prog/matched/main/
 void sub_801930() { /* 0x801930 */ }

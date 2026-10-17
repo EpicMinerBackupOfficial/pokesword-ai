@@ -2162,6 +2162,20 @@ def gen_guarded(ins, end, ident):
     src = out[0] if isinstance(out, tuple) else out
     if "if (" not in src:
         return None
+    # The SECOND shape rule: a `void` function must not return a value. `return 0;`
+    # in a `void` function is a hard C++ error, not a warning, and one of these in
+    # a 60-candidate translation unit removes all 60.
+    #
+    # Asserting it here as well as fixing the emitter is deliberate: the registry
+    # is a CACHE of verified sources, and ten of its `guarded` entries carried a
+    # body the emitter can no longer produce -- generated before the fix and still
+    # being emitted into prog/ months later, because nothing invalidated them.
+    # A cache whose entries are never re-derived against the generator is a second
+    # copy of the contract.
+    _head = src.split("{", 1)[0]
+    if _head.strip().startswith("void ") and \
+            "return " in src.replace("return;", ""):
+        return None
     return out
 
 

@@ -1075,6 +1075,15 @@ uint8_t main_f_801860(void* a0) { return *(uint8_t*)((char*)(a0)); }
 // sub_801890  (orig 0x801890, compare)
 bool main_f_801890(void* a0) { return (uint8_t)(*(uint8_t*)((char*)(a0))) > (uint64_t)(3); }
 
+// sub_8018f0  (orig 0x8018f0, guarded)
+void main_f_8018f0(void* a0, uint32_t a1) {
+    void* p0 = (void*)((uintptr_t)(((char *)(char*)(a0) + (uintptr_t)(((uint32_t)a1)) * 2)));
+    if ((a1) <= (4)) {
+        *(uint16_t*)((char*)(p0) + 2) = 0;
+        return;
+    }
+}
+
 // sub_801910  (orig 0x801910, straight)
 void main_f_801910(void* a0) {
     uint32_t k0 = 1;
@@ -6961,7 +6970,4 @@ void main_f_921f70() {}
 
 // sub_921f80  (orig 0x921f80, copy2)
 void main_f_921f80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_921f90  (orig 0x921f90, copy2)
-void main_f_921f90(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 

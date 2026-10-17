@@ -33,6 +33,12 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1268220  (orig 0x1268220, copy2)
+void main_f_1268220(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1268230  (orig 0x1268230, copy2)
+void main_f_1268230(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
 // sub_12682d0  (orig 0x12682d0, ret_only)
 void main_f_12682d0() {}
 
@@ -3073,6 +3079,15 @@ void* main_f_1347ad0(void* a0) { return (char*)a0 + 8; }
 // sub_1347ae0  (orig 0x1347ae0, ptr_add)
 void* main_f_1347ae0(void* a0) { return (char*)a0 + 8; }
 
+// sub_134b0b0  (orig 0x134b0b0, guarded)
+void main_f_134b0b0(uint64_t a0, uint32_t a1) {
+    void* p0 = (void*)((uintptr_t)((((uint64_t)a0)) + ((((uint64_t)(((uint32_t)(((uint32_t)a1)))))) * (((uint64_t)(((uint32_t)(696))))))));
+    if ((a1) <= (1)) {
+        *(uint8_t*)((char*)(p0) + 768) = 0;
+        return;
+    }
+}
+
 // sub_134b930  (orig 0x134b930, straight)
 void main_f_134b930(void* a0) {
     *(uint32_t*)((char*)(a0) + 96) = -1;
@@ -3277,6 +3292,16 @@ void main_f_136f7d0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 
 // sub_136f7e0  (orig 0x136f7e0, copy2)
 void main_f_136f7e0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1370850  (orig 0x1370850, guarded)
+void main_f_1370850(uint64_t a0, uint32_t a1) {
+    void* p0 = (void*)((uintptr_t)((((uint64_t)a0)) + ((((int64_t)(((int32_t)(((uint32_t)a1)))))) * (((int64_t)(((int32_t)(176))))))));
+    uint32_t k1 = 1;
+    if ((a1) <= (150)) {
+        *(uint8_t*)((char*)(p0) + 99) = (uint8_t)k1;
+        return;
+    }
+}
 
 // sub_1370980  (orig 0x1370980, setter-chain-zero)
 void main_f_1370980(void* a0) {
@@ -6715,20 +6740,4 @@ void main_f_1476c80(void* a0) {
 
 // sub_1476c90  (orig 0x1476c90, ret_only)
 void main_f_1476c90() {}
-
-// sub_1476ca0  (orig 0x1476ca0, copy2)
-void main_f_1476ca0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_1476cb0  (orig 0x1476cb0, copy2)
-void main_f_1476cb0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_1476cc0  (orig 0x1476cc0, const-field-set-store)
-void main_f_1476cc0(void* a0) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    uint32_t t1 = 2;
-    *(uint32_t*)((char*)(t0) + 1676) = (uint32_t)(t1);
-}
-
-// sub_1476cd0  (orig 0x1476cd0, ret_only)
-void main_f_1476cd0() {}
 

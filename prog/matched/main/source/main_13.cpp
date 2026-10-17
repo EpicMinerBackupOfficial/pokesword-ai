@@ -33,6 +33,17 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1094440  (orig 0x1094440, copy-chain-store)
+void main_f_1094440(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_10959f0  (orig 0x10959f0, ret_only)
+void main_f_10959f0() {}
+
 // sub_1095a00  (orig 0x1095a00, ret_only)
 void main_f_1095a00() {}
 
@@ -7678,10 +7689,4 @@ void main_f_1266d80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 
 // sub_1268210  (orig 0x1268210, ret_only)
 void main_f_1268210() {}
-
-// sub_1268220  (orig 0x1268220, copy2)
-void main_f_1268220(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_1268230  (orig 0x1268230, copy2)
-void main_f_1268230(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 

@@ -2012,7 +2012,7 @@ void sub_987ca0() { /* 0x987ca0 */ }
 void sub_987d90() { /* 0x987d90 */ }
 void sub_987db0() { /* 0x987db0 */ }
 void sub_987e20() { /* 0x987e20 */ }
-void sub_987e90() { /* 0x987e90 */ }
+// sub_987e90: implemented in prog/matched/main/
 // sub_987eb0: implemented in prog/matched/main/
 // sub_987ec0: implemented in prog/matched/main/
 void sub_987ee0() { /* 0x987ee0 */ }

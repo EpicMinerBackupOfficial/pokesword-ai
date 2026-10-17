@@ -3789,7 +3789,7 @@ void sub_134aa40() { /* 0x134aa40 */ }
 void sub_134aa70() { /* 0x134aa70 */ }
 void sub_134ad20() { /* 0x134ad20 */ }
 void sub_134ae00() { /* 0x134ae00 */ }
-void sub_134b0b0() { /* 0x134b0b0 */ }
+// sub_134b0b0: implemented in prog/matched/main/
 void sub_134b0d0() { /* 0x134b0d0 */ }
 void sub_134b120() { /* 0x134b120 */ }
 void sub_134b170() { /* 0x134b170 */ }

@@ -33,6 +33,22 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1476ca0  (orig 0x1476ca0, copy2)
+void main_f_1476ca0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1476cb0  (orig 0x1476cb0, copy2)
+void main_f_1476cb0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_1476cc0  (orig 0x1476cc0, const-field-set-store)
+void main_f_1476cc0(void* a0) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    uint32_t t1 = 2;
+    *(uint32_t*)((char*)(t0) + 1676) = (uint32_t)(t1);
+}
+
+// sub_1476cd0  (orig 0x1476cd0, ret_only)
+void main_f_1476cd0() {}
+
 // sub_1476ce0  (orig 0x1476ce0, copy2)
 void main_f_1476ce0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
@@ -7084,21 +7100,4 @@ void main_f_173bc80(void* a0) {
     __asm__ __volatile__("" ::: "memory");
     *(uint32_t*)((char*)a0 + 16) = 0;
 }
-
-// sub_173bd40  (orig 0x173bd40, copy-chain-store)
-void main_f_173bd40(void* a0) {
-    uint32_t t0 = *(uint32_t*)((char*)a0 + 12);
-    *(uint32_t*)((char*)a0 + 8) = (uint32_t)(t0);
-    __asm__ __volatile__("" ::: "memory");
-    *(uint32_t*)((char*)a0 + 16) = 0;
-}
-
-// sub_173c350  (orig 0x173c350, ret_only)
-void main_f_173c350() {}
-
-// sub_173ce90  (orig 0x173ce90, ret_only)
-void main_f_173ce90() {}
-
-// sub_173cfc0  (orig 0x173cfc0, setter)
-void main_f_173cfc0(void* a0, uint32_t a1) { *(uint32_t*)((char*)(a0) + 40) = a1; }
 

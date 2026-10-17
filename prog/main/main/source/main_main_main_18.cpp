@@ -368,7 +368,7 @@ void sub_1370720() { /* 0x1370720 */ }
 void sub_1370760() { /* 0x1370760 */ }
 void sub_1370810() { /* 0x1370810 */ }
 void sub_1370830() { /* 0x1370830 */ }
-void sub_1370850() { /* 0x1370850 */ }
+// sub_1370850: implemented in prog/matched/main/
 void sub_1370870() { /* 0x1370870 */ }
 void sub_13708c0() { /* 0x13708c0 */ }
 // sub_1370980: implemented in prog/matched/main/
