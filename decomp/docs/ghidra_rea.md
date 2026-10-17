@@ -88,7 +88,7 @@ string is a name and nothing more.
 
 The NSO files themselves would have `.dynsym` with names *and* addresses. They are
 not on disk: `exefs/` holds only extracted `text.bin` / `rodata.bin`, and
-`RecompSwordC.zip` (568 MB) is the C recomp source, not ROM data. **The
+`RecompSwordC.zip` (568 MB) is the C source, not ROM data (its own name says "recomp"; that is the upstream archive, not this project). **The
 `.dynsym` route is therefore blocked on re-dumping the NSOs from the game**, which
 is a data-acquisition problem, not a tooling one.
 
