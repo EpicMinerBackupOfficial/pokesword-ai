@@ -5,6 +5,12 @@
 #pragma once
 
 namespace main {
+void sub_1137b30();  // 0x1137b30
+void sub_1137bd0();  // 0x1137bd0
+void Play_Camp_Sleep();  // 0x1137dc0
+void Play_Camp_Sleep_2();  // 0x11380a0
+void sub_11383d0();  // 0x11383d0
+void sub_1138460();  // 0x1138460
 void sub_11386f0();  // 0x11386f0
 void sub_11387b0();  // 0x11387b0
 void sub_1138c70();  // 0x1138c70
@@ -3999,11 +4005,5 @@ void sub_12225a0();  // 0x12225a0
 void sub_1222610();  // 0x1222610
 void sub_1222660();  // 0x1222660
 void sub_1222670();  // 0x1222670
-void sub_1222680();  // 0x1222680
-void sub_1222690();  // 0x1222690
-void sub_1222820();  // 0x1222820
-void sub_1222830();  // 0x1222830
-void sub_12229e0();  // 0x12229e0
-void sub_1222a10();  // 0x1222a10
 
 }  // namespace main

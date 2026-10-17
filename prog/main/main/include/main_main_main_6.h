@@ -5,6 +5,8 @@
 #pragma once
 
 namespace main {
+void sub_75edb0();  // 0x75edb0
+void sub_75edc0();  // 0x75edc0
 void sub_75ede0();  // 0x75ede0
 void sub_75edf0();  // 0x75edf0
 void sub_75ee00();  // 0x75ee00
@@ -116,6 +118,7 @@ void sub_762950();  // 0x762950
 void sub_762b70();  // 0x762b70
 void sub_762cf0();  // 0x762cf0
 void sub_762d10();  // 0x762d10
+void sub_762d20();  // 0x762d20
 void sub_762d30();  // 0x762d30
 void sub_762d40();  // 0x762d40
 void sub_762d50();  // 0x762d50
@@ -461,6 +464,7 @@ void sub_76f7a0();  // 0x76f7a0
 void sub_76f7c0();  // 0x76f7c0
 void sub_76f7d0();  // 0x76f7d0
 void sub_76f7e0();  // 0x76f7e0
+void sub_76f7f0();  // 0x76f7f0
 void sub_76f800();  // 0x76f800
 void sub_76f850();  // 0x76f850
 void sub_76f910();  // 0x76f910
@@ -3834,6 +3838,7 @@ void sub_819800();  // 0x819800
 void sub_819810();  // 0x819810
 void sub_819830();  // 0x819830
 void sub_819840();  // 0x819840
+void sub_819850();  // 0x819850
 void sub_819860();  // 0x819860
 void sub_819890();  // 0x819890
 void sub_8198c0();  // 0x8198c0
@@ -4000,10 +4005,5 @@ void sub_828530();  // 0x828530
 void sub_828540();  // 0x828540
 void sub_828550();  // 0x828550
 void sub_828560();  // 0x828560
-void sub_828570();  // 0x828570
-void sub_828580();  // 0x828580
-void sub_828590();  // 0x828590
-void sub_8285a0();  // 0x8285a0
-void sub_8285b0();  // 0x8285b0
 
 }  // namespace main

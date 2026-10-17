@@ -832,15 +832,7 @@ namespace main { void sub_14273a0(); }
 namespace main { void sub_1427960(); }
 namespace main { void sub_1428950(); }
 namespace main { void sub_1428d30(); }
-
-// sub_c00d10  (orig 0xc00d10, tailcall)
-void main_f_c00d10() { main::sub_ce0(); }
-
-// sub_c00d70  (orig 0xc00d70, tailcall)
-void main_f_c00d70() { main::sub_ce0(); }
-
-// sub_c010c0  (orig 0xc010c0, tailcall)
-void main_f_c010c0() { main::sub_ce0(); }
+namespace main { void sub_14294d0(); }
 
 // sub_c01120  (orig 0xc01120, tailcall)
 void main_f_c01120() { main::sub_ce0(); }
@@ -6832,4 +6824,13 @@ void main_f_1428cc0() { main::sub_1428d30(); }
 
 // sub_1428cf0  (orig 0x1428cf0, tailcall)
 void main_f_1428cf0() { main::sub_1428d30(); }
+
+// sub_1428d00  (orig 0x1428d00, tailcall)
+void main_f_1428d00() { main::sub_1428d30(); }
+
+// sub_1429450  (orig 0x1429450, tailcall)
+void main_f_1429450() { main::sub_e7c4c0(); }
+
+// sub_1429460  (orig 0x1429460, tailcall)
+void main_f_1429460() { main::sub_14294d0(); }
 

@@ -503,7 +503,6 @@ namespace main {
 // sub_66a8d0: implemented in prog/matched/main/
 // sub_672480: implemented in prog/matched/main/
 // sub_672820: implemented in prog/matched/main/
-// sub_678bb0: implemented in prog/matched/main/
 // sub_679c90: implemented in prog/matched/main/
 // sub_679ca0: implemented in prog/matched/main/
 // sub_679cb0: implemented in prog/matched/main/
@@ -603,7 +602,6 @@ namespace main {
 // sub_76e560: implemented in prog/matched/main/
 // sub_76f790: implemented in prog/matched/main/
 // sub_76f7b0: implemented in prog/matched/main/
-// sub_76f7f0: implemented in prog/matched/main/
 // sub_770c40: implemented in prog/matched/main/
 // sub_7816e0: implemented in prog/matched/main/
 // sub_782990: implemented in prog/matched/main/
@@ -992,7 +990,6 @@ namespace main {
 // sub_86f5f0: implemented in prog/matched/main/
 // sub_87a1b0: implemented in prog/matched/main/
 // sub_87a750: implemented in prog/matched/main/
-// sub_885aa0: implemented in prog/matched/main/
 // sub_885f70: implemented in prog/matched/main/
 // sub_888f00: implemented in prog/matched/main/
 // sub_88a580: implemented in prog/matched/main/
@@ -4004,5 +4001,8 @@ namespace main {
 // sub_1428cb0: implemented in prog/matched/main/
 // sub_1428cc0: implemented in prog/matched/main/
 // sub_1428cf0: implemented in prog/matched/main/
+// sub_1428d00: implemented in prog/matched/main/
+// sub_1429450: implemented in prog/matched/main/
+// sub_1429460: implemented in prog/matched/main/
 
 }  // namespace main

@@ -4,6 +4,12 @@
 #include "main_main_main_15.h"
 
 namespace main {
+// sub_fed9d0: implemented in prog/matched/main/
+void sub_fed9e0() { /* 0xfed9e0 */ }
+void sub_feda40() { /* 0xfeda40 */ }
+void sub_feda60() { /* 0xfeda60 */ }
+void sub_fedab0() { /* 0xfedab0 */ }
+void sub_fedd90() { /* 0xfedd90 */ }
 void sub_feddf0() { /* 0xfeddf0 */ }
 void sub_feded0() { /* 0xfeded0 */ }
 void network_net_live_data_holder_4() { /* 0xfedf60 */ }
@@ -3998,11 +4004,5 @@ void sub_1091680() { /* 0x1091680 */ }
 void sub_1091770() { /* 0x1091770 */ }
 void sub_1091800() { /* 0x1091800 */ }
 void sub_1091890() { /* 0x1091890 */ }
-void sub_10918a0() { /* 0x10918a0 */ }
-void sub_10918b0() { /* 0x10918b0 */ }
-void sub_1091940() { /* 0x1091940 */ }
-void sub_10919d0() { /* 0x10919d0 */ }
-void sub_1091a60() { /* 0x1091a60 */ }
-void sub_1091af0() { /* 0x1091af0 */ }
 
 }  // namespace main

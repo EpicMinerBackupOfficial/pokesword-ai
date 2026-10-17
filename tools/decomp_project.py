@@ -364,23 +364,43 @@ def tail_target_ok(rec, matched):
     what was verified -- would no longer be the one compiled. Those are declined
     rather than emitted incorrectly, and stop being counted as matching.
 
-    A tail call WITH A PREFIX is a different thing and gets a different verdict:
+    A tail call WITH A PREFIX is a different thing, and it is NOT waved through:
 
         add  x2, x0, #0xec
         add  x3, x0, #0xe8
         mov  w4, #1
         b    target
 
-    It forwards arguments -- that is what the prefix FOR -- so refusing it
-    because the destination has parameters would refuse the only kind that can
-    possibly be right. The refusal exists to catch a bare thunk claiming
-    parameters it does not have, and a prefix is not claiming that.
+    It forwards arguments -- that is what the prefix FOR -- and the harness
+    verifies it byte-identically (5,460 of them in main). It is still not
+    emittable, and the reason is the same one this function exists to catch:
+
+        void main_f_13f40() { main::sub_16ff0(); }
+
+    is what the emitter writes, because `retype_thunk` SYNTHESISES a bare thunk
+    and ignores the verified source. And the destination is a namespaced stub
+    declared `void sub_16ff0()` -- no parameters, void return. So the thunk cannot
+    forward one argument to it, and `return <void expr>` is ill-formed besides.
+
+    Emitting these anyway is what put 5,345 rows in the CSV whose decomp_name does
+    not exist in the built ELF: the CSV recorded the verified signature
+    `_Z12main_f_13f40Pv` while the emitted body mangles to `_Z12main_f_13f40v`.
+
+    Unblocking them is a real piece of work and it is not this function: the
+    destination needs the same arity and return type the thunk forwards, which
+    means the namespaced stub has to be emitted with a per-arity signature and
+    the thunk's arguments spelled in those types. Until that exists, these stay
+    verified-but-unemittable, which is exactly what this gate is for.
     """
     t = rec.get("tail_target_addr")
     if t is None:
         return False
+    # A prefix forwards arguments, and no destination in the tree accepts them:
+    # see the docstring. Declined explicitly, because the stub branch below would
+    # otherwise wave it through -- `dest is None` means "namespaced stub, declared
+    # as void()", which is exactly the declaration that cannot take an argument.
     if int(rec.get("tail_nargs") or 0) > 0:
-        return True  # a prefix supplies the arguments it forwards
+        return False
     dest = matched.get(t)
     if dest is None:
         return True  # a namespaced stub, declared as void()

@@ -234,7 +234,6 @@ namespace main { void sub_600c30(); }
 namespace main { void sub_66a900(); }
 namespace main { void sub_672350(); }
 namespace main { void sub_6726c0(); }
-namespace main { void sub_67b0f0(); }
 namespace main { void sub_3044e0(); }
 namespace main { void sub_3044f0(); }
 extern void main_f_305c10();
@@ -283,7 +282,6 @@ extern void main_f_717010();
 namespace gflib3 { void gflnet3_descriptor_17(); }
 namespace main { void sub_762bb0(); }
 namespace main { void sub_7803c0(); }
-namespace main { void sub_762d20(); }
 namespace main { void sub_78f620(); }
 namespace main { void sub_e7c250(); }
 namespace main { void sub_790010(); }
@@ -338,7 +336,6 @@ namespace main { void sub_81b860(); }
 namespace main { void sub_86f720(); }
 namespace main { void sub_87a210(); }
 namespace main { void sub_87a7b0(); }
-namespace main { void sub_819850(); }
 namespace main { void sub_81b230(); }
 namespace main { void sub_88cec0(); }
 namespace main { void sub_88df70(); }
@@ -2097,9 +2094,6 @@ void main_f_672480() { main::sub_672350(); }
 // sub_672820  (orig 0x672820, tailcall)
 void main_f_672820() { main::sub_6726c0(); }
 
-// sub_678bb0  (orig 0x678bb0, tailcall)
-void main_f_678bb0() { main::sub_67b0f0(); }
-
 // sub_679c90  (orig 0x679c90, tailcall)
 void main_f_679c90() { main::sub_ce0(); }
 
@@ -2396,9 +2390,6 @@ void main_f_76f790() { main::sub_762bb0(); }
 
 // sub_76f7b0  (orig 0x76f7b0, tailcall)
 void main_f_76f7b0() { main::sub_762bb0(); }
-
-// sub_76f7f0  (orig 0x76f7f0, tailcall)
-void main_f_76f7f0() { main::sub_762d20(); }
 
 // sub_770c40  (orig 0x770c40, tailcall)
 void main_f_770c40() { main::sub_ce0(); }
@@ -3563,9 +3554,6 @@ void main_f_87a1b0() { main::sub_87a210(); }
 
 // sub_87a750  (orig 0x87a750, tailcall)
 void main_f_87a750() { main::sub_87a7b0(); }
-
-// sub_885aa0  (orig 0x885aa0, tailcall)
-void main_f_885aa0() { main::sub_819850(); }
 
 // sub_885f70  (orig 0x885f70, tailcall)
 void main_f_885f70() { main::sub_81b550(); }
@@ -6599,4 +6587,13 @@ void main_f_c00c70() { main::sub_ce0(); }
 
 // sub_c00cd0  (orig 0xc00cd0, tailcall)
 void main_f_c00cd0() { main::sub_ce0(); }
+
+// sub_c00d10  (orig 0xc00d10, tailcall)
+void main_f_c00d10() { main::sub_ce0(); }
+
+// sub_c00d70  (orig 0xc00d70, tailcall)
+void main_f_c00d70() { main::sub_ce0(); }
+
+// sub_c010c0  (orig 0xc010c0, tailcall)
+void main_f_c010c0() { main::sub_ce0(); }
 

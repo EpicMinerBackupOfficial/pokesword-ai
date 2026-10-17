@@ -4,6 +4,12 @@
 #include "main_main_main_14.h"
 
 namespace main {
+void sub_f08550() { /* 0xf08550 */ }
+// sub_f08600: implemented in prog/matched/main/
+void sub_f08630() { /* 0xf08630 */ }
+void sub_f08640() { /* 0xf08640 */ }
+void sub_f08670() { /* 0xf08670 */ }
+void sub_f08680() { /* 0xf08680 */ }
 void State_Intro_NameInput() { /* 0xf087c0 */ }
 void sub_f08900() { /* 0xf08900 */ }
 void sub_f08a00() { /* 0xf08a00 */ }
@@ -3998,11 +4004,5 @@ void network_net_live_data_holder_3() { /* 0xfed700 */ }
 void sub_fed860() { /* 0xfed860 */ }
 void sub_fed8f0() { /* 0xfed8f0 */ }
 void sub_fed980() { /* 0xfed980 */ }
-// sub_fed9d0: implemented in prog/matched/main/
-void sub_fed9e0() { /* 0xfed9e0 */ }
-void sub_feda40() { /* 0xfeda40 */ }
-void sub_feda60() { /* 0xfeda60 */ }
-void sub_fedab0() { /* 0xfedab0 */ }
-void sub_fedd90() { /* 0xfedd90 */ }
 
 }  // namespace main

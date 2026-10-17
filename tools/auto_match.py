@@ -3000,7 +3000,7 @@ def main():
         keep = ("module", "addr", "size", "name", "shape", "ident", "sig",
                 "src", "orig_insns", "new_insns", "tail_target_addr",
                 "tail_orig_name", "needs_proto", "symbol", "handwritten",
-                "note")
+                "tail_nargs", "tail_ret", "note")
 
         # Merge, never replace.
         #

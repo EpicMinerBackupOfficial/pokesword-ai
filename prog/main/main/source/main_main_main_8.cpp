@@ -4,6 +4,12 @@
 #include "main_main_main_8.h"
 
 namespace main {
+void sub_8aa4f0() { /* 0x8aa4f0 */ }
+void sub_8aa500() { /* 0x8aa500 */ }
+void sub_8aa590() { /* 0x8aa590 */ }
+void sub_8aa5e0() { /* 0x8aa5e0 */ }
+void sub_8aa5f0() { /* 0x8aa5f0 */ }
+void sub_8aa600() { /* 0x8aa600 */ }
 void sub_8aa790() { /* 0x8aa790 */ }
 void sub_8aa880() { /* 0x8aa880 */ }
 void sub_8aa930() { /* 0x8aa930 */ }
@@ -3998,11 +4004,5 @@ void sub_9a72c0() { /* 0x9a72c0 */ }
 void sub_9a7300() { /* 0x9a7300 */ }
 void sub_9a7470() { /* 0x9a7470 */ }
 void sub_9a74c0() { /* 0x9a74c0 */ }
-void sub_9a7680() { /* 0x9a7680 */ }
-void sub_9a76b0() { /* 0x9a76b0 */ }
-void sub_9a76e0() { /* 0x9a76e0 */ }
-void sub_9a7850() { /* 0x9a7850 */ }
-// sub_9a78c0: implemented in prog/matched/main/
-void sub_9a7a90() { /* 0x9a7a90 */ }
 
 }  // namespace main

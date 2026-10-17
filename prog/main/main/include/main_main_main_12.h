@@ -5,6 +5,12 @@
 #pragma once
 
 namespace main {
+void sub_cd7e10();  // 0xcd7e10
+void sub_cd7e20();  // 0xcd7e20
+void sub_cd7e30();  // 0xcd7e30
+void sub_cd7e70();  // 0xcd7e70
+void sub_cd7e80();  // 0xcd7e80
+void sub_cd7ea0();  // 0xcd7ea0
 void sub_cd7eb0();  // 0xcd7eb0
 void sub_cd7ec0();  // 0xcd7ec0
 void sub_cd7ed0();  // 0xcd7ed0
@@ -3999,11 +4005,5 @@ void sub_e10b50();  // 0xe10b50
 void sub_e10ba0();  // 0xe10ba0
 void sol_no_matching_function_call_takes_this_number_of_argum();  // 0xe10bd0
 void aligned_allocation_of_userdata_block_data_section_for_s_3();  // 0xe10d40
-void sub_e10f70();  // 0xe10f70
-void sub_e11150();  // 0xe11150
-void pairs_on_type_s_it_is_not_recognized_as_a_container_4();  // 0xe111c0
-void sub_e11270();  // 0xe11270
-void class_cast_40();  // 0xe112f0
-void class_check_9();  // 0xe113e0
 
 }  // namespace main

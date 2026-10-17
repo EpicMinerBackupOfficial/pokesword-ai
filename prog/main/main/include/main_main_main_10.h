@@ -5,6 +5,12 @@
 #pragma once
 
 namespace main {
+void sub_af86d0();  // 0xaf86d0
+void sub_af87c0();  // 0xaf87c0
+void sub_af88a0();  // 0xaf88a0
+void sub_af8b00();  // 0xaf8b00
+void sub_af8e10();  // 0xaf8e10
+void sub_af9040();  // 0xaf9040
 void sub_af91b0();  // 0xaf91b0
 void sub_af9300();  // 0xaf9300
 void sub_af9640();  // 0xaf9640
@@ -3999,11 +4005,5 @@ void sub_be2080();  // 0xbe2080
 void sub_be2090();  // 0xbe2090
 void sub_be21a0();  // 0xbe21a0
 void sub_be22e0();  // 0xbe22e0
-void sub_be2420();  // 0xbe2420
-void sub_be2540();  // 0xbe2540
-void sub_be2640();  // 0xbe2640
-void sub_be2760();  // 0xbe2760
-void sub_be27d0();  // 0xbe27d0
-void sub_be2810();  // 0xbe2810
 
 }  // namespace main

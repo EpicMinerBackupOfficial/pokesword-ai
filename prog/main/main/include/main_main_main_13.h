@@ -5,6 +5,12 @@
 #pragma once
 
 namespace main {
+void sub_e10f70();  // 0xe10f70
+void sub_e11150();  // 0xe11150
+void pairs_on_type_s_it_is_not_recognized_as_a_container_4();  // 0xe111c0
+void sub_e11270();  // 0xe11270
+void class_cast_40();  // 0xe112f0
+void class_check_9();  // 0xe113e0
 void sub_e11680();  // 0xe11680
 void sub_e11740();  // 0xe11740
 void seperator_mark_18();  // 0xe11880
@@ -3999,11 +4005,5 @@ void sub_f083d0();  // 0xf083d0
 void sub_f083e0();  // 0xf083e0
 void sub_f083f0();  // 0xf083f0
 void State_Intro_HeroSelect();  // 0xf08400
-void sub_f08550();  // 0xf08550
-void sub_f08600();  // 0xf08600
-void sub_f08630();  // 0xf08630
-void sub_f08640();  // 0xf08640
-void sub_f08670();  // 0xf08670
-void sub_f08680();  // 0xf08680
 
 }  // namespace main

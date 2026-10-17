@@ -554,6 +554,7 @@ void sub_678410() { /* 0x678410 */ }
 void sub_678520() { /* 0x678520 */ }
 void sub_6787e0() { /* 0x6787e0 */ }
 void sub_6788f0() { /* 0x6788f0 */ }
+void sub_678bb0() { /* 0x678bb0 */ }
 void sub_678bc0() { /* 0x678bc0 */ }
 void sub_678bf0() { /* 0x678bf0 */ }
 void unnamed_5() { /* 0x678d70 */ }
@@ -667,6 +668,7 @@ void sub_67abd0() { /* 0x67abd0 */ }
 void unnamed_6() { /* 0x67adc0 */ }
 void sub_67af80() { /* 0x67af80 */ }
 void sub_67b080() { /* 0x67b080 */ }
+void sub_67b0f0() { /* 0x67b0f0 */ }
 void sub_67b100() { /* 0x67b100 */ }
 void sub_67b120() { /* 0x67b120 */ }
 void sub_67b150() { /* 0x67b150 */ }
@@ -4002,7 +4004,5 @@ void sub_75ed40() { /* 0x75ed40 */ }
 void sub_75ed70() { /* 0x75ed70 */ }
 void sub_75ed80() { /* 0x75ed80 */ }
 // sub_75eda0: implemented in prog/matched/main/
-void sub_75edb0() { /* 0x75edb0 */ }
-void sub_75edc0() { /* 0x75edc0 */ }
 
 }  // namespace main

@@ -5,6 +5,12 @@
 #pragma once
 
 namespace main {
+void sub_9a7680();  // 0x9a7680
+void sub_9a76b0();  // 0x9a76b0
+void sub_9a76e0();  // 0x9a76e0
+void sub_9a7850();  // 0x9a7850
+void sub_9a78c0();  // 0x9a78c0
+void sub_9a7a90();  // 0x9a7a90
 void sub_9a7f10();  // 0x9a7f10
 void sub_9a8190();  // 0x9a8190
 void cameraAnimeFile();  // 0x9a8200
@@ -3999,11 +4005,5 @@ void sub_af7450();  // 0xaf7450
 void StateBtlSpotCompPrepareMatching();  // 0xaf7460
 void sub_af8260();  // 0xaf8260
 void sub_af8420();  // 0xaf8420
-void sub_af86d0();  // 0xaf86d0
-void sub_af87c0();  // 0xaf87c0
-void sub_af88a0();  // 0xaf88a0
-void sub_af8b00();  // 0xaf8b00
-void sub_af8e10();  // 0xaf8e10
-void sub_af9040();  // 0xaf9040
 
 }  // namespace main

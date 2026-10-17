@@ -4,6 +4,12 @@
 #include "main_main_main_22.h"
 
 namespace main {
+// sub_15e7d10: implemented in prog/matched/main/
+void sub_15e7d20() { /* 0x15e7d20 */ }
+void sub_15e7e40() { /* 0x15e7e40 */ }
+void sub_15e7ea0() { /* 0x15e7ea0 */ }
+void sub_15e7f00() { /* 0x15e7f00 */ }
+void sub_15e8270() { /* 0x15e8270 */ }
 void sub_15e83c0() { /* 0x15e83c0 */ }
 void sub_15e84c0() { /* 0x15e84c0 */ }
 void sub_15e8510() { /* 0x15e8510 */ }
@@ -3642,8 +3648,11 @@ void sub_16a8b30() { /* 0x16a8b30 */ }
 void sub_16a9070() { /* 0x16a9070 */ }
 void sub_16a90f0() { /* 0x16a90f0 */ }
 void sub_16a9130() { /* 0x16a9130 */ }
+void sub_16a9210() { /* 0x16a9210 */ }
 void sub_16a9220() { /* 0x16a9220 */ }
+void sub_16a9310() { /* 0x16a9310 */ }
 void sub_16a9320() { /* 0x16a9320 */ }
+void sub_16a9510() { /* 0x16a9510 */ }
 void sub_16a9520() { /* 0x16a9520 */ }
 void sub_16a9570() { /* 0x16a9570 */ }
 void sub_16a95d0() { /* 0x16a95d0 */ }
@@ -3661,6 +3670,7 @@ void sub_16a9990() { /* 0x16a9990 */ }
 void sub_16a9a20() { /* 0x16a9a20 */ }
 void sub_16a9a60() { /* 0x16a9a60 */ }
 void sub_16a9a90() { /* 0x16a9a90 */ }
+void sub_16a9b80() { /* 0x16a9b80 */ }
 void sub_16a9ba0() { /* 0x16a9ba0 */ }
 void sub_16a9d20() { /* 0x16a9d20 */ }
 void sub_16a9d60() { /* 0x16a9d60 */ }
@@ -3974,7 +3984,9 @@ void sub_16c2980() { /* 0x16c2980 */ }
 void sub_16c2a60() { /* 0x16c2a60 */ }
 void sub_16c2aa0() { /* 0x16c2aa0 */ }
 void sub_16c2ad0() { /* 0x16c2ad0 */ }
+void sub_16c2ba0() { /* 0x16c2ba0 */ }
 void sub_16c2bb0() { /* 0x16c2bb0 */ }
+void sub_16c2c90() { /* 0x16c2c90 */ }
 void sub_16c2ca0() { /* 0x16c2ca0 */ }
 void sub_16c2da0() { /* 0x16c2da0 */ }
 void sub_16c2ea0() { /* 0x16c2ea0 */ }
@@ -3984,6 +3996,7 @@ void sub_16c2ff0() { /* 0x16c2ff0 */ }
 void sub_16c3050() { /* 0x16c3050 */ }
 void sub_16c3090() { /* 0x16c3090 */ }
 void sub_16c30c0() { /* 0x16c30c0 */ }
+void sub_16c31a0() { /* 0x16c31a0 */ }
 void sub_16c31b0() { /* 0x16c31b0 */ }
 void sub_16c3290() { /* 0x16c3290 */ }
 void sub_16c34a0() { /* 0x16c34a0 */ }
@@ -3991,18 +4004,5 @@ void sub_16c3680() { /* 0x16c3680 */ }
 void sub_16c3a20() { /* 0x16c3a20 */ }
 void sub_16c3a60() { /* 0x16c3a60 */ }
 // sub_16c3da0: implemented in prog/matched/main/
-void sub_16c3db0() { /* 0x16c3db0 */ }
-void sub_16c3e10() { /* 0x16c3e10 */ }
-void pia_nex_heap() { /* 0x16c3e70 */ }
-void sub_16c3f40() { /* 0x16c3f40 */ }
-void sub_16c3f90() { /* 0x16c3f90 */ }
-void sub_16c4040() { /* 0x16c4040 */ }
-void sub_16c4050() { /* 0x16c4050 */ }
-void sub_16c4100() { /* 0x16c4100 */ }
-void sub_16c4110() { /* 0x16c4110 */ }
-void sub_16c4120() { /* 0x16c4120 */ }
-void SDK_MW_Nintendo_PiaNex_5_18_0_forNEX_4_6_2() { /* 0x16c4190 */ }
-void sub_16c41a0() { /* 0x16c41a0 */ }
-// sub_16c4550: implemented in prog/matched/main/
 
 }  // namespace main

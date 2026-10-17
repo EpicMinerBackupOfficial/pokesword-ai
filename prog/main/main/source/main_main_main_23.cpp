@@ -4,6 +4,19 @@
 #include "main_main_main_23.h"
 
 namespace main {
+void sub_16c3db0() { /* 0x16c3db0 */ }
+void sub_16c3e10() { /* 0x16c3e10 */ }
+void pia_nex_heap() { /* 0x16c3e70 */ }
+void sub_16c3f40() { /* 0x16c3f40 */ }
+void sub_16c3f90() { /* 0x16c3f90 */ }
+void sub_16c4040() { /* 0x16c4040 */ }
+void sub_16c4050() { /* 0x16c4050 */ }
+void sub_16c4100() { /* 0x16c4100 */ }
+void sub_16c4110() { /* 0x16c4110 */ }
+void sub_16c4120() { /* 0x16c4120 */ }
+void SDK_MW_Nintendo_PiaNex_5_18_0_forNEX_4_6_2() { /* 0x16c4190 */ }
+void sub_16c41a0() { /* 0x16c41a0 */ }
+// sub_16c4550: implemented in prog/matched/main/
 void sub_16c4560() { /* 0x16c4560 */ }
 void sub_16c45a0() { /* 0x16c45a0 */ }
 void sub_16c45e0() { /* 0x16c45e0 */ }
@@ -1872,6 +1885,7 @@ void sub_173a5a0() { /* 0x173a5a0 */ }
 void sub_173a6d0() { /* 0x173a6d0 */ }
 // sub_173a700: implemented in prog/matched/main/
 void sub_173a710() { /* 0x173a710 */ }
+void sub_173ab30() { /* 0x173ab30 */ }
 void sub_173ab40() { /* 0x173ab40 */ }
 void sub_173ab60() { /* 0x173ab60 */ }
 void sub_173aba0() { /* 0x173aba0 */ }
@@ -3990,19 +4004,5 @@ void sub_17ccba0() { /* 0x17ccba0 */ }
 void sub_17ccbb0() { /* 0x17ccbb0 */ }
 void sub_17ccbc0() { /* 0x17ccbc0 */ }
 void sub_17ccbd0() { /* 0x17ccbd0 */ }
-// sub_17ccc00: implemented in prog/matched/main/
-void sub_17ccc10() { /* 0x17ccc10 */ }
-void sub_17ccc40() { /* 0x17ccc40 */ }
-void sub_17cccc0() { /* 0x17cccc0 */ }
-void sub_17ccd50() { /* 0x17ccd50 */ }
-void sub_17cce00() { /* 0x17cce00 */ }
-void sub_17cce90() { /* 0x17cce90 */ }
-void sub_17cceb0() { /* 0x17cceb0 */ }
-void sub_17ccee0() { /* 0x17ccee0 */ }
-void sub_17ccfc0() { /* 0x17ccfc0 */ }
-void sub_17cd1e0() { /* 0x17cd1e0 */ }
-void sub_17cd230() { /* 0x17cd230 */ }
-void sub_17cd3e0() { /* 0x17cd3e0 */ }
-void sub_17cd550() { /* 0x17cd550 */ }
 
 }  // namespace main
