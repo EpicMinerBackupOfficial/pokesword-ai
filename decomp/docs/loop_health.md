@@ -136,3 +136,50 @@ bug.
 
 Now `work/adrpreg_<pid>`, and the linked-ELF temp is `_adrpreg_linked_<pid>.elf`
 for the same reason.
+
+
+## The whole chain was down, and `ast.parse` is why nobody noticed
+
+`health_check.py` reported `my processes : 0`. All five -- wake, watchdog,
+supervisor, keepalive, heartbeat -- gone, with two stale pidfiles left behind.
+
+### What had actually happened
+
+`wake.py` would not start:
+
+    File "tools/wake.py", line 247
+      encoding="utf-8", errors="replace")
+      ^^^^^^^^^^^^^^^^
+    SyntaxError: keyword argument repeated: encoding
+
+A `subprocess.run` call carried `encoding="utf-8", errors="replace"` TWICE -- once
+at the end of the first line and again on the continuation. `wake.py` is the
+tier that pings the session, so the session stopped being woken, and nothing
+relaunched it: the watchdog's tier-4 job is to keep the ping chain alive, and
+ping_chain.json still held a pid for a process that could not start.
+
+### `ast.parse` does not catch this, and every patch in this arc uses it
+
+    ast.parse(src)          ->  OK
+    python -m py_compile    ->  SyntaxError: keyword argument repeated
+
+A repeated keyword argument is a COMPILE-time check, in the symbol-table phase,
+not a PARSE-time one. So the parser accepts it and the compiler rejects it.
+
+That is the standing guard for every edit in this project -- "assert every patch
+anchor, `ast.parse` after every step" -- and it is strictly weaker than it looks.
+It has been passing edits that produce a file which cannot be imported, which is
+the one failure mode that stops the whole arc silently.
+
+`py_compile` is the check that catches it, and it costs the same. Anything that
+edits a tool and is going to run it should compile it, not merely parse it.
+
+### Also seen in the log, and not yet fixed
+
+    subprocess.TimeoutExpired: Command '[... gen_zero_fill.py --apply]'
+        timed out after -4024.6345928001683 seconds
+
+A NEGATIVE timeout, which `subprocess.run` can only compute from a deadline that
+has already passed -- the suspended-machine failure this file records from an
+earlier arc. It is still unfixed and it is a plausible contributor to the chain
+coming down: a generator that raises there takes the tick down with it.

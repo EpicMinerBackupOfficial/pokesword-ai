@@ -243,8 +243,8 @@ def wait_idle(cli, sess, max_wait, poll=15):
         try:
             r = subprocess.run(
                 [cli, "api", "GET", API_MSGS % sess],
-                cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
-                           encoding="utf-8", errors="replace")
+                cwd=ROOT, capture_output=True, text=True,
+                encoding="utf-8", errors="replace", timeout=60)
             data = _json.loads(r.stdout or "{}")
             items = data.get("data") if isinstance(data, dict) else None
             items = items or []
