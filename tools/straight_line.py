@@ -2841,8 +2841,33 @@ class StraightLine:
             # real names, so this only works in `_emit` -- which is exactly where
             # the result is needed.
             _, op, s1, s2, ct = val
-            _ct1, _e1 = self._render(s1, names) if isinstance(s1, tuple) \
-                else (None, s1)
+            # A POINTER-typed left operand makes this pointer arithmetic, not
+            # integer arithmetic, and C++ will not compile `(a0) + (360)` when
+            # `a0` is `void *`:
+            #
+            #     error: arithmetic on a pointer to void
+            #
+            # That error killed a whole 20-candidate batch, so the population it
+            # came from (6,467 prefix tail calls in main) was never compared at
+            # all -- the run reported 5,083 of 11,550 tried and stopped.
+            #
+            # `ptr_add(left, 0)` is the existing spelling for "this pointer,
+            # byte 0", so it produces `(char *)(a0)` and the arithmetic becomes
+            # byte arithmetic. An argument whose declared type is an integer is
+            # left alone -- casting that to `char *` would change the code
+            # Clang emits, not just make it compile.
+            _s1 = s1
+            if (op == "+" and isinstance(s1, tuple) and s1[0] == "arg"
+                    and (len(s1) < 3 or s1[2] == "void*")):
+                _ct0, _e0 = self._render(s1, names)
+                if _e0 in names.values():
+                    _s1 = _e0
+                    _c1, _e1 = "void*", ptr_add(_e0, 0)
+                else:
+                    _ct1, _e1 = self._render(s1, names)
+            else:
+                _ct1, _e1 = self._render(s1, names) if isinstance(s1, tuple) \
+                    else (None, s1)
             if isinstance(s2, tuple):
                 if s2[0] == "shift":
                     _c2, _e2 = self._render(s2[3], names)
@@ -3254,7 +3279,18 @@ class StraightLine:
                     if _sig in _seen:
                         _names.append(_names[_seen.index(_sig)])
                         continue
-                    _ln = "vq%d" % len(_seen)
+                    # The name has to be unique across the WHOLE FUNCTION, not
+                    # across this one statement. `_seen` is reset to `[]` for
+                    # every pair store, so `vq%d % len(_seen)` restarted at vq0
+                    # for the second one and the batch died with
+                    #
+                    #     error: redefinition of 'vq0'
+                    #
+                    # A synthetic local's scope is the function, so the counter
+                    # has to be too. `pre + body_txt` is the number of statements
+                    # actually emitted so far, and this branch appends one line
+                    # per distinct operand, so it strictly increases here.
+                    _ln = "vq%d" % (len(pre) + len(body_txt))
                     _seen.append(_sig)
                     _names.append(_ln)
                     _sink.append("%s %s = %s;" % (_ct, _ln, _ex))
@@ -3267,6 +3303,28 @@ class StraightLine:
                 continue
             w, n, off, val = stmt[:4]
             iexpr = stmt[4] if len(stmt) > 4 else None
+            # An index expression is a VALUE TUPLE, not text, and it has to be
+            # rendered like any other value.
+            #
+            # It was interpolated straight into the format string, which put the
+            # tuple's repr into the emitted C:
+            #
+            #     *(uint64_t*)(((char*)(p1) + ('expr', '*', ('load', 0, 336, 4,
+            #      True), ('imm', 8, 'int32_t'), 'int32_t'))) = a1;
+            #
+            # That is not a compile error inside one function -- it is a compile
+            # error in a TRANSLATION UNIT, and `auto_match --module main` batches
+            # 60 candidates per unit. So it aborted the whole batch, the run
+            # exited 1, and the per-shape MATCH lines were never printed at all:
+            # the report read as "the generators were exhausted" when in fact
+            # 18 copy-chain and 6 float_const candidates had never been compiled.
+            #
+            # An address index is also an integer, never a pointer, so it is
+            # spelled `uintptr_t`; `ptr_add` has already made the left side
+            # `(char *)`, so the addition is byte arithmetic.
+            if isinstance(iexpr, tuple):
+                _ict, iexpr = self._render(iexpr, names)
+                iexpr = "((uintptr_t)(%s))" % iexpr
             ct, expr = self._render(val, names)
             # An address expression may only be stored at pointer width. Storing
             # one through a narrower type is ill-formed C++ -- `*(uint32_t*)p =
@@ -3476,8 +3534,20 @@ class StraightLine:
             _tcall = "%s(%s)" % (_tname, ", ".join(_targs))
             _lines = list(all_txt)
             _lines.append("return %s;" % _tcall)
+            # `sig`, not "v". The parameter list above is built from the
+            # argument registers the tail call forwards, and `sig` is its Itanium
+            # encoding -- so a five-argument tail call mangles as `Pm...`, not as
+            # the empty parameter list `v`. Returning "v" made every prefixed
+            # tail call look for a symbol the object does not define:
+            #
+            #     MISS tailcall 0x17dfdb0  symbol not found / no code
+            #
+            # which is the harness blaming the emitter for a malformed lookup
+            # key -- the same shape of error as the "no parameters" note above.
+            # Return types are absent from the mangling, so the `uint64_t` here
+            # costs nothing.
             return "%s %s(%s) {\n    %s\n}\n" % (
-                "uint64_t", ident, plist, "\n    ".join(_lines)), "v"
+                "uint64_t", ident, plist, "\n    ".join(_lines)), sig
         if ret_val is None:
             if saw_call:
                 all_txt.append(FRAME_ASM)

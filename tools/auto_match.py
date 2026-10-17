@@ -336,7 +336,15 @@ def gen_tailcall(ins, end, ident, ctx):
     if prefix:
         import straight_line
         try:
-            out = straight_line.StraightLine(prefix).translate(ident, tail=(tname, n))
+            # The whole body, branch included. `tail=` treats the trailing `b` as
+            # the body's TERMINATOR -- it is the return, and it is excluded from
+            # the walk. Handing the translator the prefix alone (which is what
+            # `ctx["tail_prefix"]` holds, because the arity is computed from the
+            # prefix's argument registers) makes it look for a terminator that is
+            # not there, and every one of the 6,487 bodies in main declined with
+            # `tail body does not end in b`.
+            out = straight_line.StraightLine(list(ins[:end])).translate(
+                ident, tail=(tname, n))
         except straight_line.Bail:
             return None
         except Exception:

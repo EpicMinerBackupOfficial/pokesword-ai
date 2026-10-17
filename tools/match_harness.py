@@ -490,10 +490,39 @@ def compile_batch_isolated(candidates, workdir, incdir=None, head=None):
                 bad_half = h
                 break
         if bad_half is None:
-            # Both halves are fine on their own, so the failure needs the pair
-            # -- a collision between candidates, not a single bad body.
-            return [], list(candidates), [("collision across %d candidates"
-                                           % len(pool), err[:400])]
+            # Both halves are fine on their own, so the failure needs more than
+            # one candidate together.
+            #
+            # This used to give up here and return an error, which aborted the
+            # WHOLE run: `auto_match --module main` printed no per-shape MATCH
+            # line at all and exited 1, and the report read as "the generators
+            # are exhausted" when in fact 18 copy-chain and 6 float_const
+            # candidates had never been compiled. Four separate generator bugs
+            # were hidden behind this one line, one per beat, because the visible
+            # symptom was always the same.
+            #
+            # Peeling costs one compile per candidate but never loses the rest of
+            # the pool, and it names the candidate that is part of it.
+            keep = []
+            peeled = list(pool)
+            while len(peeled) > 1:
+                o, _e = compile_batch(peeled[1:], workdir + "_p", incdir, head)
+                if o is None:
+                    # The remainder still fails, so the peeled candidate was not
+                    # the cause; drop it and keep isolating.
+                    peeled = peeled[1:]
+                    continue
+                dropped.append((peeled[0][0],
+                                "collision: the batch fails only with this "
+                                "candidate present"))
+                peeled = peeled[1:]
+                keep = peeled
+            o, e = compile_batch(peeled, workdir + "_p", incdir, head)
+            if o is None:
+                return [], list(candidates), [(str(c[0]), e[:400]) for c in peeled]
+            if keep:
+                dropped.append((str(keep[0][0]), "collision partner"))
+            return peeled, dropped, []
         # Keep the good half and record the bad one; recurse into the bad half.
         good_half = halves[1] if bad_half is halves[0] else halves[0]
         for c in bad_half:
