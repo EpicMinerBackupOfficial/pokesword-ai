@@ -291,63 +291,90 @@ which is the `tail call argument x1 is neither written nor an incoming argument`
 bail, with no other explanation visible.
 
 
-## The tail-call prefix: VERIFIED at 91%, blocked at the emit, not the codegen
+## The tail-call prefix: LANDED -- 5,322 bodies, +3.50% of the figure
 
-The last mile was a single wrong index. `obj_relocations` is keyed by **offset
-within the function**, and the lookup asked for offset 0 -- right for a bare thunk
-whose whole body is one `b`, wrong for a prefix where the `b` is the last of
-several instructions:
+The population that was unreachable for three beats is banked. What it needed was
+never codegen. It was one index, one keyword, and an overload.
 
-    mine_t = [relocs.get(mangled, {}).get(0)]              # wrong
-    mine_t = [relocs.get(mangled, {}).get(4 * max(0, end - 1))]   # the branch
+    32,531 / 21.39%   ->   37,853 / 24.89%
+    356,232 bytes     ->   399,108 bytes
 
-The expected symbol had been right all along. With the offset fixed:
+### 1. One index
 
-    generated 11550 candidates
-    MATCH 10543 / 11550 = 91.28%
-    NOT already in registry: 5460
+`obj_relocations` is keyed by **offset within the function**, and the lookup asked
+for offset 0 -- right for a bare thunk whose whole body is one `b`, wrong for a
+prefix where the `b` is the last of several instructions:
 
-So 5,460 bodies in main are **verified byte-identical** by the harness. They are
-also **not emitted**, and that is the gate working rather than a failure.
+    mine_t = [relocs.get(mangled, {}).get(0)]                   # before
+    mine_t = [relocs.get(mangled, {}).get(4 * max(0, end - 1))]  # the branch
 
-### Why they are not emitted
+The expected symbol had been right all along. With the offset fixed: 10,543 of
+11,550 verified, 91.28%, of which 5,460 were new.
 
-`retype_thunk` does not rewrite the verified source. It SYNTHESISES a bare thunk
-and throws the argument setup away:
+### 2. One keyword
 
-    verified   uint64_t main_f_13f40(void* a0) { return main::sub_16ff0((char*)a0 + 784); }
-    emitted    void      main_f_13f40()             { main::sub_16ff0(); }
+The report writes a **key whitelist**. `tail_nargs` and `tail_ret` were set on the
+record and dropped on the way to disk, so `tail_target_ok` saw nothing and could
+not tell a bare thunk from a prefixed one. A field that is computed, stored and
+then filtered out is indistinguishable from a field that does not exist.
 
-And the destination is a namespaced stub, declared by `proto_for` as
-`namespace main { void sub_16ff0(); }` -- no parameters, void return. So a thunk
-cannot forward one argument to it, and `return <void expr>` is ill-formed besides.
+### 3. One overload
 
-Letting them through anyway put **5,345 rows in the CSV whose decomp_name does not
-exist in the built ELF**: the CSV recorded the verified signature
-`_Z12main_f_13f40Pv` while the emitted body mangles to `_Z12main_f_13f40v`. The
-audit caught it; that is what it is for.
+This was the real work, and it was not in the matcher. `retype_thunk` does not
+rewrite the verified source -- it **synthesises** a bare thunk and discards the
+argument setup the harness had verified byte-for-byte:
 
-### The figure went DOWN by 7, and that is the gate catching a real error
+    verified   uint64_t main_f_13f40(void* a0)
+                   { return main::sub_16ff0((char*)a0 + 784); }
+    emitted    void      main_f_13f40()
+                   { main::sub_16ff0(); }
 
-32,538 -> 32,531. Seven bodies were previously emitted as bare thunks while retail
-had a prefix in front of the branch -- so the emitted body was one instruction
-short of retail and was being counted as matching. `tail_target_ok` now declines
-every record with `tail_nargs > 0` and those seven came out. A gate that only ever
-goes up is not a gate.
+Different parameter lists, so different mangled names: the CSV recorded
+`_Z12main_f_13f40Pv` while the ELF had `_Z12main_f_13f40v`, and the audit failed
+with **5,345 rows whose decomp_name does not exist in the built ELF**.
 
-### What unblocks 5,460 bodies, precisely
+The destination cannot take the argument either -- it is a namespaced stub
+declared `void main::sub_16ff0()`. So the fix is an OVERLOAD emitted beside the
+stub, which leaves the canonical `void ns::f()` definition and its symbol exactly
+as they were:
 
-Not codegen. Three things, all in `decomp_project`:
+    void      sub_16ff0() { /* 0x16ff0 */ }
+    uint64_t  sub_16ff0(uintptr_t a0) { /* 0x16ff0: 1-arg tail-call target */ return 0; }
 
-  1. `retype_thunk` must REWRITE the verified source for a prefixed tail call --
-     substitute the placeholder for the real definition name -- instead of
-     synthesising a bare thunk.
-  2. The destination stub needs a **per-arity signature**, so `proto_for` emits
-     `namespace main { uint64_t sub_16ff0(uintptr_t); }` and `build_prog` emits a
-     definition that agrees. Two thunks to one destination with different arities
-     are the reason the arity has to be in the name.
-  3. The thunk's arguments have to be spelled in the destination's parameter
-     types, not `uintptr_t`. `((uintptr_t)(...))` does not convert to `void *` in
-     C++, so a pointer-typed destination parameter needs the pointer spelling.
+and `proto_for` declares the same overload in the thunk's translation unit,
+because a call in one file resolves against what THAT file says.
 
-The verification already exists. Only the shipping path is missing.
+Measured first, which is why this was cheap: of the 5,460 prefixed tail calls in
+main, **5,322 target a stub, every one at arity 1**, across 1,625 distinct
+destinations, with **zero** destinations called at two arities. `work/stub_targets.py`
+is the measurement. Had the arities been mixed, the per-arity symbol naming from
+two beats ago would have been needed here too -- which is why it was built first.
+
+### 4. The gate still refuses 138
+
+A prefixed tail call whose destination is **emittable** stays declined: that
+destination has a RECOVERED signature, and re-declaring it with a different arity
+would put a name in the CSV that the build does not produce. 138 of 5,460 in main.
+They unblock when their destinations are recovered, not before.
+
+### The figure went DOWN 7 on the way here, and that was the gate working
+
+Between 32,538 and 32,531, seven bodies were being emitted as bare thunks while
+retail had a prefix in front of the branch -- one instruction short of retail and
+counted as matching. `tail_target_ok` caught them. A gate that only ever goes up is
+not a gate.
+
+### The figure that was never allowed to stand
+
+Letting all 5,460 through before the emit was fixed read **24.91%** and failed the
+audit. It is worth recording that number, because it is what the figure looks like
+when the only thing checked is that the harness compiled something.
+
+### Still open
+
+  * 138 prefixed tail calls with an emittable destination.
+  * 1,963 tail calls whose branch target is not a recovered function at all --
+    the branch leaves the module or lands mid-function, so there is no
+    destination to overload. `work/tail_population.py` counts them.
+  * 20 bodies in main whose prefix the translator declines (`mov str ldur ldur
+    sub add mov` and similar).

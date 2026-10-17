@@ -251,35 +251,50 @@ Each is a POPULATION with a measured size, not a task. The sizes are body counts
 not attempt counts -- the difference has bitten this project three times and the
 rule is in "The rule that keeps biting" below.
 
-1. **The tail-call prefix: 8,193 bodies, 5.4% of the figure.** The largest
-   untouched class, and the translator half is DONE and PROVEN byte-identical.
+1. ~~**The tail-call prefix.**~~ **DONE -- 5,322 bodies, 21.39% -> 24.89%.**
 
-       add  x2, x0, #0xec
-       add  x3, x0, #0xe8
-       mov  w4, #1
-       b    <target>
+   The three things it needed, in the order they were found, and none of them was
+   codegen:
 
-   compiles from
+     * **one index.** `obj_relocations` is keyed by OFFSET WITHIN THE FUNCTION, and
+       the lookup asked for offset 0. Right for a bare thunk, whose whole body is
+       one `b`; wrong for a prefix, where the `b` is the last of several
+       instructions. `mine_t = [...get(4 * max(0, end - 1))]`. The expected symbol
+       had been right all along.
+     * **one keyword.** The registry report writes a KEY WHITELIST, so `tail_nargs`
+       was computed, stored, and then dropped on the way to disk. A field filtered
+       out on write is indistinguishable from a field that was never computed.
+     * **one overload.** `retype_thunk` does not rewrite the verified source, it
+       SYNTHESISES a bare thunk and throws the argument setup away. The fix is an
+       overload emitted beside the namespaced stub -- which leaves the canonical
+       `void ns::f()` definition and its symbol untouched:
 
-       return g(((uintptr_t)(a0)), ((uintptr_t)(a1)),
-                ((uintptr_t)((char*)(a0) + 236)), ...);
+           void      sub_16ff0() { /* 0x16ff0 */ }
+           uint64_t  sub_16ff0(uintptr_t a0) { /* 1-arg tail-call target */ return 0; }
 
-   and Clang's tail-call optimisation turns the `return` back into the branch --
-   the `b` IS the return. `tools/straight_line.py` has the `tail=` mode;
-   `tools/auto_match.py` still needs two things:
+       `proto_for` must declare the same overload in the thunk's TU, because a call
+       in one file resolves against what THAT file says.
 
-     * the classifier: a body ending in `b <target>` with a straight-line prefix
-       is a tailcall, not `branchy` (61,774 bodies in main are in `branchy`)
-     * `gen_tailcall`: it forwards `a0..an` unchanged, so it has to render the
-       prefix with the translator and pass those expressions as the argument
-       list
+   Measured before implementing, which is why it was cheap: 5,322 of the 5,460
+   target a stub, all at arity 1, across 1,625 destinations, zero called at two
+   arities. `tools/../work/stub_targets.py`. Had the arities been mixed, the
+   per-arity symbol naming would have been needed here too.
 
-   The arity is the trap: the target is declared `uint64_t t_x();` and in C++
-   that means ZERO parameters, so a five-argument call is ill-formed. And two
-   bodies calling one target with different arities would be two disagreeing
-   declarations. The likely answer is a per-arity name, `t_<mod>_<addr>_<n>`,
-   which needs the build-time rewrite in `decomp_project.py` to match.
+   **Still open from this population:** 138 prefixed tail calls whose destination
+   is emittable (that destination has a RECOVERED signature and must not be
+   re-declared); 1,963 whose branch target is not a recovered function at all, so
+   there is no destination to overload; 20 in main whose prefix the translator
+   declines.
 
+2. **The 35 guarded bodies that need a genuine stack local.** An out-parameter
+   whose address is taken:
+
+       uint64_t slot;  g(&slot);  use(slot);
+
+   Clang places it at a fixed `sp` offset by itself. The `sp` refusal in
+   `resolve_base` is a CORRECT refusal of an input the translator cannot yet
+   express, so this needs a new kind of synthetic local -- the one whose offset
+   the ORIGINAL fixes rather than the compiler choosing.
 2. **The 35 guarded bodies that need a genuine stack local.** An out-parameter
    whose address is taken:
 
