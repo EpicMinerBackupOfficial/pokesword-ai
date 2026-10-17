@@ -378,3 +378,79 @@ when the only thing checked is that the harness compiled something.
     destination to overload. `work/tail_population.py` counts them.
   * 20 bodies in main whose prefix the translator declines (`mov str ldur ldur
     sub add mov` and similar).
+
+
+## The 1,962 unreachable tail calls are PLT calls, and the blocker is dynsym
+
+Measured, not assumed. `work/tail_unreachable.py` classifies every branch target
+that resolves to no recovered function:
+
+    1962  GAP      inside the module's text, in no function row
+       0  INSIDE   lands mid-function in someone else
+       0  OUTSIDE  past the end of text
+
+All 1,962 are the same thing. `work/gap_what.py` disassembles them:
+
+    main 0x17e8f50:
+      adrp x16, #0x2494000
+      ldr  x17, [x16, #0x9c0]
+      add  x16, x16, #0x9c0
+      br   x17
+
+That is the aarch64 lazy-binding PLT entry, 16 bytes, `#off` being a GOT slot. So
+these are not broken tail calls to a function we failed to recover -- they are
+**tail calls to an EXTERNAL symbol**, and there is no callee in the module to name.
+
+### Which is the blocker, precisely
+
+The identity of the callee lives one level DOWN, at the GOT slot, in a relocation.
+`data/main.elf` has no `.rela.plt`, no `.got`, no `.dynsym` and no `.dynstr` -- the
+NSO-to-ELF conversion drops the dynamic segment, so `llvm-objdump -r` on it
+returns nothing at all.
+
+And the extractor that was supposed to recover the names has produced nothing,
+**in every module, and nothing has noticed**:
+
+    module      dynsym.txt    dynsym_count   dynamic entries
+    main        0 B           0              1
+    rtld        0 B           0              -
+    sdk         0 B           0              1
+    subsdk0     0 B           0              21
+    subsdk1     0 B           0              1
+
+`main`'s manifest says `"dynamic": {"0x0": "0x1"}` -- one entry, then it stops. A
+Switch NSO's mod0 dynamic segment is an `NsoArray` of per-module pointers, not the
+plain ELF dynamic array `tools/nso_parse.py:parse_dynsym` walks, and
+`{"0x0": "0x1"}` is what reading one entry as if it were a module list looks like.
+
+**A zero-byte file is the most dangerous output in this project.** It is
+indistinguishable from a legitimate "there are no symbols here", it passes every
+existence check, and it has been sitting there long enough to be believed.
+
+### Why these are not simply banked on a weaker claim
+
+For the 5,322 banked tail calls, the harness verifies the branch DESTINATION by
+reading the relocation the compiler emitted and matching it against the expected
+name. That is a real check. Here there is no name on either side: retail's `b`
+carries an address, and our build's `b` carries a relocation to whatever we called
+the stub. Comparing addresses cannot work -- the two images are laid out
+differently -- and comparing names cannot work because neither side has one.
+
+Banking them would mean verifying the prefix and the branch opcode while calling
+the destination unverified. That is a weaker guarantee than the rest of the figure,
+and the project's rule is byte-identical only. So they wait.
+
+### What unblocks 1,962 bodies
+
+  1. Walk the NSO mod0 `NsoArray` properly and recover `.dynsym` + `.rela.dyn`,
+     which turns each PLT slot into a symbol name. `tools/nso_parse.py` is the
+     place; the change is in how mod0's dynamic segment is traversed, not in the
+     ELF dynamic parser that already works.
+  2. Then the existing machinery applies unchanged: a PLT stub becomes a
+     namespaced stub like any other destination, `build_prog` emits the overload
+     for the forwarded arity, and `proto_for` declares it.
+  3. And the verification gets STRONGER rather than weaker: with a name on both
+     sides the branch destination can be compared by name, exactly as it is for
+     the 5,322.
+
+Step 3 is the reason to do step 1 properly rather than paper over it.
