@@ -4,6 +4,9 @@ target_sources(pokesword PRIVATE
   taildest_battle_main.h
   taildest_gflib3_main.h
   taildest_main_main.h
+  taildest_net_main.h
+  taildest_pokemon_main.h
+  taildest_render_main.h
   taildest_save_main.h
   taildest_sdk_sdk.h
   taildest_subsdk0_subsdk0.h
