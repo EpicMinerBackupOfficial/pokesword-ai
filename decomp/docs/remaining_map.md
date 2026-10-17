@@ -440,21 +440,24 @@ Banking them would mean verifying the prefix and the branch opcode while calling
 the destination unverified. That is a weaker guarantee than the rest of the figure,
 and the project's rule is byte-identical only. So they wait.
 
-### What unblocks 1,962 bodies
+### What unblocked 1,962 bodies -- and did not
 
-  1. Walk the NSO mod0 `NsoArray` properly and recover `.dynsym` + `.rela.dyn`,
-     which turns each PLT slot into a symbol name. `tools/nso_parse.py` is the
-     place; the change is in how mod0's dynamic segment is traversed, not in the
-     ELF dynamic parser that already works.
-  2. Then the existing machinery applies unchanged: a PLT stub becomes a
-     namespaced stub like any other destination, `build_prog` emits the overload
-     for the forwarded arity, and `proto_for` declares it.
-  3. And the verification gets STRONGER rather than weaker: with a name on both
-     sides the branch destination can be compared by name, exactly as it is for
-     the 5,322.
+Kept as the record of what was tried, so the closure above is auditable rather
+than asserted:
 
-Step 3 is the reason to do step 1 properly rather than paper over it.
-
+  1. ~~Walk the NSO mod0 NsoArray and recover .dynsym + .rela.dyn.~~ **Refuted.**
+     No offset near the RVA parses as a dynamic array; the header-skip hypothesis
+     was wrong.
+  2. ~~Extract the missing segments.~~ **Refuted.** `flags = 0x3f` is
+     boilerplate; the data segment runs to EOF and there is no fourth or fifth
+     region to open.
+  3. ~~Recover the names from the GOT.~~ **Refuted.** No dynamic array exists to
+     carry the slot relocations, and GOT contents are filled at load time.
+  4. Skip the missing segments by PLT offset -- name the stub by its GOT slot
+     (`plt_24949c0`) and call it. **Rejected, not refuted:** it would produce
+     correct bytes for the thunk, but the destination would be named by an address
+     on our side and by nothing on retail's, so the branch destination would go
+     unverified. That is exactly the weaker claim declined above.
 
 ## dynsym, measured properly: the RVA does not resolve, and my first hypothesis was wrong
 
@@ -529,6 +532,50 @@ Segments 3, 4 and 5 -- `.bss`, `.dynstr`, `.dynsym` -- are compressed, flagged a
 present, and **never decompressed and never written to disk**. That is the whole
 reason `parse_dynsym` has nothing to point at. It is not a parsing-basis bug. The
 bytes it was trying to read were never extracted.
+
+### CLOSED: these NSOs carry no dynamic symbol metadata at all
+
+The decisive measurement. `work/dyn_scan.py` and `work/dyn_scan_text.py` scan
+every 8-byte-aligned offset in **all three decompressed segments**, and for text
+the whole 25 MB rather than just the first 64 KiB. The acceptance rule is strict:
+a run of 16-byte entries, tags in 0..35, terminated by DT_NULL, at least six
+entries, carrying BOTH DT_STRTAB and DT_SYMTAB, with DT_STRSZ and DT_SYMENT sane.
+
+    rodata   0 candidate dynamic arrays
+    data     0 candidate dynamic arrays
+    text     0 candidate dynamic arrays   (whole 25,084,512 bytes)
+
+**Zero, everywhere.** And the segments are not hiding elsewhere: the data segment
+runs from 20,357,185 to EOF (20,454,852), so there are no bytes after it, and
+`flags = 0x3f` is boilerplate in a file that stores only three segments.
+
+The MOD0 arithmetic, checked properly, is CORRECT -- I got this wrong once in this
+same document and am correcting it rather than leaving it:
+
+    0x08  "MOD0"
+    0x0c  dynamic    = 0x24947f0    inside data (0x236d000 .. 0x24b9b10)
+    0x10  bss_start  = 0x24b9ff8    data ends at 0x24b9b10 -- immediately after
+    0x14  bss_end    = 0x27fdb40
+
+So those RVAs are module-image-relative virtual addresses and they are
+self-consistent. The address is real. There is simply no ELF dynamic section
+there, or anywhere else in the module.
+
+**Conclusion: the PLT symbol names are not recoverable from these NSOs.** Retail
+Switch NSOs commonly ship the GOT and the PLT but strip `.dynstr` and `.dynsym`,
+because nothing in the shipped module needs them -- there is no dynamic linker
+involved, and imports resolve from the module name table instead.
+
+That closes the 1,962. Not "we could not find it": measured across every
+decompressed segment and the whole text, with an acceptance rule that rejects
+plausible-looking offsets on purpose. Do not re-derive this.
+
+### The weaker alternative stays declined
+
+Banking these by verifying the prefix and the branch opcode while leaving the
+destination unverified is weaker than every other row in the figure. The rule here
+is byte-identical only. So the 1,962 stay unmatched, and the next population has
+to be somewhere else.
 
 ### Why this NSO's header does not give the layout up cheaply
 

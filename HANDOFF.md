@@ -282,9 +282,24 @@ rule is in "The rule that keeps biting" below.
 
    **Still open from this population:** 138 prefixed tail calls whose destination
    is emittable (that destination has a RECOVERED signature and must not be
-   re-declared); 1,963 whose branch target is not a recovered function at all, so
-   there is no destination to overload; 20 in main whose prefix the translator
-   declines.
+   re-declared), and 20 in main whose prefix the translator declines.
+
+   **CLOSED, do not re-derive: the 1,963 PLT tail calls.** They branch to a PLT
+   stub -- `adrp / ldr / add / br` through a GOT slot -- so they are tail calls to
+   an EXTERNAL symbol. The blocker was `dynsym.txt` being 0 bytes in all five
+   modules. That is now root-caused and closed:
+
+     * `parse_header` extracts three segments; `flags = 0x3f` is boilerplate in a
+       file that stores only three, and the data segment runs to EOF, so there
+       are no `.dynstr`/`.dynsym` segments to open
+     * a strict scan for a self-consistent `Elf64_Dyn` array across rodata, data
+       AND the whole 25 MB of text finds ZERO -- retail Switch NSOs ship the GOT
+       and PLT but strip the dynamic symbol metadata
+     * so the names are not in the input, and the destination cannot be named on
+       either side. Verifying the prefix and branch opcode alone is weaker than
+       every other row in the figure, so these stay unmatched by choice.
+
+   `work/dyn_scan.py` and `work/dyn_scan_text.py` are the measurements.
 
 2. **The 35 guarded bodies that need a genuine stack local.** An out-parameter
    whose address is taken:
