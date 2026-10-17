@@ -841,3 +841,65 @@ Two things to try, neither measured yet:
 The first is a one-line experiment. The second is the question that decides
 whether this population is reachable at all, and it is worth asking before
 spending more on the first.
+
+
+## Frame-inside-branch is NOT reachable from C. The guarded population is capped.
+
+Question (2) from the last section, asked before spending more on question (1),
+and it has an answer.
+
+Retail sets the frame up inside the guarded block:
+
+    cbz  w8, <ret>            <- the guard
+    str  x19, [sp, #-0x20]!   <- the frame, AFTER the guard
+    stp  x29, x30, [sp, #0x10]
+    add  x29, sp, #0x10
+    mov  x19, x0
+
+That is SHRINK-WRAPPING: the prologue moves into the path that needs it. Clang
+implements it, and it is enabled for aarch64, so the question is whether it fires
+here. Two C shapes, measured:
+
+    A   if (*(uint8_t*)((char*)a0 + 0x7c)) { g(*(void**)((char*)a0 + 0x58));
+                                            *(uint16_t*)((char*)a0 + 0x7a) = 1; }
+        return 0;
+
+    B   if (*(uint8_t*)((char*)a0 + 0x7c)) { void *self = a0; ... }
+        return 0;                     <- a0 copied INSIDE, dead after the guard
+
+B is the shape shrink-wrapping needs: `a0` is dead once the guard has consumed
+it, so the fallthrough needs no frame. **Both compile to the same code**, and
+neither shrink-wraps:
+
+    str  x19, [sp, #-32]!
+    stp  x29, x30, [sp, #16]
+    add  x29, sp, #16
+    mov  x19, x0          <- the copy hoisted ABOVE the guard
+    ldrb w8, [x19, #124]
+    cbz  w8, ...
+
+Clang hoists the copy and the frame in both. Its shrink-wrapping has a cost
+threshold -- a tiny entry path is not worth duplicating the prologue for -- and
+this is as small an entry path as there is: one byte load.
+
+### So the population is capped, and the cap is measured
+
+  * **8 bodies** match -- the ones with no callee-saved frame at all, where the
+    frame is `stp x29,x30,[sp,#-N]!` and the guard skips it wholesale. Those
+    banked as 5.
+  * **The other 61 are not reachable from C** with the harness flags, because
+    their distinguishing feature is a frame that Clang will not place inside a
+    branch.
+
+That is worth stating plainly rather than leaving as "61 still to try": the
+remaining work is not a missing handler, a missing mnemonic, or a scheduling
+hint. It is a codegen shape this toolchain does not produce, and the two
+independent shapes that would express it were both measured and both refused.
+
+There is one thing that would still be worth knowing, and it is cheap: whether
+Clang shrink-wraps at ALL for this target with a longer entry path. If it does,
+then this population is reachable but only for bodies big enough to cross the
+threshold, and the right filter is body size rather than frame shape. If it does
+not, the population is closed and the next 61 are not worth anything.
+
+That is the next measurement, and it is the last thing this population needs.
