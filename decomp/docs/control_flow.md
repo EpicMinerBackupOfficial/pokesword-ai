@@ -957,3 +957,33 @@ Nine beats went into this population: one shape matched, and the rest are now
 known to be either ordinary work or outside what the compiler will emit. That is
 a worse outcome than a number suggests and a better one than five more beats of
 guessing would have been.
+
+
+## The two ordinary mnemonics, done and measured
+
+`bfxil` and `sbfiz` are the bitfield forms the list never carried -- `ubfiz` was
+there and the signed insert was not, and a missing mnemonic reads as a missing
+population rather than a missing handler.
+
+Measured before trusting either:
+
+    u32 B(u32 d, u32 v) { return (d & ~255u) | ((v >> 3) & 255u); }
+        ->  bfxil  w0, w1, #3, #8            exact
+
+    u32 A(u32 v) { return (u32)(((int32_t)(v << 24) >> 24) << 8); }
+        ->  sbfiz  w0, w0, #8, #8           exact
+
+The signed one needed a correction, and the measurement caught it rather than the
+comparison. Written with the UNSIGNED type for the cast, the `>>` is a logical
+shift, the extension is a zero-extend, and the result is
+
+        ubfiz  w0, w0, #8, #8
+
+which is the neighbouring mnemonic and compiles, links and matches nothing.
+`S` (the signed type map) already existed; using it was the whole fix.
+
+Effect: straight-line candidates 3154 -> 3191, call bodies 528 -> 530, and
+neither mnemonic blocks anything anywhere in the four modules. Zero new matches,
+because the populations behind them are the ones already measured exhausted --
+but the reachable set is larger and two bodies that could not be translated can
+now be, which is the precondition for any of the rest.
