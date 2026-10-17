@@ -777,3 +777,67 @@ bigger change than anything left in this file, and it is the last big class here
 
 The three small ones (fsub, bfxil, sbfiz, two bodies each) are ordinary missing
 mnemonics and are worth 6 bodies between them.
+
+
+## 0 verify, and the two differences are now both LAYOUT
+
+With the frame stripper fixed, 69 of the 123 translate and the rest are almost
+entirely `sp` (35) and three missing mnemonics. None of the 69 matches, and the
+instruction-level diff for the two smallest is short enough to read whole:
+
+    sub_67bf70@0x67bf70 : 12 against 15
+      retail                                        ours
+      ldrb  w8, [x0, #0x7c]                        str  x19, [sp, #-0x20]!
+      cbz   w8, <ret>                               stp  x29, x30, [sp, #0x10]
+      str  x19, [sp, #-0x20]!                       add  x29, sp, #0x10
+      stp  x29, x30, [sp, #0x10]                    mov  x19, x0
+      add  x29, sp, #0x10                           ldrb w8, [x19, #0x7c]
+      mov  x19, x0                                  cbz  w8, <ret>
+      ldr  x0, [x0, #0x58]                          bl
+      bl                                           strh w0, [x19, #0x7a]
+      strh w0, [x19, #0x7a]                        ldp  x29, x30, [sp, #0x10]
+      ldp  x29, x30, [sp, #0x10]                    ldr  x19, [sp], #0x20
+      ldr  x19, [sp], #0x20                         ret
+      ret                                          mov  x0, xzr
+                                                   ldp  x29, x30, [sp, #0x10]
+                                                   ldr  x19, [sp], #0x20
+                                                   ret
+
+The instruction SEQUENCE is retail's. What differs is where the frame is set up
+and that there are two return paths.
+
+### The two-return question is settled, and not by guessing
+
+Measured both shapes for the callee-saved case, one `return` and two:
+
+    u32 A(void *a0) { void* p = ...; u32 r = 0;
+                      if (p) { ...; r = 1; } return r; }
+    u32 B(void *a0) { void* p = ...;
+                      if (p) { ...; return 1; } return 0; }
+
+Both compile to twelve instructions with ONE epilogue and ONE `ret`. So the
+guarded wrapper's two returns are not what produces the duplicated epilogue, and
+rewriting it to a single return would be a change with no measured effect -- the
+third hypothesis this file has now killed, and the first one where the simple
+case and the guarded case gave the same answer.
+
+### What is left is frame placement, which is layout
+
+Retail pushes the frame INSIDE the branch; Clang puts it at the top with
+`mov x19, x0` in front of the load. Both keep a0 live across the guard -- retail
+copies x0 to x19 after the branch and ours before it -- so the C is not wrong
+about liveness. The difference is where Clang chooses to materialise the
+callee-saved copy, and this is the same class as the seven scheduling causes
+already eliminated in `fp_scheduling.md`.
+
+Two things to try, neither measured yet:
+
+  * a copy hint at the top of the guarded block, the `+r` barrier the displaced
+    address uses, so the register is chosen where retail chooses it
+  * whether the frame-inside-branch form is reachable at all from C, or whether
+    it is an artifact of how the original was compiled and only ever matched by
+    spelling that happens to reproduce it
+
+The first is a one-line experiment. The second is the question that decides
+whether this population is reachable at all, and it is worth asking before
+spending more on the first.
