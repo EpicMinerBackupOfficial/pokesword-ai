@@ -504,6 +504,47 @@ obvious thing to try next, but it is a guess and it will be measured the same wa
 this one was: read the bytes, demand a self-consistent array, and do not believe
 a plausible-looking offset.
 
+### The NSOs are on disk, and the segments are there too -- correction
+
+Last beat said the source NSOs were gone and the route was input-blocked.
+**That was wrong**, and checking cost one command:
+
+    exefs/ exists: 1206 files, 5.58 GB
+    exefs/nso/{rtld,main,sdk,subsdk0,subsdk1}   all five, magic NSO0
+
+They are excluded by `.gitignore` as deliberate -- 5.7 GB of Nintendo binaries and
+console keys must not be pushed -- which is right, but it made them *look* absent
+to a recursive glob for `*.nso`, and the files have no extension at all. So the
+1,962 PLT tail calls are NOT input-blocked.
+
+And the header says the segments are there too:
+
+    exefs/nso/main   20454852 B   flags = 0x3f   (bits 0-5 all set)
+
+Six compressed segments. `tools/nso_parse.py:parse_header` extracts **three**:
+
+    for i, n in enumerate(["text", "rodata", "data"]):
+
+Segments 3, 4 and 5 -- `.bss`, `.dynstr`, `.dynsym` -- are compressed, flagged as
+present, and **never decompressed and never written to disk**. That is the whole
+reason `parse_dynsym` has nothing to point at. It is not a parsing-basis bug. The
+bytes it was trying to read were never extracted.
+
+### Why this NSO's header does not give the layout up cheaply
+
+The segment table at 0x10 has a 0x10 stride and only three entries fit before
+0x3C, which is the bss size:
+
+    seg 0: fileoff=257        memoff=0          memsz=25084512
+    seg 1: fileoff=12885139   memoff=25088000   memsz=12057832
+    seg 2: fileoff=20357185   memoff=37146624   memsz=1362704
+    0x3c = 3425520            <- bss size, inside seg 2's slot
+
+and the usual NSO fields are not where they belong: `dynstr_size`/`dynsym_size`
+should be at 0x30/0x34, but those hold the data segment's fileoff and memoff. So
+this is an NSO header variant, and segments 4 and 5 have to be located
+empirically rather than read out of a field.
+
 ### subsdk0 is a third thing
 
 subsdk0's manifest records 21 dynamic entries and a first tag of 22540009848443908
