@@ -2744,7 +2744,7 @@ void main_f_16317c0() { main::sub_15b6e10(); }
 // sub_1638860  (orig 0x1638860, tailcall)
 void main_f_1638860() { main::sub_15b6e10(); }
 
-// InstanceTable_137  (orig 0x163e120, tailcall)
+// sub_163e120  (orig 0x163e120, tailcall)
 void main_f_163e120() { main::sub_1636d00(); }
 
 // sub_1641690  (orig 0x1641690, tailcall)
@@ -2891,7 +2891,7 @@ void main_f_1675d10() { main::sub_ce0(); }
 // sub_1675d20  (orig 0x1675d20, tailcall)
 void main_f_1675d20() { main::sub_ce0(); }
 
-// p1frXqxmeCZWFv0X_2  (orig 0x1679d30, tailcall)
+// sub_1679d30  (orig 0x1679d30, tailcall)
 void main_f_1679d30() { main_f_1733d30(); }
 
 // sub_167b8e0  (orig 0x167b8e0, tailcall)
@@ -3473,7 +3473,7 @@ void main_f_17209d0() { main::sub_ce0(); }
 // sub_17210f0  (orig 0x17210f0, tailcall)
 void main_f_17210f0() { main::sub_1721c60(); }
 
-// pia_common_heap  (orig 0x1721350, tailcall)
+// sub_1721350  (orig 0x1721350, tailcall)
 void main_f_1721350() { main::pead_MainThread(); }
 
 // sub_1722650  (orig 0x1722650, tailcall)
@@ -3545,7 +3545,7 @@ void main_f_174e3f0() { main_f_173cfa0(); }
 // sub_174fe60  (orig 0x174fe60, tailcall)
 void main_f_174fe60() { main::sub_8c0(); }
 
-// Hostname_s_was_found_in_DNS_cache  (orig 0x1756a60, tailcall)
+// sub_1756a60  (orig 0x1756a60, tailcall)
 void main_f_1756a60() { main::sub_1755420(); }
 
 // sub_175cc70  (orig 0x175cc70, tailcall)
@@ -3560,13 +3560,13 @@ void main_f_17774d0() { gflib3::nn_ssl(); }
 // sub_17774e0  (orig 0x17774e0, tailcall)
 void main_f_17774e0() { main::sub_1777f50(); }
 
-// WARNING_Using_weak_random_seed  (orig 0x1777570, tailcall)
+// sub_1777570  (orig 0x1777570, tailcall)
 void main_f_1777570() { main::sub_1777f00(); }
 
-// RELOAD  (orig 0x1777580, tailcall)
+// sub_1777580  (orig 0x1777580, tailcall)
 uint32_t main_f_1777580() { return main_f_1777f30(); }
 
-// RELOAD  (orig 0x1777590, tailcall)
+// sub_1777590  (orig 0x1777590, tailcall)
 uint32_t main_f_1777590() { return main_f_1777f40(); }
 
 // sub_177d080  (orig 0x177d080, tailcall)

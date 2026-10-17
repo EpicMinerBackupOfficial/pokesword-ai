@@ -1586,7 +1586,7 @@ void main_f_cb6400() { main::sub_cb6260(); }
 // sub_cb6c40  (orig 0xcb6c40, tailcall)
 void main_f_cb6c40() { main::sub_cb6a80(); }
 
-// Corridor  (orig 0xcb7100, tailcall)
+// sub_cb7100  (orig 0xcb7100, tailcall)
 void main_f_cb7100() { main_f_5c6850(); }
 
 // sub_cc9800  (orig 0xcc9800, tailcall)
@@ -3563,7 +3563,7 @@ void main_f_f4a760() { main::sub_f4a7a0(); }
 // sub_f4a770  (orig 0xf4a770, tailcall)
 void main_f_f4a770() { main::sub_f4a7a0(); }
 
-// ViewTitle_6  (orig 0xf4b450, tailcall)
+// sub_f4b450  (orig 0xf4b450, tailcall)
 void main_f_f4b450() { main::sub_f4ae60(); }
 
 // sub_f4ba10  (orig 0xf4ba10, tailcall)
@@ -3578,7 +3578,7 @@ void main_f_f4ba50() { main::sub_f4ba90(); }
 // sub_f4ba60  (orig 0xf4ba60, tailcall)
 void main_f_f4ba60() { main::sub_f4ba90(); }
 
-// ViewTitle_6  (orig 0xf4c810, tailcall)
+// sub_f4c810  (orig 0xf4c810, tailcall)
 void main_f_f4c810() { main::sub_f4c3d0(); }
 
 // sub_f4cdd0  (orig 0xf4cdd0, tailcall)
@@ -6083,7 +6083,7 @@ void main_f_131ae40() { main::sub_131b690(); }
 // sub_131ae50  (orig 0x131ae50, tailcall)
 void main_f_131ae50() { main::sub_131b690(); }
 
-// OptionBar_11  (orig 0x131d430, tailcall)
+// sub_131d430  (orig 0x131d430, tailcall)
 void main_f_131d430() { main::button_list_item__02d(); }
 
 // sub_131f320  (orig 0x131f320, tailcall)
@@ -6461,7 +6461,7 @@ void main_f_13cd0a0() { main::sub_ce0(); }
 // sub_13ce3d0  (orig 0x13ce3d0, tailcall)
 void main_f_13ce3d0() { main::LookAtWait_3(); }
 
-// fi_npc_type_2  (orig 0x13ce3e0, tailcall)
+// sub_13ce3e0  (orig 0x13ce3e0, tailcall)
 void main_f_13ce3e0() { main::LookAtWait_5(); }
 
 // sub_13ce8c0  (orig 0x13ce8c0, tailcall)
