@@ -164,3 +164,71 @@ loads, adds, moves, all of it. The two things that are new are small:
 Neither is a control-flow problem, which is what makes this the right next piece
 after nine beats in one that was. 8,193 bodies is 5.4% of the figure -- more than
 the last ten beats banked between them.
+
+
+## The tail-call prefix, PROVEN byte-identical
+
+The translator now has a `tail` mode. `translate(ident, tail=(name, arity))` takes a
+body that ends in `b <target>` instead of `ret`, walks the prefix, and emits the
+branch as the return:
+
+    add  x2, x0, #0xec
+    add  x3, x0, #0xe8
+    mov  w4, #1
+    b    target
+
+becomes
+
+    uint64_t f(void* a0, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4) {
+        return g(((uintptr_t)(a0)), ((uintptr_t)(a1)),
+                 ((uintptr_t)((char*)(a0) + 236)),
+                 ((uintptr_t)((char*)(a0) + 232)), ((uintptr_t)(1)));
+    }
+
+and Clang's tail-call optimisation turns that `return` back into a branch:
+
+    0:  add  x2, x0, #236
+    4:  add  x3, x0, #232
+    8:  orr  w4, wzr, #0x1
+    c:  b    #0
+
+Retail's four instructions, encodings included. The `b` is not a call -- it is
+the RETURN, and the compiler produces it from the `return` alone.
+
+### Four things that had to be right, and each was a silent failure
+
+**1. The tail branch has to come BEFORE the `ret_val is None` early return.** A
+tailcall whose prefix only sets up arguments has no stores and no call, so
+`all_txt` is empty, and the early return produced `void f() {}` -- the body
+silently dropped, with no error anywhere. The branch also has to come before the
+`not all_txt` return. Two early returns, two times.
+
+**2. The arity defines the parameters.** x0 and x1 are never READ by the prefix,
+so the walk never marked them used and the signature came out with no parameters
+for them:
+
+    tail call argument x1 is neither written nor an incoming argument
+
+A tail call FORWARDS argument registers, whether or not the body read them.
+
+**3. The arguments are spelled like call arguments.** The prefix's pointer
+arithmetic renders as `(char *)(a0) + 236` -- a `char *`, which does not convert
+to `uintptr_t` in C++. `call_arg` already knows how to spell one; the tail path
+has to use it.
+
+**4. `b` is a terminator, not an instruction.** The body's last instruction is
+the branch, so it is excluded from the walk, and the function has no `ret`.
+
+### What is still needed, in auto_match
+
+The translator is done and proven. Two things remain in `auto_match.py`:
+
+  * the classifier: a body ending in `b <target>` with a straight-line prefix is
+    a tailcall, not `branchy`
+  * `gen_tailcall`: it forwards `a0..an` unchanged, so it has to render the
+    prefix with the translator and pass those expressions as the argument list --
+    and it needs the target's arity, which is the target's own signature
+
+Neither is a control-flow problem, which is why this is the piece to pick after a
+run of beats that were entirely about control flow and mostly about proving
+things unreachable.
