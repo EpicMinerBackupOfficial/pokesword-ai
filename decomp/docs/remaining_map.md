@@ -618,3 +618,100 @@ It is not exercised end to end: the source NSO is not on disk (`work/main` has
 the extracted segments but no `.nso`), so `nso_parse.py` cannot be re-run here.
 The change is `py_compile` clean and its two call paths are unit-checked, and that
 is the honest claim.
+
+
+## The conditional population: 85,758, and the largest shape had MACHINERY BUT NO ROUTE
+
+`remaining_map.md` quoted 10,396 conditional-branch bodies. That was main only and
+it understated the shape by 8x. `work/cond_pop.py` over all four modules:
+
+    main       59363
+    sdk        13790
+    subsdk0     6478
+    subsdk1     6127
+                85758  TOTAL
+
+Largest buckets, by (direction, conditional count, terminator):
+
+    12124  fwd / cond=1 / ret     <- one-armed if: the whole population's centre
+     8742  fwd / cond=2 / ret
+     4731  fwd / cond=3 / ret
+     2868  fwd / cond=4 / ret
+     2647  fwd / cond=1 / b
+     2082  fwd / cond=5 / ret
+     1725  fwd / cond=6 / ret
+
+### The centre of it: 6,418 bodies the guarded path already knows how to emit
+
+`work/guard_kind.py` classifies the 12,217 `cond=1 / ret` bodies by what the guard
+TESTS, which is what decides whether it can be expressed at all:
+
+     6418  test a loaded field for zero or nonzero   <- the guarded path's shape
+     2794  test a register NO load produced           <- the value is not in state
+     1465  cmp a register against an immediate
+      778  cmp two registers
+      278  test a single BIT of a loaded field
+      114  the guard is an `fcmp`, not a `cmp` or a test
+
+6,418 bodies whose guard is a zero/non-zero test on a loaded field. And
+`straight_line.translate` has taken `guard=` since the guarded path was built, and
+is proven on five banked bodies.
+
+### So why were none of them reached
+
+Because the only caller that passes `guard=` is
+`call_register.candidates_guarded`, and it requires **EXACTLY ONE `bl`**:
+
+    * the body ends in `ret`
+    * exactly one conditional branch, whose target IS the `ret`
+    * exactly one `bl`                              <- this
+    * no `adrp`/`adr`/`blr`
+
+It is a call-body enumerator. A guarded body with no call in it never arrives, and
+nothing else could produce one: `shape_of` returns `branchy` for any body with a
+branch, and `gen_straight` calls `translate(ident)` with no guard.
+
+**Machinery with no route.** In main that is 1,606 bodies classified, so the
+route is worth having regardless of what happens next.
+
+### What the route found the moment it was built: the guard is DELETED, not emitted
+
+`shape_of` grew a `guarded` shape and `gen_guarded` passes the branch index, and
+38 of the 1,606 produced source -- which looked like progress and was not:
+
+    add  x8, x0, w1, uxtw #3
+    ldr  x8, [x8, #0x350]
+    cbz  x8, ret            <- the guard
+    strh w2, [x8, #0x8a]
+    ret
+
+became
+
+    void f_x(void* a0, uint32_t a1, uint64_t a2) {
+        void* p0 = ...; void* p1 = ...;
+        *(uint16_t *)((char *)p0 + 138) = (uint16_t)a2;      <- no `if`
+    }
+
+The guarded block is emitted UNCONDITIONALLY. The test and both of its outcomes
+are gone, and that is a different function. No error is raised anywhere.
+
+It cannot corrupt the figure -- retail has the branch and this does not, so the
+comparison rejects it -- but it puts wrong C into `prog/` for every body that goes
+this way, silently. So `gen_guarded` now ASSERTS THE ARTIFACT'S SHAPE AT
+PRODUCTION: if `if (` is not in the emitted source, the body is declined. All 1,606
+now decline, and the population stays mapped instead of shipping wrong code.
+
+This is the second time in three beats that a translator path produced plausible
+output with a whole instruction class missing. The rule is now: a generator that
+cannot show the thing it is generating is not finished.
+
+### What unblocks 6,418 bodies
+
+The guarded emitter, not the classifier or the enumerator. It has to turn the
+`cbz` into an `if` with both outcomes present. Two things are known to stand in
+the way and both were measured on the SMALLER call-body guarded population, so they
+have to be re-measured at this size:
+
+  * 61 of 123 needed a frame INSIDE the branch, and Clang does not shrink-wrap
+    for aarch64 at -O3 with these flags
+  * 35 needed a genuine `sp` local, an out-parameter whose address is taken

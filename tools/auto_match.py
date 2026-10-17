@@ -2106,10 +2106,70 @@ def gen_straight(ins, end, ident):
         return None
 
 
+COND_BRANCH = ("b.eq", "b.ne", "b.lt", "b.le", "b.gt", "b.ge", "b.hi", "b.hs",
+               "b.lo", "b.ls", "b.cc", "b.cs", "b.mi", "b.pl", "b.vs", "b.vc",
+               "cbz", "cbnz", "tbz", "tbnz")
+
+
+def gen_guarded(ins, end, ident):
+    """A guarded straight line: one conditional branch that skips a block.
+
+    `guard=` is the INDEX OF THE CONDITIONAL BRANCH within the walked body, which
+    `translate` derives by slicing the trailing `ret` off -- so it is the index
+    within `ins[:end-1]`, not within `ins[:end]`. Passing `end` instead puts the
+    index one past the branch and the guard test reads the wrong instruction.
+    """
+    import straight_line
+    body = list(ins[:end])
+    brs = [k for k, x in enumerate(body[:-1]) if x.mnemonic in COND_BRANCH]
+    if len(brs) != 1:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(ident, guard=brs[0])
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    # ASSERT THE ARTIFACT'S SHAPE AT PRODUCTION.
+    #
+    # With `guard=` set, `translate` can return a body in which the guarded block
+    # is emitted UNCONDITIONALLY -- the conditional branch is deleted rather than
+    # expressed:
+    #
+    #     add  x8, x0, w1, uxtw #3
+    #     ldr  x8, [x8, #0x350]
+    #     cbz  x8, ret          <- the guard
+    #     strh w2, [x8, #0x8a]
+    #     ret
+    #
+    # became
+    #
+    #     void f_x(void* a0, uint32_t a1, uint64_t a2) {
+    #         void* p0 = ...; void* p1 = ...;
+    #         *(uint16_t *)((char *)p0 + 138) = (uint16_t)a2;   <- no `if`
+    #     }
+    #
+    # which is a DIFFERENT FUNCTION: the test and both of its outcomes are gone.
+    # The comparison would reject it -- retail has the branch and this does not --
+    # so it cannot corrupt the figure, but it does put wrong C into prog/ for
+    # every body that goes this way, and it does so WITHOUT AN ERROR.
+    #
+    # A producer should assert its artifact's shape at the moment of production,
+    # not leave a later stage to discover it. Declined here, so the population
+    # stays mapped and the bodies stay out of the tree until the guarded emitter
+    # actually emits the guard.
+    src = out[0] if isinstance(out, tuple) else out
+    if "if (" not in src:
+        return None
+    return out
+
+
 # Shape -> generator. Every shape `shape_of` can return must appear here, or
 # --all-shapes silently skips it.
 SHAPE_GENERATORS = dict(GENERATORS)
 SHAPE_GENERATORS["straight"] = gen_straight
+SHAPE_GENERATORS["guarded"] = gen_guarded
 SHAPE_GENERATORS["tailcall"] = gen_tailcall
 SHAPE_GENERATORS["pair-ret"] = gen_pair_ret
 SHAPE_GENERATORS["fp-conv-store"] = gen_fp_conv_store
@@ -2667,6 +2727,46 @@ def shape_of(ins, end):
     # so cset and cmp sit at -2 and -3.
     if n >= 3 and mn[-1] == "ret" and mn[-2] == "cset" and mn[-3] == "cmp":
         return "compare"
+    # GUARDED STRAIGHT LINE: a straight line, one conditional branch, and the
+    # branch targets the trailing `ret`.
+    #
+    #     ldr  w8, [x0, #0x50]
+    #     cbz  w8, ret          <- skips the block
+    #     ...                  <- the guarded block
+    #     ret
+    #
+    # which is
+    #
+    #     if (*(uint32_t *)((char *)a0 + 0x50)) { ... }
+    #
+    # This had WORKING MACHINERY AND NO ROUTE. `straight_line.translate` has taken
+    # a `guard=` argument since the guarded path was built and is proven on five
+    # banked bodies -- but the only caller that passes it is
+    # `call_register.candidates_guarded`, which requires EXACTLY ONE `bl`. That
+    # is a call-body enumerator, so a guarded body with no call in it never
+    # arrives. And nothing else could produce one: `shape_of` returns `branchy`
+    # for any body with a branch, and `gen_straight` calls `translate(ident)` with
+    # no guard.
+    #
+    # Measured: 6,418 unmatched bodies test a loaded field for zero or nonzero and
+    # terminate in `ret` -- this exact shape, `work/guard_kind.py`. The conditional
+    # population as a whole is 85,758, not the 10,396 the map quoted for main.
+    if n >= 3 and mn[-1] == "ret" and "adrp" not in mn and "adr" not in mn \
+            and "blr" not in mn and "bl" not in mn:
+        brs = [k for k, x in enumerate(mn[:-1]) if x in COND_BRANCH]
+        if len(brs) == 1:
+            k = brs[0]
+            ops = [x.strip() for x in ins[k].op_str.split(",")]
+            try:
+                tgt = int(ops[-1].lstrip("#"), 16)
+            except ValueError:
+                tgt = None
+            # The branch must skip the block and land on the `ret` -- the shape
+            # `translate(guard=)` is written for. A branch into the middle, or a
+            # backward one, is a different body and is declined here rather than
+            # handed a guard index it does not mean.
+            if tgt is not None and (tgt - ins[0].address) // 4 == n - 1:
+                return "guarded"
     # Pure tail-call thunk: the whole body is one `b <other function>`.
     if n == 1 and mn[0] == "b":
         return "tailcall"
