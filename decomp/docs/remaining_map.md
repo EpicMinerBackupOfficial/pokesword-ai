@@ -454,3 +454,79 @@ and the project's rule is byte-identical only. So they wait.
      the 5,322.
 
 Step 3 is the reason to do step 1 properly rather than paper over it.
+
+
+## dynsym, measured properly: the RVA does not resolve, and my first hypothesis was wrong
+
+Two beats of guessing at `parse_dynsym` produced two measurements and one dead
+end. Recording both, because the dead end is the useful part.
+
+### What is certain
+
+    module      dynsym.txt    dynsym_count   mod0.dynamic      first d_tag
+    main        0 B           0              0x24947f0         0 (DT_NULL)
+    sdk         0 B           0              0xc01628          0 (DT_NULL)
+    subsdk0     0 B           0              0x5f62d0          garbage
+
+`read_dynamic` reads `Elf64_Dyn` starting at the mod0 `dynamic` RVA. For main and
+sdk the FIRST tag is 0, which is DT_NULL, so the walk stops after one entry and
+the manifest records `{"0x0": "0x1"}`. `parse_dynsym` needs DT_SYMTAB and
+DT_STRTAB, gets neither, and returns nothing.
+
+### The hypothesis I had, and why it is wrong
+
+An NSO's mod0 dynamic section is not a bare `Elf64_Dyn` array -- it opens with an
+`NsoDynamicHeader { u32 magic; }` whose magic is zero for the module object, and
+followed by an `NsoArray` and then the real array. So reading from the RVA should
+consume the magic as `d_tag = 0` and stop, and skipping 4 bytes should fix it.
+
+`work/dyn_skip.py` tests that: it tries every plausible skip and demands a
+SELF-CONSISTENT array -- tags in range, DT_SYMTAB and DT_STRTAB both present, and
+a DT_NULL terminator.
+
+    main mod0.dynamic = 0x24947f0
+      +0   no DT_SYMTAB/DT_STRTAB (has [0])
+      +4   out-of-range tags [4294967296, 4294967296, ...]
+      +8   out-of-range tags [1879048185, 1879047925]
+     ...   every offset to +40 fails
+
+**No offset works for main or for sdk.** So it is not a header-skip. The RVA does
+not point at a readable dynamic array at all, and the bytes there are something
+else -- for main, `00000000 00000000 00000001 00000000 00000001 00000000 ...`,
+which as 64-bit words is `0, 1, 1, 1`, not tags. For subsdk0 the first two words
+are `00401404 00501405`, which is neither a tag nor a count.
+
+`parse_mod0` reads six `u32` RVAs out of the MOD0 header (`dynamic`, `bss_start`,
+`bss_end`, `eh_frame_hdr_start`, `eh_frame_hdr_end`, `module_object`). Whatever
+basis those RVAs use is not the decompressed-segment basis the rest of the tool
+works in, and that is where the bug is. `ssize`/image-base style rebasing is the
+obvious thing to try next, but it is a guess and it will be measured the same way
+this one was: read the bytes, demand a self-consistent array, and do not believe
+a plausible-looking offset.
+
+### subsdk0 is a third thing
+
+subsdk0's manifest records 21 dynamic entries and a first tag of 22540009848443908
+-- not 0, and nonsense. So subsdk0's `dynamic` RVA lands on data that is not a
+dynamic array either. All three modules are wrong in the same way, which points at
+the RVAs rather than at three separate parse bugs.
+
+### What changed in the tool anyway
+
+The loud-failure work stands on its own merits, independent of the fix:
+
+  * `read_dynamic` records the first tag it saw and how many entries it got, in
+    the manifest.
+  * `parse_dynsym` returns a REASON, not just an empty list.
+  * `dynsym.txt` writes `# NO SYMBOLS RECOVERED` and the reason instead of being
+    zero bytes, and the module line on stdout says `DYNSYM EMPTY -- ...`.
+
+A zero-byte file is the most dangerous output in this project: indistinguishable
+from a module that exports no symbols, it satisfies every existence check, and it
+was produced for all five modules and believed. This change does not fix the
+parse. It makes the parse fail out loud.
+
+It is not exercised end to end: the source NSO is not on disk (`work/main` has
+the extracted segments but no `.nso`), so `nso_parse.py` cannot be re-run here.
+The change is `py_compile` clean and its two call paths are unit-checked, and that
+is the honest claim.
