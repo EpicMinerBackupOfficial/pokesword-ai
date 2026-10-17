@@ -112,7 +112,12 @@ EXTEND_TYPES = {
 FP_MNEMONICS = ("fmov", "fneg", "movi")
 
 BITWISE_MNEMONICS = ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
-                     "ubfiz", "mvn", "neg", "lsl", "lsr", "asr")
+                     "ubfiz", "bfxil", "mvn", "neg", "lsl", "lsr", "asr",
+                     # `sbfiz` is the SIGNED bitfield insert and `ubfiz` was
+                     # already handled -- the list carried the unsigned form and
+                     # not the signed one, and a missing mnemonic looks like a
+                     # missing population.
+                     "sbfiz")
 
 # Condition flags, and the branchless conditionals that consume them.
 #
@@ -1665,7 +1670,8 @@ class StraightLine:
             # All are ordinary value expressions on registers, which is exactly
             # what the existing `expr` value kind already renders.
             if mn in ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
-                      "ubfiz", "mvn", "neg", "lsl", "lsr", "asr"):
+                      "ubfiz", "bfxil", "sbfiz", "mvn", "neg", "lsl",
+                      "lsr", "asr"):
                 ops2 = split_ops(i.op_str)
                 if len(ops2) < 2:
                     raise Bail("%s with %d operands is not modelled" % (mn, len(ops2)))
@@ -1719,6 +1725,56 @@ class StraightLine:
                                          ("expr", "&", v, ("imm", mask, ty), ty),
                                          ("imm", lo, ty), ty), ty)
                     state[wreg(dst)] = e
+                    continue
+
+                # `sbfiz Rd, Rn, #lo, #width` -- the SIGNED bitfield insert.
+                # Sign-extend the low `width` bits of Rn, then place them at
+                # `lo`. `ubfiz` above is the same shape with no extension, which
+                # is exactly why the list carried one and not the other.
+                if mn == "sbfiz" and len(ops2) >= 4:
+                    v = _val(ops2[1])
+                    lo = parse_imm(ops2[2])
+                    wd = parse_imm(ops2[3])
+                    if lo is None or wd is None:
+                        raise Bail("sbfiz with non-immediate fields")
+                    ty = _rw(v)
+                    bits = 8 * (2 if ty.endswith("64_t") else 1)
+                    # The SIGNED type for the extension, or `>>` is a LOGICAL
+                    # shift and the result is a zero-extend -- which is `ubfiz`,
+                    # and is what this produced before the cast was made signed.
+                    # Measured: unsigned cast gave `ubfiz w0, w0, #8, #8`.
+                    sty = S[bits // 8]
+                    e = ("expr", "<<", v, ("imm", bits - wd, ty), ty)
+                    e = ("cast", sty, e)
+                    e = ("expr", ">>", e, ("imm", bits - wd, sty), sty)
+                    if lo:
+                        e = ("expr", "<<", e, ("imm", lo, ty), ty)
+                    state[wreg(dst)] = e
+                    continue
+
+                # `bfxil Rd, Rn, #lo, #width` -- extract bits [lo, lo+width)
+                # from Rn, place them at bit 0, merge into Rd. It is `ubfx` into
+                # a DESTINATION rather than overwriting it, so Rd s low `width`
+                # bits are cleared first.
+                if mn == "bfxil" and len(ops2) >= 4:
+                    v = _val(ops2[1])
+                    lo = parse_imm(ops2[2])
+                    wd = parse_imm(ops2[3])
+                    if lo is None or wd is None:
+                        raise Bail("bfxil with non-immediate fields")
+                    ty = _rw(v)
+                    dv = state.get(wreg(dst))
+                    bits = 8 * (2 if ty.endswith("64_t") else 1)
+                    field = ((1 << wd) - 1) if wd < bits else ((1 << bits) - 1)
+                    if lo:
+                        v = ("expr", ">>", v, ("imm", lo, ty), ty)
+                    ins = ("expr", "&", v, ("imm", field, ty), ty)
+                    if dv is None:
+                        state[wreg(dst)] = ins
+                        continue
+                    keep = ("expr", "&", dv,
+                            ("imm", ~field & ((1 << bits) - 1), ty), ty)
+                    state[wreg(dst)] = ("expr", "|", keep, ins, ty)
                     continue
 
                 # Wide-immediate move: `movk Rd, #imm, lsl #shift` merges into
