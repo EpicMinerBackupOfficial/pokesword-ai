@@ -602,7 +602,7 @@ class StraightLine:
     def __init__(self, insns):
         self.insns = insns
 
-    def translate(self, ident, calls=None, guard=None):
+    def translate(self, ident, calls=None, guard=None, tail=None):
         """Translate the walked body into a C function.
 
         `guard` is the index into `body` of a CONDITIONAL BRANCH whose target is
@@ -622,9 +622,28 @@ class StraightLine:
         See decomp/docs/control_flow.md.
         """
         insns = self.insns
-        if not insns or insns[-1].mnemonic != "ret":
-            raise Bail("body does not end in ret")
-        body = insns[:-1]
+        if tail is not None:
+            # A TAIL CALL. The body is a straight-line prefix and then `b <target>`;
+            # the target does the returning, so there is no `ret` here.
+            #
+            #     add  x2, x0, #0xec
+            #     add  x3, x0, #0xe8
+            #     mov  w4, #1
+            #     b    target
+            #
+            # is
+            #
+            #     return target(a0, a1, a0 + 0xec, a0 + 0xe8, 1);
+            #
+            # -- the prefix sets up the ARGUMENT REGISTERS and the branch
+            # forwards them. `tail` is (callee name, arity).
+            if not insns or insns[-1].mnemonic != "b":
+                raise Bail("tail body does not end in b")
+            body = insns[:-1]
+        else:
+            if not insns or insns[-1].mnemonic != "ret":
+                raise Bail("body does not end in ret")
+            body = insns[:-1]
         if not body or len(body) > MAX_INSNS:
             raise Bail("empty body, or %d instructions > MAX_INSNS=%d" % (len(body), MAX_INSNS))
         for _pf, i in enumerate(body):
@@ -2615,8 +2634,23 @@ class StraightLine:
         self._fp_slotmap = {k: _imax + 1 + k for k in sorted(fp_slots)}
         self._fp_args = fp_args
         self._late_synth = late_synth
+        if tail is not None:
+            # A tail call FORWARDS argument registers, so the arity defines the
+            # parameter list -- whether or not the body read them.
+            #
+            #     add  x2, x0, #0xec
+            #     add  x3, x0, #0xe8
+            #     mov  w4, #1
+            #     b    target
+            #
+            # forwards x0..x4. x0 and x1 are never READ by the body, so the
+            # walk never marked them used, and the signature came out with no
+            # parameters for them -- "tail call argument x1 is neither written
+            # nor an incoming argument".
+            for _k in range(tail[1]):
+                used_args.add(_k)
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
-                               call_stmts, saw_call,
+                               call_stmts, saw_call, tail=tail,
                                block=(None if guard is None else
                                       (_gstate, _gn_stmts, _gn_calls, _gval, _gform)))
 
@@ -3022,7 +3056,7 @@ class StraightLine:
         raise Bail("unknown value kind %r" % (kind,))
 
     def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
-              call_stmts=(), saw_call=False, block=None):
+              call_stmts=(), saw_call=False, block=None, tail=None):
         """Render the walked body as a function.
 
         `call_stmts` arrives as (callee name, raw argument value tuples) because
@@ -3408,6 +3442,42 @@ class StraightLine:
         # at -O3, -O2 and -Os, with no compiler flag.
         FRAME_ASM = 'asm volatile("");'
 
+        if tail is not None:
+            # A TAIL CALL is the return. The prefix set up the argument
+            # registers and the branch forwards them, so the C is
+            #
+            #     return callee(a0, a1, <x2>, <x3>, ...);
+            #
+            # A register the prefix did NOT write still holds its incoming
+            # argument, so it is passed on as `aN`. A register it DID write
+            # holds an expression the walk computed, and that is what goes.
+            #
+            # This has to come BEFORE the `not all_txt` early return below: a
+            # tailcall whose prefix only sets up arguments has no stores and no
+            # call, so `all_txt` is empty and the early return produced
+            # `void f() {}` -- the whole body silently dropped.
+            _tname, _tn = tail
+            _targs = []
+            for _k in range(_tn):
+                _rk = "x%d" % _k
+                if _rk in state:
+                    _ct2, _ex2 = self._render(state[_rk], names)
+                    # The callee is declared with `uintptr_t` parameters, so
+                    # every argument is spelled the way `call_arg` spells one.
+                    # Without it the prefix s pointer arithmetic -- `(char *)(a0)
+                    # + 236` -- is a `char *` and does not convert to uintptr_t
+                    # in C++.
+                    _targs.append(call_arg((_ct2, _ex2)))
+                elif _k < len(used_args):
+                    _targs.append("((uintptr_t)(a%d))" % _k)
+                else:
+                    raise Bail("tail call argument x%d is neither written nor "
+                               "an incoming argument" % _k)
+            _tcall = "%s(%s)" % (_tname, ", ".join(_targs))
+            _lines = list(all_txt)
+            _lines.append("return %s;" % _tcall)
+            return "%s %s(%s) {\n    %s\n}\n" % (
+                "uint64_t", ident, plist, "\n    ".join(_lines)), "v"
         if ret_val is None:
             if saw_call:
                 all_txt.append(FRAME_ASM)
