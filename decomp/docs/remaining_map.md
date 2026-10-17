@@ -232,3 +232,60 @@ The translator is done and proven. Two things remain in `auto_match.py`:
 Neither is a control-flow problem, which is why this is the piece to pick after a
 run of beats that were entirely about control flow and mostly about proving
 things unreachable.
+
+
+## The tail-call prefix: REACHED, generating, not yet verifying
+
+Two beats ago the translator gained a `tail` mode and it was measured byte-identical
+on one body. This beat the remaining plumbing is in and the population is counted:
+
+    main         unmatched  80470   prefix tailcall  6487   pure thunk   8
+    sdk           unmatched  20277   prefix tailcall   163   pure thunk   1
+    subsdk0       unmatched   8794   prefix tailcall    28
+    subsdk1       unmatched   9955   prefix tailcall   117
+    TOTAL prefix tailcalls 6795, plus 1963 with a branch target that is not a
+    recovered function (a further population, untouched)
+
+`work/tail_why.py main` says where the 6,487 go in main:
+
+    6467  GENERATED
+      20  generator returned None
+     108  target is not a recovered function
+
+So the population is reachable and the generator expresses it. **Zero of them
+verify yet**, and the reason is now named rather than guessed:
+
+    MISS tailcall 0x1527c10  branch 0 goes to None, expected _Z15t_main_e7c4c0_1m
+
+The expected symbol is right -- `t_main_e7c4c0` with arity 1, mangled with the
+forwarded parameter. The relocation lookup on the compiled object misses, so the
+candidate's branch list is empty and the comparison fails on the branch alone.
+That is the last mile and it is a lookup question, not a codegen one.
+
+### The per-arity target name
+
+The target is declared in the batch head, and in C++ `uint64_t t_x();` means ZERO
+parameters -- so a five-argument call is ill-formed. Two bodies tail-calling one
+destination with different arities would also be two disagreeing declarations,
+which is a redefinition and kills the whole translation unit. So the arity goes
+into the symbol:
+
+    t_<module>_<addr>        arity 0, the bare thunk, unchanged
+    t_<module>_<addr>_<n>    arity n, declared `uint64_t t_x_n(uintptr_t, ...);`
+
+`work/tail_population.py` shows the arity distribution: 1 dominates at 5,509,
+then 2 (523), 3 (422), 4 (180), 5 (87), down to 8 (24). A one-argument tail call
+is usually `add x0, x0, #imm ; b target` -- the single most common shape in the
+whole unmatched set.
+
+### The arity is a MENTION, not a write
+
+`tail_arity` counts the highest argument register the prefix *mentions*, read or
+written:
+
+    add x2, x0, #0xec ; add x3, x0, #0xe8 ; mov w4, #1 ; b target
+
+writes x2, x3, x4 and reads x0, so the call takes five. Counting only the written
+registers would give three, and the incoming arguments would have nowhere to go --
+which is the `tail call argument x1 is neither written nor an incoming argument`
+bail, with no other explanation visible.
