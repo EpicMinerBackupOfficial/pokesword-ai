@@ -1137,3 +1137,54 @@ it is most of the 1,451.
 above are correctness bugs in the guarded path rather than codegen luck, and the
 guard-sense inversion is the one that matters: it produces a body that tests the
 opposite condition, which is a wrong decompilation rather than a wrong encoding.
+
+
+## The guarded population is 292, not 1,606 -- and 1,379 of the rest are SWITCHES
+
+`shape_of` counted CONDITIONAL branches and ignored unconditional ones, so it
+classified a body with a `b` or `br` in it as a one-armed if. The pre-filter then
+declined it. The census:
+
+    1056  Bail: unsupported mnemonic 'br'
+     323  Bail: unsupported mnemonic 'b'
+     146  GENERATED
+      16  no `if` in the source
+       8  operand 's0' is not an argument register
+       5  first operand is a pointer; add/sub cannot add it
+      ...  14 more shapes, all singletons
+
+So of main's 1,606 "guarded" bodies, **1,379 contained an unconditional branch**.
+A `br` is a jump table and a `b` is a second branch: those are SWITCHES, they need
+a different generator, and a shape that claims bodies it cannot express has a yield
+that is a lie.
+
+    shape_of now excludes them, and the honest census is:
+
+        main        213
+        sdk          33
+        subsdk0      17
+        subsdk1      29
+        TOTAL       292
+
+Of those 292, 146 generate and 9 match. The other 1,379 are a real population --
+`guarded + a jump table` -- and they are untouched.
+
+### The frame strip, which was not the reason
+
+`candidates_guarded` strips a frame before translating and `gen_guarded` did not,
+so every guarded body with a prologue declined with `memory base is sp`. That was
+worth fixing and it is fixed -- `is_frame_insn` is now module-level in
+`tools/call_register.py` and BOTH paths call it, because two copies of a predicate
+like that diverge silently and the divergence shows up as a yield difference nobody
+can explain.
+
+But fixing it changed nothing: generation stayed at 155. The declines were the
+`br`/`b` pre-filter all along, and the frame was a second, smaller problem behind
+it. Measuring the reasons rather than the total is what found that -- "1,451
+declined" said nothing, and "1,379 of them say `unsupported mnemonic 'br'`" says
+everything.
+
+Stripping also moves indices, so the guard index is recomputed AFTER the strip.
+Carrying it over would point the guard at whichever instruction shifted into the old
+slot: a plausible source testing the wrong condition, which is worse than
+declining.

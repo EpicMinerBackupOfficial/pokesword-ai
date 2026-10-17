@@ -2120,7 +2120,19 @@ def gen_guarded(ins, end, ident):
     index one past the branch and the guard test reads the wrong instruction.
     """
     import straight_line
-    body = list(ins[:end])
+    # STRIP THE FRAME before translating.
+    #
+    # The pair handler reads `sp` as a memory base and declines with "memory base
+    # is sp: a stack slot is not modelled" -- a correct refusal of the WRONG INPUT.
+    # The frame is exactly that wrong input, and `call_register.candidates_guarded`
+    # has stripped it for its call bodies since the guarded path was built.
+    #
+    # Stripping changes the indices, so the guard index has to be recomputed AFTER
+    # the strip, not carried over. Carrying it over would point the guard at
+    # whichever instruction shifted into the old slot -- a plausible source with the
+    # wrong condition, which is worse than declining.
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
     brs = [k for k, x in enumerate(body[:-1]) if x.mnemonic in COND_BRANCH]
     if len(brs) != 1:
         return None
@@ -2765,8 +2777,18 @@ def shape_of(ins, end):
     # Measured: 6,418 unmatched bodies test a loaded field for zero or nonzero and
     # terminate in `ret` -- this exact shape, `work/guard_kind.py`. The conditional
     # population as a whole is 85,758, not the 10,396 the map quoted for main.
+    # NO unconditional branch. A body with a `b` or `br` in it is a SWITCH --
+    # a jump table, or a computed goto -- and the pre-filter declines it with
+    # "unsupported mnemonic 'br'" or "'b'". That was 1,379 of main's 1,606
+    # "guarded" bodies, so the shape was claiming 1,606 when the real one-armed-if
+    # population is about 227. `work/guard_kind.py` and the Bail census both.
+    #
+    # Excluding them here does not lose them: they are a DIFFERENT population with
+    # a different generator, and a shape that claims bodies it cannot express is a
+    # shape whose yield is a lie.
     if n >= 3 and mn[-1] == "ret" and "adrp" not in mn and "adr" not in mn \
-            and "blr" not in mn and "bl" not in mn:
+            and "blr" not in mn and "bl" not in mn \
+            and "b" not in mn and "br" not in mn:
         brs = [k for k, x in enumerate(mn[:-1]) if x in COND_BRANCH]
         if len(brs) == 1:
             k = brs[0]

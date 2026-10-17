@@ -133,6 +133,46 @@ def candidates(mod, reg, md, limit):
     return out
 
 
+def is_frame_insn(x):
+    """Is this instruction PURE frame bookkeeping, rather than a stack slot?
+
+    Module-level, and used by both the call-body guarded enumerator here and the
+    straight-line guarded generator in tools/auto_match.py. It was a closure inside
+    `candidates_guarded`, which meant the straight-line path could not strip a frame
+    at all -- so every guarded body with a prologue declined with "memory base is
+    sp: a stack slot is not modelled", which reads as a population limit and is
+    actually a missing call.
+
+    Two copies of a predicate like this is one copy too many: they diverge silently
+    and the divergence shows up as a yield difference nobody can explain.
+
+    ONLY frame bookkeeping is removed: the x29/x30 pair, a callee-saved push/pop,
+    and the `sub/add sp` that reserves the frame. An out-parameter
+    (`add x1, sp, #8 ; str xzr, [sp, #8]`) passes a stack slot to a callee, the C
+    genuinely needs it, and those bodies keep declining -- correctly.
+    """
+    _m, _o = x.mnemonic, x.op_str.strip()
+    if not (_o.startswith("[sp") or "[sp" in _o or _o.startswith("sp, ")
+            or "sp, #" in _o or _o.startswith("x29, sp")):
+        return False
+    if _m in ("stp", "ldp") and _o.startswith("x29, x30, [sp"):
+        return True
+    if _m in ("str", "ldr") and _o.startswith("x") and "[sp" in _o:
+        # A callee-saved push/pop. A spill of an ordinary value through sp is not
+        # frame bookkeeping, so the register must be callee saved: x19-x28, x29,
+        # x30, or the frame pointer itself.
+        _r = _o.split(",")[0].strip()
+        _n = _r[1:]
+        return _n.isdigit() and int(_n) >= 19
+    if _m in ("sub", "add") and _o.startswith("sp, sp"):
+        return True
+    if _m == "add" and _o.startswith("x29, sp, #"):
+        return True
+    if _m == "mov" and _o in ("x29, sp", "sp, x29"):
+        return True
+    return False
+
+
 def candidates_guarded(mod, reg, md, limit):
     """-> the GUARDED population: bodies declined for a conditional branch.
 
@@ -213,27 +253,7 @@ def candidates_guarded(mod, reg, md, limit):
         # access that is part of saving or restoring registers, or that moves sp
         # or x29. A genuine local -- an out-parameter, a spill -- is neither, and
         # still declines.
-        def _is_frame(x):
-            _m, _o = x.mnemonic, x.op_str.strip()
-            if not (_o.startswith("[sp") or "[sp" in _o or _o.startswith("sp, ")
-                    or "sp, #" in _o or _o.startswith("x29, sp")):
-                return False
-            if _m in ("stp", "ldp") and _o.startswith("x29, x30, [sp"):
-                return True
-            if _m in ("str", "ldr") and _o.startswith("x") and "[sp" in _o:
-                # A callee-saved push/pop. A spill of an ordinary value through
-                # sp is not frame bookkeeping, so the register must be callee
-                # saved: x19-x28, x29, x30, or the frame pointer itself.
-                _r = _o.split(",")[0].strip()
-                _n = _r[1:]
-                return _n.isdigit() and int(_n) >= 19
-            if _m in ("sub", "add") and _o.startswith("sp, sp"):
-                return True
-            if _m == "add" and _o.startswith("x29, sp, #"):
-                return True
-            if _m == "mov" and _o in ("x29, sp", "sp, x29"):
-                return True
-            return False
+        _is_frame = is_frame_insn
 
         work = []
         for x in ins[:-1]:
