@@ -100,3 +100,67 @@ and the largest block -- conditional control flow, 10,396 sampled and
 proportionally far more of the real 119,530 -- is a different kind of work
 entirely. A control-flow extension to `straight_line.py` is the next structural
 decision, not another handler.
+
+
+## The tailcall population: 8,193 bodies with a straight-line prefix
+
+The largest untouched class, and the first one that is not a control-flow problem.
+
+    35,609 unverified tailcall bodies (the last instruction is `b <target>`)
+
+But the `tailcall` shape only reaches 5,241 of them, all ALREADY REGISTERED:
+
+    auto_match --shape tailcall
+      main      5083 / 5083 = 100.0%
+      sdk         72 /   72 = 100.0%
+      subsdk0     28 /   28 = 100.0%
+      subsdk1     58 /   58 = 100.0%
+      registry +0 on every module
+
+100% and nothing new, because the CLASSIFIER only claims a body when the whole
+body is one `b`:
+
+    if n == 1 and mn[0] == "b":
+        return "tailcall"
+
+Everything else that ends in `b` lands in the `branchy` bucket -- 61,774 bodies in
+main alone, 76.8% of that module's unmatched. A straight-line argument setup
+followed by a jump is not "branchy"; it is a tailcall that computes its arguments
+first.
+
+### Measured, and the prefix is the part that is already solved
+
+    1,047  pure `b` thunks, already registered
+  8,193  WITH a straight-line prefix
+
+        sub                4,526
+        ldr                  766
+        add                  695
+        mov                  456
+        mov,mov              325
+        mov,mov,mov          150
+
+    main sub_12160@0x12160        main sub_12170@0x12170
+      add  x2, x0, #0xec            ldr  w8, [x0, #0xb4]
+      add  x3, x0, #0xe8            add  x8, x0, x8, lsl #4
+      mov  w4, #1                  add  x1, x8, #0x18
+      b    <target>                mov  w4, #1
+                                    mov  x2, xzr
+                                    mov  x3, xzr
+                                    b    <target>
+
+The C is
+
+    uint64_t f(void *a0, ...) { return target(<prefix expressions>); }
+
+and **the prefix expressions are what the general translator already computes** --
+loads, adds, moves, all of it. The two things that are new are small:
+
+  1. the classifier: a body ending in `b <target>` with a straight-line prefix is
+     a tailcall, not `branchy`
+  2. `gen_tailcall` forwards `a0..an` UNCHANGED, so it cannot express a prefix.
+     It has to render the prefix and pass those expressions as the argument list.
+
+Neither is a control-flow problem, which is what makes this the right next piece
+after nine beats in one that was. 8,193 bodies is 5.4% of the figure -- more than
+the last ten beats banked between them.
