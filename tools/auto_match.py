@@ -2912,7 +2912,23 @@ def verify(cands, batch, module):
                     # function the original jumps to, read from the relocation
                     # rather than assumed. Relocations name mangled symbols, so
                     # the expected destination is mangled the same way.
-                    mine_t = [relocs.get(mangled, {}).get(0)]
+                    # The branch is the body's TERMINATOR, so its relocation is at
+                    # the offset of the LAST instruction -- not at 0.
+                    #
+                    # `obj_relocations` is keyed by offset within the function, and
+                    # offset 0 is right only for a bare thunk, whose whole body is
+                    # one `b`. For a tail call with an argument-setup prefix the `b`
+                    # is the last of several instructions, so `.get(0)` read nothing
+                    # and every prefixed candidate was reported as
+                    #
+                    #     branch 0 goes to None, expected _Z15t_main_e7c4c0_1m
+                    #
+                    # The expected symbol was right all along; the lookup asked the
+                    # wrong offset. `4 * (end - 1)` is the byte offset of the final
+                    # instruction, and for a bare thunk `end == 1`, so this is
+                    # `.get(0)` again -- the old behaviour, unchanged, for the shape
+                    # that already worked.
+                    mine_t = [relocs.get(mangled, {}).get(4 * max(0, end - 1))]
                     # A bare thunk returns void; a prefixed tail call returns
                     # whatever its target returns, which is `uint64_t`. Mangling
                     # it as void names a symbol the object does not define, the
