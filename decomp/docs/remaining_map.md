@@ -1379,3 +1379,84 @@ looked at**, and print an example for every bucket big enough to act on.
 The 135 "one instruction longer at the terminator" bucket is the largest one that
 is still diagnosed-but-unfixed, and it is a smaller, more tractable question than
 either of the two dead populations.
+
+
+## The 135 is not a terminator problem: it is a MISSING WRITEBACK, and it is 29,556 bodies
+
+Last beat called the 135 "one instruction longer at the terminator". That label was
+wrong, and reading the bodies instead of trusting the bucket name is what caught it.
+
+    main 0x308690, four instructions each
+    retail  ldr x8, [x0, #-0x30]!     <- PRE-INDEX, writes x0 back
+            ldr x3, [x8, #0x188]
+            and w1, w1, #1
+            br x3
+    mine    ldur x8, [x0, #-48]      <- UNSCALED, no writeback
+            ldr x2, [x8, #392]
+            and w1, w1, #0x1
+            br x2
+
+The C `(char *)a0 - 48` is a correct dereference of `a0 - 48` but never STORES the
+decremented pointer back into x0. Retail's `!` does, and that is a different
+program: any later use of x0 sees `a0 - 48` in retail and `a0` in mine. They are the
+same length, the same mnemonics in the same order, and a different program.
+
+### An indexed load with writeback produces TWO values, and the model has room for one
+
+    ldr xD, [xN, #off]!     xD = *(T*)((char*)xN + off);  xN = (char*)xN + off;
+    ldr xD, [xN], #off      xD = *(T*)xN;                 xN = (char*)xN + off;
+
+The translator's value map is one register to one value, and the register kind
+`load` records only the dereference. Both forms are unmodelled today -- the
+pre-index form silently loses the writeback, and the POST-index form declines
+outright, which is how this was first met:
+
+    Bail("unhandled instruction 'ldr' 'x9, [x8], #8'")
+
+A post-index load is the harder one for the model and the easier one for C: the
+pointer has to be materialised into the local BEFORE the dereference, which the
+existing `expr` kind already does.
+
+### The population, measured with the frame stripped
+
+    work/writeback.py, over 112,227 unmatched bodies
+
+      82,671  no indexed load with update
+      29,556  HAS ONE  (main 25,779  sdk 1,586  subsdk0 1,125  subsdk1 1,066)
+       8,729  ...post-index instances
+      98,202  ...pre-index instances
+
+**29,556 bodies -- 26% of everything that remains -- are blocked on two
+instructions that need one new value kind.**
+
+The first version of this census reported 51,299 and its examples were
+
+    str x21, [sp, #-0x30]! ; stp x20, x19, [sp, #0x10] ; ...
+
+which is the standard PROLOGUE, not indexed loads on a pointer. Stripping the
+frame -- which `call_register.is_frame_insn` has done for every generator input
+since the guarded path was built -- drops it to 29,556, and excluding `sp`/`x29`
+bases drops it again, because a spill restore is already declined as "memory base is
+sp: a stack slot is not modelled" and belongs to a different blocker.
+
+Two corrections to a population number inside one probe, both in the same
+direction and both from the same mistake: counting something the translator had
+already stripped. The frame is not the body.
+
+## Where the remaining population now stands, as capability
+
+    29,556  indexed load with writeback -- ONE value kind        NEW, largest
+    51,299  sp/x29-relative -- already declined as stack slots   different blocker
+      279  indirect tail calls whose callee register is positional   provably dead
+      147  indirect tail calls that set a constant argument          provably dead
+    18,051  bodies with no branch AND no writeback -- small enough to audit by hand
+     2,689  diamonds, blocked on block LAYOUT
+     3,404  loops containing a call, blocked on a missing emitter
+       102  jump tables, blocked on the .rodata table bytes
+
+## Next
+
+Measure the recipe for `ldr xD, [xN, #off]!` before writing the handler, as with
+every other one: if Clang cannot be made to emit the writeback form from C, then
+29,556 is another population claimed and not reachable, and finding that out is
+cheaper than writing the handler.
