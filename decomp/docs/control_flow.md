@@ -1261,3 +1261,51 @@ was right, but left them unlabelled. `work/switch_kind.py`:
 
 The DIAMOND at 2,926 is the next one: the guarded emitter already produces one arm
 and a fallthrough, so a second arm is a smaller step than a jump table is.
+
+
+## What LLVM itself says about the branch polarity, from outside
+
+Searched for the mechanism behind the `orig (b.eq) vs new (b.ne)` misses rather
+than inferring it from more misses. It is in
+`llvm/lib/CodeGen/MachineBasicBlock.cpp`, `MachineBasicBlock::updateTerminator`:
+
+```cpp
+  if (FBB) {
+    // The block has a non-fallthrough conditional branch. If one of its
+    // successors is its layout successor, rewrite it to a fallthrough
+    // conditional branch.
+    if (isLayoutSuccessor(TBB)) {
+      if (TII->reverseBranchCondition(Cond))
+        return;                              // <-- REFUSES to invert
+      TII->removeBranch(*this, nullptr, &IsConsistent);
+      TII->insertBranch(*this, FBB, nullptr, Cond, DL, nullptr, IsConsistent);
+    } else if (isLayoutSuccessor(FBB)) {
+      TII->removeBranch(*this, nullptr, &IsConsistent);
+      TII->insertBranch(*this, TBB, nullptr, Cond, DL, nullptr, IsConsistent);
+    }
+  }
+```
+
+Two things follow, and both matter:
+
+**1. The polarity is LAYOUT, and it is not negotiable by the front end.** If the
+only way to make a block the fallthrough successor would be to invert the
+condition, `updateTerminator` returns without doing it. So `b.eq` versus `b.ne` in
+a mismatch is decided by WHICH ARM is the layout successor, not by the source's
+operator -- which independently confirms last beat's correction. The C cannot ask
+for the other polarity; it can only order the arms differently.
+
+**2. The rule the DIAMOND generator has to follow.** For an if/else, Clang lays
+out so the fallthrough successor keeps the fallthrough conditional branch. So:
+
+    if (c) { A } else { B }      ->  c-cond  <B>;  A;  b <join>
+    if (!c) { A } else { B }     ->  !c-cond <A>;  B;  b <join>
+
+Both are produced from the SAME C by reordering the arms. Retail picks one of the
+two layouts per body, and which one is knowable from which arm its conditional
+branch targets. So a diamond generator does not choose a polarity -- it reads the
+arm order off the original and emits the matching C.
+
+That is also why the `+4` offset misses are a family of their own rather than a
+bug: an arm whose statement count differs by one instruction moves the join, and
+with it every branch target after it.
