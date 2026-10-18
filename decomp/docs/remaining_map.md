@@ -1297,3 +1297,85 @@ argument three. Wrong, plausible, and caught by no shape assertion.
   * The 1,513 candidates this shape generates but does not match -- 58% overall
     miss rate on the shape.
   * 2,689 diamonds, 3,404 loops containing a call, 102 jump tables.
+
+
+## Why the other 1,513 indirect tail calls miss: 56% of them differ by ONE register
+
+The shape generated 1,508 candidates and matched 776. That is a 58% miss rate on
+a shape that demonstrably works, so the loss is layout, not capability -- and
+layout losses are found by finding the first instruction that differs.
+
+    work/itail_diff.py, 497 main candidates compiled and diffed
+
+    br=497                     every one IS a genuine tail call; TAILCC fires
+      279  mnemonics equal, operands differ      56% of the misses
+      135  diverges at the TERMINATOR only        27%   (mine is one insn longer)
+       15  diverges mid-body
+        7  diverges in the LOAD/STORE sequence
+      ...  the rest are one-offs, all under 8
+
+### And it is ONE register
+
+    main 0x1e480, instruction for instruction:
+
+    retail  ldr x0,[x0,#0x6e8] ; ldr x8,[x0] ; ldr x5,[x8,#0x18] ; and ; and ; br x5
+    mine    ldr x0,[x0,#1768] ; ldr x8,[x0] ; ldr x3,[x8,#24]  ; and ; and ; br x3
+
+Six instructions, identical offsets, identical masks. Retail keeps the callee in
+**x5**; Clang puts it in **x3**.
+
+### The register is POSITIONAL, so x5 is unreachable from C
+
+    work/callee_reg.py
+
+    A: nested inline cast (what we emit)            callee=x3
+    B: callee bound to a named local                callee=x3
+    C: callee local, arguments pre-bound            callee=x3
+    D: arguments masked FIRST, then the callee      callee=x3
+    E: FOUR-argument signature                      callee=x4   <- moves with arity
+
+Variant E is the one that settles it. The callee register is the lowest free
+caller-saved register AFTER the argument registers, so it tracks the arity: three
+arguments in x0-x2 gives x3, four in x0-x3 gives x4. Four different spellings of
+the same call all give x3, and changing only the arity moves it.
+
+**Retail's x5 is therefore not reachable by any C.** It is the register Nintendo's
+compiler chose, and Clang 5.0.1's allocator has an invariant that excludes it. This
+is the same class of block as the MOVZ-into-an-argument finding, and unlike MOVZ
+this one is provable rather than merely measured across spellings: the allocator
+assigns positionally, and position is not a source-level property.
+
+So the 279 are dead, and the honest total for this shape is:
+
+    1,508 candidates
+      776  matched
+      279  unreachable: Clang allocates the callee register positionally
+      135  mine is one instruction longer at the terminator
+      318  the rest, and none of them has been diagnosed yet
+
+## Three probe bugs in this beat, all the same species
+
+Every one of these reported something that was not true, and every one was caught
+by a denominator or an example rather than by the number:
+
+  * `work/itail_diff.py` filtered nm on `_Z2f_t`. The mangled length prefix counts
+    every character, so `f_t` is `_Z3f_t`, and all 497 candidates came back "NO
+    SYMBOL (empty body)" -- a total-missage codegen report for functions that were
+    emitted perfectly, one of them at exactly retail's byte count.
+  * Then the operand field index was wrong, printing `ldr ` with no operands and
+    making the largest bucket in the census unreadable -- the one thing the bucket
+    exists to show.
+  * Then `canon()` did not convert anything, because objdump writes `[x0, #1768]`
+    with the closing bracket attached, so the token is `#1768]` and a pattern
+    anchored at `$` after the digits never matched. 279 bodies were still reported
+    as operand differences when the operands were identical.
+
+The rule that catches all three: **read identifiers and field boundaries out of nm
+and objdump's own output; never spell a mangled name or an index you have not
+looked at**, and print an example for every bucket big enough to act on.
+
+## Next
+
+The 135 "one instruction longer at the terminator" bucket is the largest one that
+is still diagnosed-but-unfixed, and it is a smaller, more tractable question than
+either of the two dead populations.
