@@ -875,3 +875,92 @@ kind and is not claimed.
 
 So the order is unchanged and now has one fewer item in front of it: FP arithmetic
 done, the `else` next, and the vector FP form after both.
+
+
+## Every unmatched body has a branch: the straight-line population is EMPTY
+
+37,975 / 24.97%, unchanged. Last beat's `else` measured at zero, so this beat
+looked for a new population -- the loop family (2,026 claimed) and the jump
+table family (2,230 claimed) -- and got a stronger result than either.
+
+### The claimed loop population is 3,532, and none of it is reachable today
+
+`work/loop_basis.py` classifies every backward branch, not every backward branch's
+owner:
+
+        5,911  REAL CYCLE (a predecessor lies inside the target's span)
+        6,559  convergence: shared epilogue, no cycle
+        2,814  backward branch, single predecessor
+        9,841  indirect `br` (jump table)
+
+A backward `b` is not a loop. A **shared epilogue** -- several disjoint paths
+converging on one factored-out block, typically a `ret` -- branches backward
+without any cycle existing. The discriminator is whether the target has a
+predecessor INSIDE the span between target and branch; if not, nothing loops.
+
+Of the real cycles, **3,404 contain a call** and **128 do not**. The 128 are the
+honest capability test, because a counted loop with no call is the simplest thing
+that is still a loop:
+
+        128 no-call cycles, and the translator handles 0 of them
+          69  body does not end in ret
+          59  over MAX_INSNS=32
+
+So loops are not one capability away. They need an emitter that does not exist,
+and the cheapest possible instance of it already fails -- 69 of 128 for a
+precondition ("the body must end in `ret`") that a loop structurally cannot meet.
+
+### The probe was wrong AGAIN, and I wrote the bug this time
+
+`loop_basis.py` first reported **9,675 "target unparsed"**. That was one
+character of mine:
+
+        best = best or "target unparsed"     # keeps the FIRST verdict, forever
+
+so a body whose first backward branch was unparseable kept that label even when
+a later branch classified cleanly. 9,675 confident wrong labels, produced while
+trying to keep a measurement honest. Re-measured per-branch: the real figure is
+3,532 cycles, and 9,675 was nothing at all.
+
+That is the sixth probe bug in this project, and the rule that catches them is now
+the same each time: **classify per-item and count every stage**, never let one
+item's verdict stand in for another's, and never report a remainder as a
+population without reconciling it against a second, independent count.
+
+### Reconciled against the authoritative figure
+
+Two independent counts disagreed (113,003 vs 114,087) and the gap is where an
+unmeasured population hides, so `work/acct.py` accounts for all of it:
+
+        114,087  CSV unmatched, the authoritative figure
+        113,905  reached by walking the four module registries
+           902  disassembly produced nothing
+           182  rows belonging to other CSV modules
+        113,003  accounted for, and every one has a branch
+
+**113,003 of 113,003 unmatched bodies contain a branch of some kind.** Not one is
+a straight-line body.
+
+### So the straight-line translator's vocabulary is at TOTAL COVERAGE
+
+`work/vocab_gap.py` reads the accepted-mnemonic sets **out of `straight_line.py`**
+rather than retyping them -- so the FP handlers added last week count without the
+script knowing -- and asks how many unmatched branch-free bodies are within one
+handler. The answer is zero, because there are no branch-free bodies at all.
+
+That is the real finding of this beat. It is not "no new generator worked". It is:
+
+  * the straight-line vocabulary covers 100% of the bodies that could use it;
+  * every remaining body is control flow;
+  * and all three control-flow shapes measured this beat are blocked by a
+    capability that does not exist yet -- `else` for diamonds (30 translate, 0
+    match), a loop emitter for cycles (0 of 128), a per-case body for jump tables.
+
+The remaining population is not waiting for a better generator. It is waiting for
+capabilities, and the next one should be chosen by size: **jump tables, 9,841.**
+
+### What NOT to do
+
+Do not re-run the existing generators expecting a different number. All four
+module yields are unchanged and the vocabulary is saturated, so a fifth run of the
+same generators returns the same 37,975 and the run is wasted. Measure first.
