@@ -5,11 +5,6 @@
 #include "sdk_sdk_sdk_4.h"
 
 namespace sdk {
-// sub_3205c0: implemented in prog/matched/sdk/
-// sub_3205f0: implemented in prog/matched/sdk/
-// sub_320620: implemented in prog/matched/sdk/
-// sub_320640: implemented in prog/matched/sdk/
-// sub_320660: implemented in prog/matched/sdk/
 // sub_320670: implemented in prog/matched/sdk/
 void sub_320680() { /* 0x320680 */ }
 void sub_320820() { /* 0x320820 */ }
@@ -3836,7 +3831,7 @@ void sub_3a2e40() { /* 0x3a2e40 */ }
 void sub_3a2e50() { /* 0x3a2e50 */ }
 void sub_3a2e60() { /* 0x3a2e60 */ }
 void sub_3a2e70() { /* 0x3a2e70 */ }
-void sub_3a2e80() { /* 0x3a2e80 */ }
+// sub_3a2e80: implemented in prog/matched/sdk/
 void sub_3a2ea0() { /* 0x3a2ea0 */ }
 // sub_3a2ef0: implemented in prog/matched/sdk/
 void sub_3a2f00() { /* 0x3a2f00 */ }
@@ -4005,5 +4000,10 @@ void sub_3a7410() { /* 0x3a7410 */ }
 // sub_3a7440: implemented in prog/matched/sdk/
 // sub_3a7470: implemented in prog/matched/sdk/
 // sub_3a74a0: implemented in prog/matched/sdk/
+// sub_3a74c0_sdk_3a74c0: implemented in prog/matched/sdk/
+// sub_3a74f0: implemented in prog/matched/sdk/
+// sub_3a7520_sdk_3a7520: implemented in prog/matched/sdk/
+// sub_3a7550: implemented in prog/matched/sdk/
+// sub_3a7570: implemented in prog/matched/sdk/
 
 }  // namespace sdk

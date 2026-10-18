@@ -1,4 +1,4 @@
-/* sdk -- 71 functions verified to match the original.
+/* sdk -- 81 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -33,7 +33,10 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+namespace sdk { uint64_t sub_5f10(uintptr_t); }
+namespace sdk { uint64_t p_4ux_4u_4u_3X(uintptr_t); }
 namespace sdk { void sub_1d5f0(); }
+namespace sdk { uint64_t sub_1d5f0(uintptr_t); }
 namespace sdk { void sub_29450(); }
 namespace sdk { void sub_14d680(); }
 namespace sdk { void sub_373ef0(); }
@@ -66,11 +69,15 @@ namespace sdk { void sub_42c7f0(); }
 namespace sdk { void sub_42e420(); }
 namespace sdk { void sub_42e570(); }
 namespace sdk { void sub_40db90(); }
+namespace sdk { uint64_t sub_4106b0(uintptr_t); }
 namespace sdk { void sub_413ce0(); }
+namespace sdk { uint64_t sub_410a80(uintptr_t); }
 namespace sdk { void sub_4166f0(); }
 namespace sdk { void sub_4167e0(); }
 namespace sdk { void sub_416a80(); }
 namespace sdk { void sub_4314c0(); }
+namespace sdk { uint64_t sub_410bc0(uintptr_t); }
+namespace sdk { uint64_t sub_40efd0(uintptr_t); }
 extern uint32_t sdk_f_49f340();
 namespace sdk { void sub_45f310(); }
 namespace sdk { void sub_45f7d8(); }
@@ -90,6 +97,8 @@ namespace sdk { void sub_4649e8(); }
 namespace sdk { void sub_464f08(); }
 namespace sdk { void sub_465408(); }
 namespace sdk { void sub_465908(); }
+namespace sdk { uint64_t sub_49e498(uintptr_t); }
+namespace sdk { uint64_t sub_49e5a8(uintptr_t); }
 namespace sdk { void sub_49f258(); }
 namespace sdk { void sub_49f270_sdk_49f270(); }
 namespace sdk { void sub_49f358(); }
@@ -97,9 +106,25 @@ namespace sdk { void sub_49f3b0(); }
 namespace sdk { void sub_4b5a60(); }
 namespace sdk { void sub_4ff0d8(); }
 namespace sdk { void sub_5019f0(); }
+namespace sdk { uint64_t unknown_register(uintptr_t); }
+
+// sub_5f00  (orig 0x5f00, tailcall)
+uint64_t sdk_f_5f00(void* a0) {
+    return sdk::sub_5f10(((uintptr_t)(*(uint64_t*)((char*)(a0) + 24))));
+}
+
+// sub_16240  (orig 0x16240, tailcall)
+uint64_t sdk_f_16240(void* a0) {
+    return sdk::p_4ux_4u_4u_3X(((uintptr_t)(*(uint64_t*)((char*)(a0) + 32))));
+}
 
 // sub_1ab80  (orig 0x1ab80, tailcall)
 void sdk_f_1ab80() { sdk::sub_1d5f0(); }
+
+// sub_1acd0  (orig 0x1acd0, tailcall)
+uint64_t sdk_f_1acd0(void* a0) {
+    return sdk::sub_1d5f0(((uintptr_t)((char*)(a0) - 8)));
+}
 
 // sub_2c590  (orig 0x2c590, tailcall)
 void sdk_f_2c590() { sdk::sub_29450(); }
@@ -215,8 +240,18 @@ void sdk_f_40bb80() { sdk::sub_42e570(); }
 // sub_40da00  (orig 0x40da00, tailcall)
 void sdk_f_40da00() { sdk::sub_40db90(); }
 
+// sub_414360  (orig 0x414360, tailcall)
+uint64_t sdk_f_414360(void* a0) {
+    return sdk::sub_4106b0(((uintptr_t)((char*)(a0) + 24)));
+}
+
 // sub_414bf0  (orig 0x414bf0, tailcall)
 void sdk_f_414bf0() { sdk::sub_413ce0(); }
+
+// sub_414c80  (orig 0x414c80, tailcall)
+uint64_t sdk_f_414c80(void* a0) {
+    return sdk::sub_410a80(((uintptr_t)((char*)(a0) + 24)));
+}
 
 // sub_4167c0  (orig 0x4167c0, tailcall)
 void sdk_f_4167c0() { sdk::sub_4166f0(); }
@@ -229,6 +264,16 @@ void sdk_f_416b70() { sdk::sub_416a80(); }
 
 // sub_431a20  (orig 0x431a20, tailcall)
 void sdk_f_431a20() { sdk::sub_4314c0(); }
+
+// sub_437520  (orig 0x437520, tailcall)
+uint64_t sdk_f_437520(void* a0) {
+    return sdk::sub_410bc0(((uintptr_t)((char*)(a0) + 24)));
+}
+
+// sub_437990  (orig 0x437990, tailcall)
+uint64_t sdk_f_437990(void* a0) {
+    return sdk::sub_40efd0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 6824L))));
+}
 
 // sub_4520c8  (orig 0x4520c8, tailcall)
 uint32_t sdk_f_4520c8() { return sdk_f_49f340(); }
@@ -287,6 +332,16 @@ void sdk_f_465400() { sdk::sub_465408(); }
 // sub_465900  (orig 0x465900, tailcall)
 void sdk_f_465900() { sdk::sub_465908(); }
 
+// sub_49e708  (orig 0x49e708, tailcall)
+uint64_t sdk_f_49e708(void* a0) {
+    return sdk::sub_49e498(((uintptr_t)(*(uint64_t*)((char*)(a0)))));
+}
+
+// sub_49e710  (orig 0x49e710, tailcall)
+uint64_t sdk_f_49e710(void* a0) {
+    return sdk::sub_49e5a8(((uintptr_t)(*(uint64_t*)((char*)(a0)))));
+}
+
 // sub_49e7c0  (orig 0x49e7c0, tailcall)
 void sdk_f_49e7c0() { sdk::sub_49f258(); }
 
@@ -310,4 +365,9 @@ void sdk_f_4ff150() { sdk::sub_4ff0d8(); }
 
 // sub_501af0  (orig 0x501af0, tailcall)
 void sdk_f_501af0() { sdk::sub_5019f0(); }
+
+// sub_50c530  (orig 0x50c530, tailcall)
+uint64_t sdk_f_50c530(void* a0) {
+    return sdk::unknown_register(((uintptr_t)((char*)(a0) + 16)));
+}
 

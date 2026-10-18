@@ -5,11 +5,6 @@
 #include "sdk_sdk_sdk_2.h"
 
 namespace sdk {
-void sub_18a640() { /* 0x18a640 */ }
-void sub_18a690() { /* 0x18a690 */ }
-void sub_18a6e0() { /* 0x18a6e0 */ }
-void sub_18a700() { /* 0x18a700 */ }
-void sub_18a7f0() { /* 0x18a7f0 */ }
 void sub_18a9a0() { /* 0x18a9a0 */ }
 void sub_18a9c0() { /* 0x18a9c0 */ }
 // sub_18a9e0: implemented in prog/matched/sdk/
@@ -4005,5 +4000,10 @@ void sub_258ec0() { /* 0x258ec0 */ }
 // sub_2592c0: implemented in prog/matched/sdk/
 // sub_2592e0: implemented in prog/matched/sdk/
 // sub_259300: implemented in prog/matched/sdk/
+// sub_259320: implemented in prog/matched/sdk/
+// sub_259340: implemented in prog/matched/sdk/
+// sub_259360: implemented in prog/matched/sdk/
+// sub_259380: implemented in prog/matched/sdk/
+// sub_2593a0: implemented in prog/matched/sdk/
 
 }  // namespace sdk

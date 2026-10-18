@@ -1949,7 +1949,7 @@ void sub_3893c0() { /* 0x3893c0 */ }
 void sub_3893d0() { /* 0x3893d0 */ }
 void sub_3894a0() { /* 0x3894a0 */ }
 void sub_3894d0() { /* 0x3894d0 */ }
-void sub_389540() { /* 0x389540 */ }
+// sub_389540: implemented in prog/matched/main/
 void sub_389590() { /* 0x389590 */ }
 void sub_389600() { /* 0x389600 */ }
 void sub_3896d0() { /* 0x3896d0 */ }

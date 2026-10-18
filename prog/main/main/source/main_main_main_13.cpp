@@ -2896,7 +2896,7 @@ void sub_fa8470() { /* 0xfa8470 */ }
 // sub_fa8480: implemented in prog/matched/main/
 // sub_fa8490: implemented in prog/matched/main/
 // sub_fa84a0: implemented in prog/matched/main/
-void sub_fa84b0() { /* 0xfa84b0 */ }
+// sub_fa84b0: implemented in prog/matched/main/
 // sub_fa84d0: implemented in prog/matched/main/
 // sub_fa84e0: implemented in prog/matched/main/
 // sub_fa84f0: implemented in prog/matched/main/
@@ -2904,7 +2904,7 @@ void sub_fa8500() { /* 0xfa8500 */ }
 // sub_fa8510: implemented in prog/matched/main/
 // sub_fa8520: implemented in prog/matched/main/
 // sub_fa8530: implemented in prog/matched/main/
-void sub_fa8540() { /* 0xfa8540 */ }
+// sub_fa8540: implemented in prog/matched/main/
 // sub_fa8560: implemented in prog/matched/main/
 // sub_fa8570: implemented in prog/matched/main/
 // sub_fa8580: implemented in prog/matched/main/
@@ -2920,7 +2920,7 @@ void sub_fa86a0() { /* 0xfa86a0 */ }
 void sub_fa8740() { /* 0xfa8740 */ }
 void sub_fa8780() { /* 0xfa8780 */ }
 void sub_fa87b0() { /* 0xfa87b0 */ }
-void sub_fa87e0() { /* 0xfa87e0 */ }
+// sub_fa87e0: implemented in prog/matched/main/
 // sub_fa8800: implemented in prog/matched/main/
 // sub_fa8810: implemented in prog/matched/main/
 // sub_fa8820: implemented in prog/matched/main/
@@ -2928,7 +2928,7 @@ void sub_fa87e0() { /* 0xfa87e0 */ }
 // sub_fa8840: implemented in prog/matched/main/
 // sub_fa8850: implemented in prog/matched/main/
 // sub_fa8860: implemented in prog/matched/main/
-void sub_fa8870() { /* 0xfa8870 */ }
+// sub_fa8870: implemented in prog/matched/main/
 // sub_fa8890: implemented in prog/matched/main/
 // sub_fa88a0: implemented in prog/matched/main/
 // sub_fa88b0: implemented in prog/matched/main/
@@ -2948,7 +2948,7 @@ void sub_fa8930() { /* 0xfa8930 */ }
 // sub_fa89c0: implemented in prog/matched/main/
 // sub_fa89d0: implemented in prog/matched/main/
 // sub_fa89e0: implemented in prog/matched/main/
-void sub_fa89f0() { /* 0xfa89f0 */ }
+// sub_fa89f0: implemented in prog/matched/main/
 // sub_fa8a10: implemented in prog/matched/main/
 // sub_fa8a20: implemented in prog/matched/main/
 // sub_fa8a30: implemented in prog/matched/main/
@@ -3038,7 +3038,7 @@ void sub_fae1a0() { /* 0xfae1a0 */ }
 // sub_fae1b0: implemented in prog/matched/main/
 // sub_fae1c0: implemented in prog/matched/main/
 // sub_fae1d0: implemented in prog/matched/main/
-void sub_fae1e0() { /* 0xfae1e0 */ }
+// sub_fae1e0: implemented in prog/matched/main/
 // sub_fae200: implemented in prog/matched/main/
 // sub_fae210: implemented in prog/matched/main/
 // sub_fae220: implemented in prog/matched/main/
@@ -3046,7 +3046,7 @@ void sub_fae230() { /* 0xfae230 */ }
 // sub_fae240: implemented in prog/matched/main/
 // sub_fae250: implemented in prog/matched/main/
 // sub_fae260: implemented in prog/matched/main/
-void sub_fae270() { /* 0xfae270 */ }
+// sub_fae270: implemented in prog/matched/main/
 // sub_fae290: implemented in prog/matched/main/
 // sub_fae2a0: implemented in prog/matched/main/
 // sub_fae2b0: implemented in prog/matched/main/
@@ -3070,7 +3070,7 @@ void sub_fae5d0() { /* 0xfae5d0 */ }
 void sub_fae670() { /* 0xfae670 */ }
 void sub_fae6b0() { /* 0xfae6b0 */ }
 void sub_fae6e0() { /* 0xfae6e0 */ }
-void sub_fae710() { /* 0xfae710 */ }
+// sub_fae710: implemented in prog/matched/main/
 // sub_fae730: implemented in prog/matched/main/
 // sub_fae740: implemented in prog/matched/main/
 // sub_fae750: implemented in prog/matched/main/
@@ -3078,7 +3078,7 @@ void sub_fae710() { /* 0xfae710 */ }
 // sub_fae770: implemented in prog/matched/main/
 // sub_fae780: implemented in prog/matched/main/
 // sub_fae790: implemented in prog/matched/main/
-void sub_fae7a0() { /* 0xfae7a0 */ }
+// sub_fae7a0: implemented in prog/matched/main/
 // sub_fae7c0: implemented in prog/matched/main/
 // sub_fae7d0: implemented in prog/matched/main/
 // sub_fae7e0: implemented in prog/matched/main/
@@ -3086,7 +3086,7 @@ void sub_fae7a0() { /* 0xfae7a0 */ }
 // sub_fae800: implemented in prog/matched/main/
 // sub_fae810: implemented in prog/matched/main/
 // sub_fae820: implemented in prog/matched/main/
-void sub_fae830() { /* 0xfae830 */ }
+// sub_fae830: implemented in prog/matched/main/
 // sub_fae850: implemented in prog/matched/main/
 // sub_fae860: implemented in prog/matched/main/
 // sub_fae870: implemented in prog/matched/main/
@@ -3094,7 +3094,7 @@ void sub_fae830() { /* 0xfae830 */ }
 // sub_fae890: implemented in prog/matched/main/
 // sub_fae8a0: implemented in prog/matched/main/
 // sub_fae8b0: implemented in prog/matched/main/
-void sub_fae8c0() { /* 0xfae8c0 */ }
+// sub_fae8c0: implemented in prog/matched/main/
 // sub_fae8e0: implemented in prog/matched/main/
 // sub_fae8f0: implemented in prog/matched/main/
 // sub_fae900: implemented in prog/matched/main/
@@ -3114,7 +3114,7 @@ void sub_faea80() { /* 0xfaea80 */ }
 // sub_faea90: implemented in prog/matched/main/
 // sub_faeaa0: implemented in prog/matched/main/
 // sub_faeab0: implemented in prog/matched/main/
-void sub_faeac0() { /* 0xfaeac0 */ }
+// sub_faeac0: implemented in prog/matched/main/
 // sub_faeae0: implemented in prog/matched/main/
 // sub_faeaf0: implemented in prog/matched/main/
 // sub_faeb00: implemented in prog/matched/main/

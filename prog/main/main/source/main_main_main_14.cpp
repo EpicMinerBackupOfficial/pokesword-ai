@@ -697,7 +697,7 @@ void sub_fff530() { /* 0xfff530 */ }
 void sub_fff740() { /* 0xfff740 */ }
 void sub_fff800() { /* 0xfff800 */ }
 void sub_fff8f0() { /* 0xfff8f0 */ }
-void sub_fffa10() { /* 0xfffa10 */ }
+// sub_fffa10: implemented in prog/matched/main/
 void sub_fffa20() { /* 0xfffa20 */ }
 void sub_fffa50() { /* 0xfffa50 */ }
 void sub_fffac0() { /* 0xfffac0 */ }
@@ -3231,7 +3231,7 @@ void sub_106dfe0() { /* 0x106dfe0 */ }
 void network() { /* 0x106e050 */ }
 void sub_106e0a0() { /* 0x106e0a0 */ }
 // sub_106e120: implemented in prog/matched/main/
-void sub_106e130() { /* 0x106e130 */ }
+// sub_106e130: implemented in prog/matched/main/
 void sub_106e150() { /* 0x106e150 */ }
 void sub_106e210() { /* 0x106e210 */ }
 void sub_106e270() { /* 0x106e270 */ }

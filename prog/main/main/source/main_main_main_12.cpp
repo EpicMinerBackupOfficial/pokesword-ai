@@ -3753,9 +3753,9 @@ void sub_ebcc90() { /* 0xebcc90 */ }
 void sub_ebccd0() { /* 0xebccd0 */ }
 void sub_ebcfb0() { /* 0xebcfb0 */ }
 void sub_ebd130() { /* 0xebd130 */ }
-void sub_ebd150() { /* 0xebd150 */ }
-void sub_ebd160() { /* 0xebd160 */ }
-void sub_ebd170() { /* 0xebd170 */ }
+// sub_ebd150: implemented in prog/matched/main/
+// sub_ebd160: implemented in prog/matched/main/
+// sub_ebd170: implemented in prog/matched/main/
 void sub_ebd180() { /* 0xebd180 */ }
 void pt3_mons_form() { /* 0xebd370 */ }
 void sub_ebe9f0() { /* 0xebe9f0 */ }

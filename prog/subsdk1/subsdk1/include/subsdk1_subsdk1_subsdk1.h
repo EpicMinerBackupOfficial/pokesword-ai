@@ -741,9 +741,6 @@ void sub_32f40();  // 0x32f40
 void sub_32f50();  // 0x32f50
 void sub_32f60();  // 0x32f60
 void sub_32f70();  // 0x32f70
-void sub_32f90();  // 0x32f90
-void sub_32fc0();  // 0x32fc0
-void sub_32ff0();  // 0x32ff0
 void sub_33020();  // 0x33020
 void sub_330f0();  // 0x330f0
 void sub_33140_subsdk1_33140();  // 0x33140
@@ -756,7 +753,6 @@ void sub_33580();  // 0x33580
 void sub_33650();  // 0x33650
 void sub_33720_subsdk1_33720();  // 0x33720
 void sub_337f0();  // 0x337f0
-void sub_338c0();  // 0x338c0
 void sub_338f0_subsdk1_338f0();  // 0x338f0
 void sub_33900_subsdk1_33900();  // 0x33900
 void sub_33910_subsdk1_33910();  // 0x33910
@@ -3050,7 +3046,6 @@ void sub_11a2d0();  // 0x11a2d0
 void sub_11a4a0();  // 0x11a4a0
 void sub_11a7a0();  // 0x11a7a0
 void sub_11aa20();  // 0x11aa20
-void sub_11b4f0_subsdk1_11b4f0();  // 0x11b4f0
 void sub_11cb10();  // 0x11cb10
 void sub_11cb40_subsdk1_11cb40();  // 0x11cb40
 void sub_11cb80_subsdk1_11cb80();  // 0x11cb80
@@ -3250,7 +3245,6 @@ void sub_13d6e0();  // 0x13d6e0
 void sub_13d720();  // 0x13d720
 void sub_13d740();  // 0x13d740
 void sub_13d7f0();  // 0x13d7f0
-void sub_13d970();  // 0x13d970
 void sub_13dcf0();  // 0x13dcf0
 void sub_13dd50_subsdk1_13dd50();  // 0x13dd50
 void sub_13e070();  // 0x13e070
@@ -3373,7 +3367,6 @@ void sub_1520c0();  // 0x1520c0
 void sub_1520d0();  // 0x1520d0
 void sub_1520e0();  // 0x1520e0
 void sub_1520f0();  // 0x1520f0
-void sub_152120();  // 0x152120
 void sub_152130();  // 0x152130
 void sub_152200();  // 0x152200
 void sub_152210();  // 0x152210
@@ -3482,7 +3475,6 @@ void sub_159ba0();  // 0x159ba0
 void sub_159bb0();  // 0x159bb0
 void sub_159bc0_subsdk1_159bc0();  // 0x159bc0
 void sub_159bd0();  // 0x159bd0
-void sub_159be0();  // 0x159be0
 void sub_159bf0();  // 0x159bf0
 void sub_159c30();  // 0x159c30
 void sub_159c40();  // 0x159c40
@@ -3570,7 +3562,6 @@ void sub_167fa0();  // 0x167fa0
 void sub_168010();  // 0x168010
 void sub_168020();  // 0x168020
 void sub_168070();  // 0x168070
-void sub_168080();  // 0x168080
 void sub_168090();  // 0x168090
 void sub_1680a0_subsdk1_1680a0();  // 0x1680a0
 void sub_1680b0();  // 0x1680b0
@@ -3725,7 +3716,6 @@ void sub_181950();  // 0x181950
 void sub_181b10();  // 0x181b10
 void sub_182050();  // 0x182050
 void sub_182080();  // 0x182080
-void sub_182160();  // 0x182160
 void sub_1821f0();  // 0x1821f0
 void sub_1822c0_subsdk1_1822c0();  // 0x1822c0
 void sub_1824b0();  // 0x1824b0
@@ -3819,7 +3809,6 @@ void sub_186d10();  // 0x186d10
 void sub_186e10();  // 0x186e10
 void sub_187270();  // 0x187270
 void sub_187370();  // 0x187370
-void sub_187420();  // 0x187420
 void sub_187680();  // 0x187680
 void sub_187820();  // 0x187820
 void sub_187aa0();  // 0x187aa0
@@ -3909,7 +3898,6 @@ void sub_1906e0();  // 0x1906e0
 void sub_190720();  // 0x190720
 void sub_190820_subsdk1_190820();  // 0x190820
 void sub_190940();  // 0x190940
-void sub_1909a0();  // 0x1909a0
 void sub_1909c0();  // 0x1909c0
 void sub_190a50();  // 0x190a50
 void sub_190aa0();  // 0x190aa0
@@ -4005,5 +3993,17 @@ void sub_1be960();  // 0x1be960
 void sub_1be970_subsdk1_1be970();  // 0x1be970
 void sub_1bea10();  // 0x1bea10
 void sub_1bea20();  // 0x1bea20
+void sub_1bea50();  // 0x1bea50
+void sub_1bea80();  // 0x1bea80
+void sub_1bea90();  // 0x1bea90
+void sub_1beb40();  // 0x1beb40
+void sub_1bebc0();  // 0x1bebc0
+void sub_1becb0();  // 0x1becb0
+void sub_1becc0();  // 0x1becc0
+void sub_1befb0();  // 0x1befb0
+void sub_1bf2c0();  // 0x1bf2c0
+void sub_1bf5d0();  // 0x1bf5d0
+void sub_1bf8f0();  // 0x1bf8f0
+void sub_1bff30();  // 0x1bff30
 
 }  // namespace subsdk1

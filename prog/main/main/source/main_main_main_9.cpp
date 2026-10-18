@@ -3484,7 +3484,7 @@ void sub_b49d10() { /* 0xb49d10 */ }
 void sub_b49d80() { /* 0xb49d80 */ }
 void sub_b49f40() { /* 0xb49f40 */ }
 void sub_b4a070() { /* 0xb4a070 */ }
-void sub_b4a240() { /* 0xb4a240 */ }
+// sub_b4a240: implemented in prog/matched/main/
 void sub_b4a260() { /* 0xb4a260 */ }
 // sub_b4a380: implemented in prog/matched/main/
 void sub_b4a390() { /* 0xb4a390 */ }

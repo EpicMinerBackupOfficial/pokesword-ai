@@ -5,11 +5,6 @@
 #pragma once
 
 namespace sdk {
-void sub_18a640();  // 0x18a640
-void sub_18a690();  // 0x18a690
-void sub_18a6e0();  // 0x18a6e0
-void sub_18a700();  // 0x18a700
-void sub_18a7f0();  // 0x18a7f0
 void sub_18a9a0();  // 0x18a9a0
 void sub_18a9c0();  // 0x18a9c0
 void sub_18a9e0();  // 0x18a9e0
@@ -4005,5 +4000,10 @@ void sub_259290();  // 0x259290
 void sub_2592c0();  // 0x2592c0
 void sub_2592e0();  // 0x2592e0
 void sub_259300();  // 0x259300
+void sub_259320();  // 0x259320
+void sub_259340();  // 0x259340
+void sub_259360();  // 0x259360
+void sub_259380();  // 0x259380
+void sub_2593a0();  // 0x2593a0
 
 }  // namespace sdk

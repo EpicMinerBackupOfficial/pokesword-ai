@@ -5,11 +5,6 @@
 #include "sdk_sdk_sdk_3.h"
 
 namespace sdk {
-// sub_259320: implemented in prog/matched/sdk/
-// sub_259340: implemented in prog/matched/sdk/
-// sub_259360: implemented in prog/matched/sdk/
-// sub_259380: implemented in prog/matched/sdk/
-// sub_2593a0: implemented in prog/matched/sdk/
 // sub_2593c0: implemented in prog/matched/sdk/
 // sub_2593e0: implemented in prog/matched/sdk/
 // sub_259400: implemented in prog/matched/sdk/
@@ -1358,7 +1353,7 @@ void sub_2b6d60() { /* 0x2b6d60 */ }
 void sub_2b6d70() { /* 0x2b6d70 */ }
 void u_u_u_u() { /* 0x2b6d80 */ }
 // sub_2b6dc0: implemented in prog/matched/sdk/
-void sub_2b6dd0() { /* 0x2b6dd0 */ }
+// sub_2b6dd0: implemented in prog/matched/sdk/
 void sub_2b6de0() { /* 0x2b6de0 */ }
 void sub_2b6e20() { /* 0x2b6e20 */ }
 void sub_2b6e60() { /* 0x2b6e60 */ }
@@ -4005,5 +4000,10 @@ void sub_3204a0() { /* 0x3204a0 */ }
 // sub_320530: implemented in prog/matched/sdk/
 // sub_320560: implemented in prog/matched/sdk/
 // sub_320590: implemented in prog/matched/sdk/
+// sub_3205c0: implemented in prog/matched/sdk/
+// sub_3205f0: implemented in prog/matched/sdk/
+// sub_320620: implemented in prog/matched/sdk/
+// sub_320640: implemented in prog/matched/sdk/
+// sub_320660: implemented in prog/matched/sdk/
 
 }  // namespace sdk

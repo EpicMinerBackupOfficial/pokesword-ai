@@ -950,7 +950,7 @@ void sub_20c6c0() { /* 0x20c6c0 */ }
 void sub_20c6e0() { /* 0x20c6e0 */ }
 void sub_20c720() { /* 0x20c720 */ }
 void sub_20c750() { /* 0x20c750 */ }
-void sub_20c790() { /* 0x20c790 */ }
+// sub_20c790: implemented in prog/matched/main/
 void sub_20c7d0() { /* 0x20c7d0 */ }
 // sub_20c870: implemented in prog/matched/main/
 void sub_20c8b0() { /* 0x20c8b0 */ }
@@ -3991,7 +3991,7 @@ void sub_3048a0() { /* 0x3048a0 */ }
 void sub_3048f0() { /* 0x3048f0 */ }
 void sub_304910() { /* 0x304910 */ }
 void sub_304950() { /* 0x304950 */ }
-void sub_3049b0() { /* 0x3049b0 */ }
+// sub_3049b0: implemented in prog/matched/main/
 // sub_3049c0: implemented in prog/matched/main/
 void tlsf_create_Pool_size_must_be_at_least_d_bytes() { /* 0x3049d0 */ }
 void sub_304ba0() { /* 0x304ba0 */ }

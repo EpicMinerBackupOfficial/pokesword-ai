@@ -3919,7 +3919,7 @@ void sub_67c270() { /* 0x67c270 */ }
 void sub_67c2f0() { /* 0x67c2f0 */ }
 void sub_67c360() { /* 0x67c360 */ }
 void sub_67c410() { /* 0x67c410 */ }
-void sub_67c470() { /* 0x67c470 */ }
+// sub_67c470: implemented in prog/matched/main/
 void sub_67c490() { /* 0x67c490 */ }
 void sub_67c4b0() { /* 0x67c4b0 */ }
 void sub_67c530() { /* 0x67c530 */ }
