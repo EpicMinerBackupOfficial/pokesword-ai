@@ -1309,3 +1309,65 @@ arm order off the original and emits the matching C.
 That is also why the `+4` offset misses are a family of their own rather than a
 bug: an arm whose statement count differs by one instruction moves the join, and
 with it every branch target after it.
+
+
+## Why the diamond layout is deterministic, from LLVM's own documentation
+
+Searched for how `MachineBlockPlacement` orders a diamond's arms rather than
+inferring it from more mismatches. `llvm/lib/CodeGen/MachineBlockPlacement.cpp`,
+file header:
+
+> The pass strives to preserve the structure of the CFG (that is, **retain a
+> topological ordering of basic blocks**) in the absence of a strong signal to the
+> contrary from probabilities. However, within the CFG structure, it attempts to
+> choose an ordering which favors placing more likely sequences of blocks adjacent
+> to each other.
+
+**We have no profile data** -- there is no PGO, and there is not going to be any,
+because the profiles would come from the retail binary and we do not run it. So
+the first sentence governs: the pass keeps the topological order, and the
+topological order comes from the source order.
+
+That makes the diamond layout DETERMINISTIC, and it is the rule the generator
+follows:
+
+    if (c) { A } else { B }    ->  c-cond  <B>;  A;  b <join>;  B;  join
+
+Read together with `updateTerminator`'s refusal to invert, the two together mean
+the C cannot choose the polarity -- but it CAN choose the arm order, and the
+source order is what survives. So the generator reads the arm order off the
+original (which arm the conditional branch targets) and writes the matching C.
+There is no third possibility to try, and no search over variants.
+
+### One lever worth knowing about
+
+`selectBestSuccessor` computes `BranchProbability HotProb(StaticLikelyProb, 100)`
+and will break the topological order for a "very hot" edge. `StaticLikelyProb` is
+the default static branch bias, and `__builtin_expect` moves it. So if a diamond
+that matches the plain form does NOT match, the lever is to bias that branch --
+not to swap the arms. Worth knowing before anyone spends a beat trying the arms
+the other way round first.
+
+### The design, written down so it can be built without re-deriving it
+
+The translator already emits ONE arm plus a fallthrough for `guard=k`, where the
+guard is a conditional branch whose target is the trailing `ret`. A diamond is the
+same thing with one difference -- the guard's target is ARM_B, and the fallthrough
+ARM_A ends in a `b <join>`:
+
+    <test>
+    b.cond  ARM_B          <- the guard's target is ARM_B, not the ret
+    ARM_A                  <- the "guarded block"
+    b       JOIN
+    ARM_B
+    JOIN                   <- the ret
+
+So `_emit` needs a second inner block, not a second guard: the existing
+`body_txt[_ob:]` splice already isolates the region between the guard and the end;
+it would have to split that at the `b` into ARM_A and ARM_B and emit
+
+    if (<cond>) { ARM_A } else { ARM_B }
+
+with the arm order read off the original. That is the whole change, and it reuses
+`_guard_test` unchanged -- the condition and its sense are the same as for a
+guarded body, which is why the same machinery is close to right already.
