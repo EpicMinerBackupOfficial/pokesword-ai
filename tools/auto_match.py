@@ -2316,6 +2316,109 @@ def gen_diamond(ins, end, ident):
 
 
 
+def gen_indirect_tailcall(ins, end, ident):
+    """A tail call through a POINTER: `ldr xN, [xM] ; ... ; br xN`.
+
+    The direct path has been here since the tail-call prefix landed 5,322 bodies.
+    It renders `return callee(a0, ...)`, which needs a callee NAME -- and a
+    pointer loaded from memory has none. So every one of these declined with
+
+        Bail("tail body does not end in b")
+
+    which reads as "the translator cannot express this body" and is actually "the
+    translator's one spelling of a tail call assumes a name".
+
+    `br` is also structurally EASIER than `b` for byte identity, which is why this
+    population is worth the work: `b` carries a byte-offset immediate, so two
+    differently-laid-out images can never agree on it, and the 30 diamonds that
+    translate today are blocked on exactly that. `br` is a fixed 4-byte
+    instruction with no immediate at all. Nothing to disagree about.
+
+    Restricted to bodies that FORWARD their arguments. A body that materialises a
+    constant argument is declined, and not because of the translation: Clang
+    5.0.1 emits `orr xN, xzr, #imm` for a constant call ARGUMENT and never the
+    `mov` retail uses -- measured across four barrier placements and six argument
+    types (work/movz_barrier.py, work/movz_probe.py). There is no C that makes it
+    emit MOVZ into an opaque callee's argument register. 1,762 bodies forward and
+    are live; 147 set a constant and are dead until the compiler moves.
+    """
+    import straight_line
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
+    mn = [x.mnemonic for x in body]
+    if mn.count("br") != 1 or "b" in mn:
+        return None
+    bi = mn.index("br")
+    if bi == 0:
+        return None
+    # No call, no conditional branch, no table dispatch -- this is a plain
+    # forward-and-branch. Anything else is a different shape and claiming it here
+    # would put wrong C in the registry.
+    if "bl" in mn or "blr" in mn or any(x.startswith("b.") for x in mn):
+        return None
+    if "adrp" in mn[max(0, bi - 4):bi]:
+        return None
+    # THE CONSTANT-ARGUMENT DECLINE, measured rather than assumed.
+    for x in body:
+        if x.mnemonic != "mov":
+            continue
+        p = x.op_str.split(",")
+        if len(p) == 2 and "#" in p[1]:
+            return None
+    src_reg = body[bi].op_str.strip()
+    # THE ARITY, AND THE BRANCH REGISTER IS NOT AN ARGUMENT.
+    #
+    # The first version counted every argument register the body touched and took
+    # the highest, so main 0x114360
+    #
+    #     ldr x8, [x0] ; ldr x2, [x8, #0x40] ; br x2
+    #
+    # came out with arity 3 -- because x2 holds the CALLEE. The emitted call was
+    #
+    #     return ((void (*)(uintptr_t, uintptr_t, uintptr_t))...)(a0, a1, <callee>);
+    #
+    # passing the function pointer to itself as the third argument. It is
+    # wrong, it is plausible, and it is not caught by any shape assertion.
+    #
+    # The arity is the number of CONSECUTIVE argument registers below the branch
+    # register: 0, then 1, then 2. A body that only forwards a0 has arity 1.
+    n = 0
+    for x in body:
+        for part in x.op_str.replace("[", ",").replace("]", ",").split(","):
+            t = part.strip()
+            if not (len(t) > 1 and t[0] in "xw" and t[1:].isdigit()):
+                continue
+            reg = "x" + t[1:]
+            if reg == src_reg:
+                continue          # the callee, not an argument
+            k = int(t[1:])
+            if k < 8 and k + 1 > n:
+                n = k + 1
+    if n == 0:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(
+            ident, tail=(None, n, src_reg))
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    s = out[0] if isinstance(out, tuple) else out
+    # ASSERT THE ARTIFACT. An indirect tail call that came out with no call
+    # expression is not one, and the registry is a cache nobody invalidates.
+    if "return ((void (*)" not in s:
+        return None
+    if "return " in s.replace("return;", "").replace("return ((void (*)", ""):
+        # exactly one return, the tail call
+        if s.count("return") != 1:
+            return None
+    if _has_undeclared(s):
+        return None
+    return out
+
+
+
 # Shape -> generator. Every shape `shape_of` can return must appear here, or
 # --all-shapes silently skips it.
 SHAPE_GENERATORS = dict(GENERATORS)
@@ -2323,6 +2426,7 @@ SHAPE_GENERATORS["straight"] = gen_straight
 SHAPE_GENERATORS["guarded"] = gen_guarded
 SHAPE_GENERATORS["diamond"] = gen_diamond
 SHAPE_GENERATORS["tailcall"] = gen_tailcall
+SHAPE_GENERATORS["indirect-tailcall"] = gen_indirect_tailcall
 SHAPE_GENERATORS["pair-ret"] = gen_pair_ret
 SHAPE_GENERATORS["fp-conv-store"] = gen_fp_conv_store
 SHAPE_GENERATORS["fp-compare"] = gen_fp_compare
@@ -2793,6 +2897,17 @@ def shape_of(ins, end):
     # body is too short for the getter shape's exact-count test.
     if n == 3 and mn[0] == "add" and mn[1] in LOADS and mn[2] == "ret":
         return "indexed-getter"
+
+    # A tail call through a POINTER: a single `br` as the last real instruction,
+    # no direct `b`, no call, no conditional branch. 1,909 bodies by
+    # work/tail_forward.py, of which 1,762 forward their arguments and are live.
+    if n >= 2 and mn.count("br") == 1 and "b" not in mn:
+        _bi = mn.index("br")
+        if _bi >= 1 and all(x == "nop" for x in mn[_bi + 1:]):
+            if not ("bl" in mn or "blr" in mn) and \
+                    not any(x.startswith("b.") for x in mn) and \
+                    "adrp" not in mn[max(0, _bi - 4):_bi]:
+                return "indirect-tailcall"
 
     # A DIAMOND: one unconditional `b`, one conditional branch before it, and the
     # conditional skipping to the instruction AFTER the `b`. That last condition is

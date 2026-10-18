@@ -658,8 +658,29 @@ class StraightLine:
             #
             # -- the prefix sets up the ARGUMENT REGISTERS and the branch
             # forwards them. `tail` is (callee name, arity).
-            if not insns or insns[-1].mnemonic != "b":
-                raise Bail("tail body does not end in b")
+            # AN INDIRECT TAIL CALL.
+            #
+            # `br <reg>` is a tail call through a pointer, and the terminator
+            # check refused it outright:
+            #
+            #     raise Bail("tail body does not end in b")
+            #
+            # which stopped 1,762 bodies whose every other mnemonic the translator
+            # already handles. The obstacle was never the instruction -- it was
+            # that `tail` is (callee NAME, arity) and a pointer has no name.
+            #
+            # So `tail[0] is None` means "indirect", and the callee is rendered
+            # from the branch register's value instead. Everything else about a
+            # tail call is unchanged: the branch is still the terminator, the
+            # prefix still sets the argument registers, and the branch still
+            # forwards them.
+            #
+            #     ldr x2, [x8, #0x28] ; br x2      is   return ((T(*)(...))p1)(a0, ...)
+            #
+            # A DIRECT `b` keeps its name and its own path. There is no "try both"
+            # fallback: the terminator's mnemonic decides which it is.
+            if not insns or insns[-1].mnemonic not in ("b", "br"):
+                raise Bail("tail body does not end in b or br")
             body = insns[:-1]
         else:
             if not insns or insns[-1].mnemonic != "ret":
@@ -3615,7 +3636,34 @@ class StraightLine:
             # tailcall whose prefix only sets up arguments has no stores and no
             # call, so `all_txt` is empty and the early return produced
             # `void f() {}` -- the whole body silently dropped.
-            _tname, _tn = tail
+            # `tail` is (callee name or None, arity, branch register or None).
+            # A DIRECT tail call still passes a 2-tuple from several callers, so
+            # the third element is read defensively rather than requiring every
+            # call site to be updated -- `tail[2]` on a 2-tuple raises
+            # IndexError, which is a crash, not a decline.
+            _tname, _tn = tail[0], tail[1]
+            _treg = tail[2] if len(tail) > 2 else None
+            if _tname is None:
+                # A TAIL CALL IS THE RETURN. The wrapper's declared return type
+                # must therefore be whatever the CALLEE returns, not whatever the
+                # body's last value was -- and the callee here is a pointer we
+                # cannot see, so the cast below declares it `void` and the
+                # wrapper has to agree.
+                #
+                # The first version of this emitter left `rct` alone, so 1,513
+                # generated candidates were
+                #
+                #     uint64_t f_t(...) { return ((void (*)(...))...)(...); }
+                #
+                # and Clang rejected every one:
+                #
+                #     error: cannot initialize return object of type 'uint64_t'
+                #            with an rvalue of type 'void'
+                #
+                # A compile error in a BATCH is not one failed candidate, it is
+                # every candidate sharing the translation unit -- which is why
+                # all four modules reported the error and none reported a match.
+                rct = "void"
             _targs = []
             for _k in range(_tn):
                 _rk = "x%d" % _k
@@ -3632,6 +3680,32 @@ class StraightLine:
                 else:
                     raise Bail("tail call argument x%d is neither written nor "
                                "an incoming argument" % _k)
+            if _tname is None:
+                # INDIRECT: the callee is the value the branch register holds at
+                # the branch. `state[reg]` is that value -- a load, a computed
+                # pointer, whatever the prefix produced -- and it is already
+                # rendered as an expression by everything above.
+                #
+                # The cast is the whole trick. Without one the call cannot be
+                # written at all; with it Clang sees a call through an opaque
+                # function pointer in TAIL POSITION, and its TAILCC pass emits
+                # `br` rather than `blr` (measured, work/tail_recipe.py):
+                #
+                #     ((T*)p)->f(a0, 1, 1)          ->  br, NO blr
+                #     the same call twice            ->  blr AND br
+                #
+                # The parameter types are `uintptr_t` for the same reason the direct
+                # path uses them: the callee's real signature is not derivable
+                # from the call site, and a `char *` does not convert to a
+                # `uintptr_t` parameter in C++.
+                if _treg is None:
+                    raise Bail("indirect tail call has no branch register")
+                _cv, _cex = self._render(state.get(wreg(_treg)), names)
+                if _cv is None:
+                    raise Bail("indirect tail target %r is not a value"
+                               % _treg)
+                _tname = "((void (*)(%s))((void *)%s))" % (
+                    ", ".join(["uintptr_t"] * _tn), call_arg((_cv, _cex)))
             _tcall = "%s(%s)" % (_tname, ", ".join(_targs))
             _lines = list(all_txt)
             _lines.append("return %s;" % _tcall)
@@ -3647,8 +3721,27 @@ class StraightLine:
             # key -- the same shape of error as the "no parameters" note above.
             # Return types are absent from the mangling, so the `uint64_t` here
             # costs nothing.
+            #
+            # AND IT MUST NOT BE `rct`. `rct` at this point is whatever the BODY's
+            # last value was, and a tail-call body has no last value -- the branch
+            # IS the return -- so `rct` is `void` for most thunks. Using `rct`
+            # here took main from 11,550 tail-call candidates to 5,083:
+            #
+            #     main --shape tailcall   BASE 11550   NOW 5083   -6467
+            #
+            # which reads as "the new indirect shape stole them" and was not. The
+            # direct path was compiling to the wrong return type and the batches
+            # died, which is a different failure with the same symptom.
+            #
+            # An INDIRECT tail call is the one case that must be `void`, because
+            # the cast declares the callee `void` and a `uint64_t` wrapper cannot
+            # return a void call:
+            #
+            #     error: cannot initialize return object of type 'uint64_t'
+            #            with an rvalue of type 'void'
+            _trt = "void" if tail[0] is None else "uint64_t"
             return "%s %s(%s) {\n    %s\n}\n" % (
-                "uint64_t", ident, plist, "\n    ".join(_lines)), sig
+                _trt, ident, plist, "\n    ".join(_lines)), sig
         # A GUARDED body must not take this early return.
         #
         # The guarded emit is BELOW, at `if block is not None:`, so a guarded body
