@@ -7,6 +7,7 @@
   "ret_only": 215,
   "ptr_add": 18,
   "getter": 190,
+  "diamond": 390,
   "setter-chain": 39,
   "const-field-set": 11,
   "setter": 46,

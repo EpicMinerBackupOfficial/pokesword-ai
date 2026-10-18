@@ -2174,6 +2174,8 @@ def gen_guarded(ins, end, ident):
     src = out[0] if isinstance(out, tuple) else out
     if "if (" not in src:
         return None
+    if _has_undeclared(src):
+        return None
     # The SECOND shape rule: a `void` function must not return a value. `return 0;`
     # in a `void` function is a hard C++ error, not a warning, and one of these in
     # a 60-candidate translation unit removes all 60.
@@ -2215,6 +2217,30 @@ def _branch_target(ins, k):
         return (int(o[1:], 16) - ins[0].address) // 4
     except ValueError:
         return None
+
+
+def _has_undeclared(src):
+    """True if `src` names a page symbol nothing declares.
+
+    `adrp` renders as `&adrp_<page>`, and the page table is never declared in the
+    candidate's preamble. Clang then fails with
+
+        error: use of undeclared identifier 'adrp_a74000'
+
+    and because the harness compiles candidates in BATCHES, one of these removes
+    every candidate sharing the translation unit -- 4 sdk candidates here, and
+    the loss scales with the batch. A green "no error" line elsewhere in the
+    same run does not mean the batch survived.
+
+    Declined at production rather than fixed downstream, for the same reason the
+    `if (` assertion is: the registry is a cache nobody invalidates, so a source
+    that does not compile must never reach it.
+
+    The check is a scan for the identifier family rather than a full compile,
+    because a compile per candidate is the cost this generator exists to avoid,
+    and the family is closed: only `adrp` introduces a page symbol.
+    """
+    return "adrp_" in src
 
 
 def gen_diamond(ins, end, ident):
@@ -2280,6 +2306,8 @@ def gen_diamond(ins, end, ident):
     # is a cache nobody invalidates, so a bad artifact written here is emitted
     # into prog/ long after this generator stopped producing it.
     if "if (" not in s or "} else {" not in s:
+        return None
+    if _has_undeclared(s):
         return None
     _head = s.split("{", 1)[0]
     if _head.strip().startswith("void ") and "return " in s.replace("return;", ""):

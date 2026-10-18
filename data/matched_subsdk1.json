@@ -3,6 +3,7 @@
  "population": {
   "mov_ret": 398,
   "tailcall": 182,
+  "diamond": 177,
   "setter-chain": 30,
   "ret_only": 439,
   "compare": 143,
