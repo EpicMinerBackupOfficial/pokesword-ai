@@ -623,7 +623,7 @@ class StraightLine:
     def __init__(self, insns):
         self.insns = insns
 
-    def translate(self, ident, calls=None, guard=None, tail=None):
+    def translate(self, ident, calls=None, guard=None, tail=None, dcut=None):
         """Translate the walked body into a C function.
 
         `guard` is the index into `body` of a CONDITIONAL BRANCH whose target is
@@ -672,6 +672,13 @@ class StraightLine:
             # `cbz` is not in any accepted list, because COND_MNEMONICS is the
             # SELECT family (csel/cset) and not the branch family.
             if guard is not None and _pf == guard:
+                continue
+            if dcut is not None and _pf == dcut:
+                # The unconditional `b` of a DIAMOND. It is a branch, not a
+                # terminator, so it produces no statement -- it is the boundary
+                # between ARM_A and ARM_B. The pre-filter must let it through for
+                # the same reason it lets the guard through, or it is declined as
+                # "unsupported mnemonic 'b'" before anything else happens.
                 continue
             # This is a whole-body pre-filter, and it runs before any of the
             # per-instruction handlers below. Anything missing here is declined as
@@ -929,8 +936,16 @@ class StraightLine:
         _gn_stmts = None     # len(stmts) at the guard
         _gn_calls = None     # len(call_stmts) at the guard
         _gval = None         # value tuple the guard tests
+        # A DIAMOND's second cut: `len(stmts)` where ARM_B begins, i.e. at the
+        # unconditional `b`. `None` unless `dcut` was passed.
+        _gn_dstmts = None
         _gform = None        # "nz" -> block runs when the value is NON-zero
         for _gi, i in enumerate(body):
+            if dcut is not None and _gi == dcut:
+                # ARM_A is finished. The `b` that follows skips over ARM_B, so
+                # everything emitted from here on belongs to the else-arm.
+                _gn_dstmts = len(stmts)
+                continue
             if guard is not None and _gi == guard:
                 _gstate = dict(state)
                 _gn_stmts = len(stmts)
@@ -2710,7 +2725,8 @@ class StraightLine:
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
                                call_stmts, saw_call, tail=tail,
                                block=(None if guard is None else
-                                      (_gstate, _gn_stmts, _gn_calls, _gval, _gform)))
+                                      (_gstate, _gn_stmts, _gn_calls, _gval,
+                                       _gform, _gn_dstmts)))
 
     @staticmethod
     def _guard_operand(reg, state, used_args):
@@ -3323,9 +3339,13 @@ class StraightLine:
             if key in getattr(self, "_pinned", ()):
                 pins.append('__asm__ volatile("" : "+r"(%s));' % nm(key))
         _bcut = None          # (len(pre), len(body_txt)) where the block starts
+        _dcut = None          # ... and where ARM_B starts, for a DIAMOND
         for _si, stmt in enumerate(stmts):
             if block and _si == block[1] and _bcut is None:
                 _bcut = (len(pre), len(body_txt))
+            if (block and len(block) > 5 and block[5] is not None
+                    and _si == block[5] and _dcut is None):
+                _dcut = (len(pre), len(body_txt))
             if stmt[0] == "qstore":
                 # See the q-pair store below for the measurement. One field.
                 _, n, off, v, _early = stmt
@@ -3694,7 +3714,8 @@ class StraightLine:
             # and it does that wherever it sits.
             if sret_writes:
                 raise Bail("guarded block writing through the sret register")
-            _gstate, _gn, _gc, _gval, _gform = block
+            _gstate, _gn, _gc, _gval, _gform = block[:5]
+            _gdcut = block[5] if len(block) > 5 else None
             _gct, _gexpr = self._render(_gval, names)
             # Both "nz" and "cmpnz" are non-zero senses, and `CMP_GUARDS` already
             # carries the negated operator -- so neither is wrapped in `!` here.
@@ -3736,6 +3757,37 @@ class StraightLine:
             _outer = pre + _call_txt[:_ccut] + pins + body_txt[:_ob]
             _inner = _call_txt[_ccut:] + body_txt[_ob:]
             _lines = list(_outer)
+            # THE `else`.
+            #
+            # A DIAMOND is the same shape as a guarded body with one difference:
+            # its guard skips to ARM_B rather than to the `ret`, and ARM_A ends in
+            # a `b <join>`. So the region between the guard and the end holds TWO
+            # arms, and `_dcut` is the boundary between them:
+            #
+            #     <test>
+            #     b.cond  ARM_B
+            #     ARM_A                       \\  block[1] .. block[5]
+            #     b       JOIN                <-- dcut
+            #     ARM_B                       /   block[5] ..
+            #     JOIN
+            #
+            # Clang will not invert a conditional branch to make a block fall
+            # through -- MachineBasicBlock::updateTerminator returns rather than
+            # reversing the condition -- and with no profile data
+            # MachineBlockPlacement keeps the TOPOLOGICAL order, which is SOURCE
+            # order. So the polarity is fixed and the arm order is whatever the
+            # original has; the generator reads it off the branch target and emits
+            # the matching C. There is no variant to search over.
+            if _gdcut is not None and _dcut is not None:
+                _lines.append("if (%s) {" % _cond)
+                for _l in _inner[:_dcut[1] - _ob]:
+                    _lines.append("    " + _l)
+                _lines.append("} else {")
+                for _l in _inner[_dcut[1] - _ob:]:
+                    _lines.append("    " + _l)
+                _lines.append("}")
+                return "%s %s(%s) {\n    %s\n}\n" % (
+                    rct, ident, plist, "\n    ".join(_lines)), sig
             _lines.append("if (%s) {" % _cond)
             for _l in _inner:
                 _lines.append("    " + _l)
