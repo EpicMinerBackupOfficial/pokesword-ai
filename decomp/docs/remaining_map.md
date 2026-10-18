@@ -964,3 +964,90 @@ capabilities, and the next one should be chosen by size: **jump tables, 9,841.**
 Do not re-run the existing generators expecting a different number. All four
 module yields are unchanged and the vocabulary is saturated, so a fifth run of the
 same generators returns the same 37,975 and the run is wasted. Measure first.
+
+
+## The 9,841 "jump tables" are 102 jump tables, and 1,745 tail calls
+
+37,975 / 24.97%, unchanged. Last beat said "jump tables, 9,841, by a factor of
+three" and added "a 9,841 count has never yet implied a 9,841 yield". Measuring it
+was the right call: **the 9,841 was a category error**, and the real population is
+smaller than the count but far more reachable.
+
+### `br` is doing four jobs and was counted as one
+
+    work/jump_cost.py   10,456 bodies have an indirect `br`
+                          39  adrp + add + ldr + br: a TEXTBOOK jump table
+                       1,852  adrp but no add+ldr: partial dispatch
+                       8,565  no adrp at all before the br
+
+    work/br_tail.py     2,828 the `br` is the LAST instruction (a terminator)
+                       7,628 code follows the `br`
+                        102  ...and it is a table dispatch
+                      2,726  ...and it is a TAIL CALL
+
+Only **102** are jump tables. `work/switch_kind.py` put 9,841 "jump tables" in one
+bucket, and `jump_cost.py` found 10,456 `br` bodies with 39 real jump tables
+between them -- the same error in a new file, which is what happens when a
+mnemonic is used as a category.
+
+### The 2,726 are vtable tail calls, and the call path almost already speaks them
+
+The deciding example, main 0x6080, 24 bytes:
+
+    ldr x0, [x0, #0x140] ; ldr x8, [x0] ; ldr x3, [x8, #8] ; mov w1, #1 ; mov w2, #1 ; br x3
+
+That is a tail call through a function pointer: the destination is a value, not
+an address. It is blocked by ONE line:
+
+    raise Bail("tail body does not end in b")
+
+`tail=` demands a direct `b` because it renders `return callee(args)` and a callee
+has a NAME. An indirect `br x3` has no name, so that form cannot express it.
+
+Of the 2,726, **1,745 are inside the translator's vocabulary** -- straight line,
+single `br`, no call, no conditional branch, every mnemonic known. They are one
+condition away, and the condition is a string comparison.
+
+### The recipe EXISTS, measured before implementing
+
+The rule is to measure the minimal C compile before writing any handler, because a
+plausible handler that has never been compiled produces plausible output that is
+wrong in a new way. `work/tail_recipe.py`:
+
+    ((struct T*)((char*)a0 + 0x140))->f(a0, 1, 1)   ->  br, NO blr   size 16
+    ((struct T*)((char*)a0 + 8))->f(a0)             ->  br, NO blr   size 8
+    ((struct T*)((char*)a0 + 8))->f(a0, 0x10)       ->  br, NO blr   size 12
+    the same call twice (NOT in tail position)      ->  blr AND br   size 44
+
+Clang 5.0.1 emits a genuine TAIL `br` for an indirect call, and falls back to
+`blr` when the call is not in tail position. So the capability is Clang's, not
+something to build.
+
+**And `br` has a structural advantage over `b` that no direct branch has:**
+`br` is a fixed 4-byte instruction with NO immediate, so there is no byte offset
+to mismatch between differently-laid-out images. The tail-call prefix landed
+5,322 bodies partly because of this; the diamonds' `b` can never match across
+layouts for exactly the opposite reason.
+
+### Probe bug #7, and it rejected the thing it was looking for
+
+`work/br_simple.py` first reported 1,909 of the 1,990 "simple instances" as using
+a mnemonic outside the vocabulary, and the top offender was `br` -- 1,896 of them.
+The vocabulary test ran over every mnemonic in the body INCLUDING the terminator,
+and `br` is not in the accepted set because `tail=` excludes it from the walk. The
+check and the translator disagreed about what the body is, and the check lost.
+
+That is the same class as the earlier six: a measurement that confidently rejects
+the thing it is measuring. The cure is identical -- test the BODY, not the body
+plus its terminator, and reconcile any remainder against a second count.
+
+### What is left, stated as capability rather than population
+
+    1,745  indirect tail calls, vocabulary OK, blocked on `tail=` accepting `br`
+      102  real jump tables, need the `.rodata` table bytes and a per-case body
+    3,404  loops containing a call, need a loop emitter (0 of 128 no-call
+           cycles translate today, so the emitter does not exist)
+     30  diamonds that translate, blocked on block LAYOUT not shape
+
+The first is a string comparison and a measured recipe. That is the cheapest thing
+on this list by an order of magnitude, and it is 58x the diamond population.
