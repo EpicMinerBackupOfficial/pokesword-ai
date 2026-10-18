@@ -33,6 +33,15 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_9215c0  (orig 0x9215c0, copy2)
+void main_f_9215c0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
+// sub_921f70  (orig 0x921f70, ret_only)
+void main_f_921f70() {}
+
+// sub_921f80  (orig 0x921f80, copy2)
+void main_f_921f80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
+
 // sub_921f90  (orig 0x921f90, copy2)
 void main_f_921f90(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 
@@ -6363,6 +6372,26 @@ void main_f_b327b0(void* a0) {
     *(uint32_t*)((char*)(a0) + 20) = 4;
 }
 
+// sub_b327c0  (orig 0xb327c0, guarded)
+void* main_f_b327c0(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint32_t*)((char*)(a0) + 140)) != (1)) {
+        *(uint32_t*)((char*)(p0) + 140) = 5;
+        return a0;
+    }
+    return a0;
+}
+
+// sub_b327e0  (orig 0xb327e0, guarded)
+void* main_f_b327e0(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint32_t*)((char*)(a0) + 20)) != (1)) {
+        *(uint32_t*)((char*)(p0) + 20) = 5;
+        return a0;
+    }
+    return a0;
+}
+
 // sub_b32800  (orig 0xb32800, straight)
 void main_f_b32800(void* a0) {
     *(uint32_t*)((char*)(a0) + 140) = 5;
@@ -7350,22 +7379,4 @@ void main_f_bb0b60() {}
 
 // sub_bb0b70  (orig 0xbb0b70, copy2)
 void main_f_bb0b70(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_bb0b80  (orig 0xbb0b80, copy2)
-void main_f_bb0b80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_bb0ba0  (orig 0xbb0ba0, ret_only)
-void main_f_bb0ba0() {}
-
-// sub_bb0bb0  (orig 0xbb0bb0, copy2)
-void main_f_bb0bb0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_bb0bc0  (orig 0xbb0bc0, copy2)
-void main_f_bb0bc0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_bb1020  (orig 0xbb1020, straight-line)
-uint8_t main_f_bb1020(void* a0, uint32_t a1) {
-    void* p0 = (void*)((uintptr_t)((*(uint64_t*)((char*)(a0) + 224)) + ((((uint64_t)(((uint32_t)(((uint32_t)a1)))))) * (((uint64_t)(((uint32_t)(28))))))));
-    return *(uint8_t*)((char*)(p0) + 24);
-}
 

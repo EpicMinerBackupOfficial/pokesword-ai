@@ -2737,7 +2737,23 @@ class StraightLine:
             va = self._guard_operand(a, state, used_args)
             vb = self._guard_operand(b, state, used_args)
             ct = "double" if prev.mnemonic == "fcmp" else "uintptr_t"
-            return ("expr", op, va, vb, ct), "nz"
+            # "cmpnz", NOT "nz".
+            #
+            # The two differ in what the FALLTHROUGH knows about x0, which is the
+            # difference between a correct body and a wrong one:
+            #
+            #     ldr x0, [x0, #0x50] ; cbz x0, ret   -- the zero is PROVEN, so the
+            #                                            fallthrough returns 0
+            #     ldr w8, [x0, #0x8c] ; cmp w8, #1    -- nothing is proven about x0,
+            #     b.eq ret                                  which is still the
+            #                                                incoming argument
+            #
+            # main+0xb327c0 is the second shape, and returning "nz" for it emitted
+            # `return 0;` where retail returns its argument. The condition itself
+            # was right -- `CMP_GUARDS` already holds the NEGATED operators, and
+            # `b.eq` on a compare correctly becomes `!=` -- so the source read
+            # correctly and still decompiled to the wrong function.
+            return ("expr", op, va, vb, ct), "cmpnz"
         if mn in ("cbz", "cbnz"):
             reg, form, mask = _o[0], ("nz" if mn == "cbz" else "z"), None
         elif mn in ("tbz", "tbnz"):
@@ -3622,7 +3638,11 @@ class StraightLine:
                 raise Bail("guarded block writing through the sret register")
             _gstate, _gn, _gc, _gval, _gform = block
             _gct, _gexpr = self._render(_gval, names)
-            _cond = _gexpr if _gform == "nz" else "(!%s)" % _gexpr
+            # Both "nz" and "cmpnz" are non-zero senses, and `CMP_GUARDS` already
+            # carries the negated operator -- so neither is wrapped in `!` here.
+            # They differ only in what the fallthrough returns.
+            _cond = (_gexpr if _gform in ("nz", "cmpnz")
+                     else "(!%s)" % _gexpr)
             if _gform == "nz":
                 # `cbz`: the BLOCK runs when the value is non-zero, so the
                 # fallthrough runs when it is ZERO. The constant IS the fact the
@@ -3640,8 +3660,9 @@ class StraightLine:
                 # retail has it.
                 _oexpr = "0"
             else:
-                # `cbnz`: the fallthrough runs when the value is NON-zero, so the
-                # value itself is the return and must be rendered.
+                # `cbnz`, and every COMPARE guard. The fallthrough does not prove
+                # the value is zero, so x0 is whatever it was and has to be
+                # rendered -- see the "cmpnz" note in `_guard_test`.
                 _oret = _gstate.get("x0")
                 if _oret is None:
                     raise Bail("guarded body has no value for the fallthrough "

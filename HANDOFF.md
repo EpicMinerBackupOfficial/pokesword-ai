@@ -36,7 +36,7 @@ to `BLOCK_SRC_DIR` — it is CMake-internal, referenced 0 times by `exefs/`.
 ## Current number
 
 ```
-37,862 / 152,062  =  24.90%
+37,890 / 152,062  =  24.92%
 ## The byte-identical ceiling is a compiler limit -- ~21%
 
 Measured over all 123,191 unmatched bodies:
@@ -251,7 +251,7 @@ Each is a POPULATION with a measured size, not a task. The sizes are body counts
 not attempt counts -- the difference has bitten this project three times and the
 rule is in "The rule that keeps biting" below.
 
-1. ~~**The tail-call prefix.**~~ **DONE -- 5,322 bodies, 21.39% -> 24.90%.**
+1. ~~**The tail-call prefix.**~~ **DONE -- 5,322 bodies, 21.39% -> 24.92%.**
 
    The three things it needed, in the order they were found, and none of them was
    codegen:

@@ -1997,7 +1997,7 @@ void sub_13d28e0() { /* 0x13d28e0 */ }
 void fi_npc_type_2() { /* 0x13d2a10 */ }
 void fi_common_event_4() { /* 0x13d2f30 */ }
 void fi_wait_type() { /* 0x13d3140 */ }
-void sub_13d3300() { /* 0x13d3300 */ }
+// sub_13d3300: implemented in prog/matched/main/
 void sub_13d3440() { /* 0x13d3440 */ }
 void sub_13d34d0() { /* 0x13d34d0 */ }
 void sub_13d3540() { /* 0x13d3540 */ }

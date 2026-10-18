@@ -863,7 +863,7 @@ void Generic_16Bx2() { /* 0x3cc930 */ }
 void sub_3cd350() { /* 0x3cd350 */ }
 void sub_3cd430() { /* 0x3cd430 */ }
 void sub_3cd8c0() { /* 0x3cd8c0 */ }
-void sub_3cd9b0() { /* 0x3cd9b0 */ }
+// sub_3cd9b0: implemented in prog/matched/sdk/
 void sub_3cd9c0() { /* 0x3cd9c0 */ }
 // sub_3cda00: implemented in prog/matched/sdk/
 void sub_3cda20() { /* 0x3cda20 */ }
@@ -2998,7 +2998,7 @@ void sub_436d70() { /* 0x436d70 */ }
 void sub_437470() { /* 0x437470 */ }
 void sub_437480() { /* 0x437480 */ }
 // sub_4374a0: implemented in prog/matched/sdk/
-void sub_4374c0() { /* 0x4374c0 */ }
+// sub_4374c0: implemented in prog/matched/sdk/
 void sub_4374d0() { /* 0x4374d0 */ }
 void sub_437520() { /* 0x437520 */ }
 // sub_437530: implemented in prog/matched/sdk/

@@ -2692,7 +2692,7 @@ void sub_372e40() { /* 0x372e40 */ }
 void f_0123456789_sdk_372e80() { /* 0x372e80 */ }
 void sub_372fb0() { /* 0x372fb0 */ }
 void sub_372ff0() { /* 0x372ff0 */ }
-void sub_373020() { /* 0x373020 */ }
+// sub_373020: implemented in prog/matched/sdk/
 void sub_373050() { /* 0x373050 */ }
 void sub_373190() { /* 0x373190 */ }
 void sub_3731d0() { /* 0x3731d0 */ }

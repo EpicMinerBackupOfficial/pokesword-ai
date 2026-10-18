@@ -1015,6 +1015,16 @@ void main_f_800a70(void* a0) {
 // sub_800bf0  (orig 0x800bf0, getter)
 uint8_t main_f_800bf0(void* a0) { return *(uint8_t*)((char*)(a0) + 56); }
 
+// sub_800c60  (orig 0x800c60, guarded)
+void* main_f_800c60(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint32_t*)((char*)(a0) + 60)) <= (9998)) {
+        *(uint32_t*)((char*)(p0) + 60) = (*(uint32_t*)((char*)(a0) + 60)) + (1);
+        return a0;
+    }
+    return a0;
+}
+
 // sub_800d00  (orig 0x800d00, straight-line)
 void main_f_800d00(void* a0) {
     uint32_t k0 = 0;
@@ -1071,6 +1081,16 @@ void main_f_801830(void* a0, void* a1) {
 
 // sub_801860  (orig 0x801860, getter)
 uint8_t main_f_801860(void* a0) { return *(uint8_t*)((char*)(a0)); }
+
+// sub_801870  (orig 0x801870, guarded)
+void* main_f_801870(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint8_t*)((char*)(a0))) <= (3)) {
+        *(uint8_t*)((char*)(p0)) = (*(uint8_t*)((char*)(a0))) + (1);
+        return a0;
+    }
+    return a0;
+}
 
 // sub_801890  (orig 0x801890, compare)
 bool main_f_801890(void* a0) { return (uint8_t)(*(uint8_t*)((char*)(a0))) > (uint64_t)(3); }
@@ -1163,6 +1183,16 @@ void main_f_802610(void* a0, void* a1) { *(uint8_t*)((char*)(a0)) = *(uint8_t*)(
 
 // sub_802620  (orig 0x802620, compare)
 bool main_f_802620(void* a0) { return (uint8_t)(*(uint8_t*)((char*)(a0))) > (uint64_t)(6); }
+
+// sub_802630  (orig 0x802630, guarded)
+void* main_f_802630(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint8_t*)((char*)(a0))) <= (6)) {
+        *(uint8_t*)((char*)(p0)) = (*(uint8_t*)((char*)(a0))) + (1);
+        return a0;
+    }
+    return a0;
+}
 
 // sub_802650  (orig 0x802650, setter)
 void main_f_802650(void* a0) { *(uint8_t*)((char*)(a0)) = 0; }
@@ -6961,13 +6991,4 @@ void main_f_9215a0() {}
 
 // sub_9215b0  (orig 0x9215b0, copy2)
 void main_f_9215b0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_9215c0  (orig 0x9215c0, copy2)
-void main_f_9215c0(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_921f70  (orig 0x921f70, ret_only)
-void main_f_921f70() {}
-
-// sub_921f80  (orig 0x921f80, copy2)
-void main_f_921f80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
 

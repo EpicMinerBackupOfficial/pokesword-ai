@@ -1,4 +1,4 @@
-/* sdk -- 309 functions verified to match the original.
+/* sdk -- 314 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -32,6 +32,24 @@ typedef unsigned long uintptr_t;
  * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
 struct Q2 { uint64x2_t a, b; };
 
+
+// sub_453810  (orig 0x453810, straight)
+void sdk_f_453810(void* a0, int32_t a1) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 48));
+    *(uint64_t*)((char*)(a0) + 48) = (uint64_t)(((char *)(char*)(p0) + (uintptr_t)(((int32_t)a1)) * 4));
+}
+
+// sub_453820  (orig 0x453820, setter-chain)
+void sdk_f_453820(void* a0, uint64_t a1, uint64_t a2) { *(uint64_t*)((char*)(a0) + 40) = a1; *(uint64_t*)((char*)(a0) + 48) = a1; *(uint64_t*)((char*)(a0) + 56) = a2; }
+
+// sub_453830  (orig 0x453830, ret_only)
+void sdk_f_453830() {}
+
+// sub_453838  (orig 0x453838, ret_only)
+void sdk_f_453838() {}
+
+// sub_453840  (orig 0x453840, straight)
+uint64_t sdk_f_453840() { return 0; }
 
 // sub_453850  (orig 0x453850, straight)
 uint64_t sdk_f_453850() { return 0; }

@@ -225,7 +225,7 @@ void sub_266aa0() { /* 0x266aa0 */ }
 void sub_266c20() { /* 0x266c20 */ }
 void f_1_0_200_OK_3() { /* 0x266fc0 */ }
 void sub_2671c0() { /* 0x2671c0 */ }
-void sub_2672f0() { /* 0x2672f0 */ }
+// sub_2672f0: implemented in prog/matched/subsdk0/
 void sub_267300() { /* 0x267300 */ }
 void sub_2673b0() { /* 0x2673b0 */ }
 void sub_267490() { /* 0x267490 */ }
@@ -1147,7 +1147,7 @@ void VideoDFS_Mjolnir() { /* 0x2cc040 */ }
 void sub_2cc2c0() { /* 0x2cc2c0 */ }
 void VideoDFS_videoconf() { /* 0x2cc590 */ }
 void NVMMLITE_TVMRDEC_8() { /* 0x2cc710 */ }
-void sub_2cc9e0() { /* 0x2cc9e0 */ }
+// sub_2cc9e0: implemented in prog/matched/subsdk0/
 void cbCreateDecrypter() { /* 0x2cca00 */ }
 void NVMMLITE_TVMRDEC_9() { /* 0x2ccb70 */ }
 void sub_2ccde0() { /* 0x2ccde0 */ }

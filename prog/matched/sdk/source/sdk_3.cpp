@@ -33,6 +33,17 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_171fc0  (orig 0x171fc0, ret_only)
+void sdk_f_171fc0() {}
+
+// sub_173960  (orig 0x173960, setter-chain-zero)
+void sdk_f_173960(void* a0) {
+    struct u64x2 { uint64_t a, b; };
+    *(struct u64x2*)((char*)a0 + 16) = (struct u64x2){ 0, 0 };
+    __asm__ __volatile__("" ::: "memory");
+    *(struct u64x2*)(char*)a0 = (struct u64x2){ 0, 0 };
+}
+
 // sub_173970  (orig 0x173970, ret_only)
 void sdk_f_173970() {}
 
@@ -12127,17 +12138,6 @@ uint64_t sdk_f_31a130(uint64_t a0, uint32_t a1) {
 extern void callee_523440();
 uint64_t sdk_f_31a150() {
     uint64_t r0 = (((uint64_t (*)(void))&callee_523440)()) & (4294967295);
-    asm volatile("");
-    return r0;
-}
-
-// sub_31a1c0  (orig 0x31a1c0, ret_only)
-void sdk_f_31a1c0() {}
-
-// sub_31a320  (orig 0x31a320, call)
-extern void callee_523470();
-uint64_t sdk_f_31a320(uint64_t a0, uint64_t a1) {
-    uint64_t r0 = (((uint64_t (*)(uintptr_t, uintptr_t, uintptr_t))&callee_523470)(((uintptr_t)(((uint64_t)a0))), ((uintptr_t)(((uint64_t)a1))), ((uintptr_t)(21)))) & (4294967295);
     asm volatile("");
     return r0;
 }

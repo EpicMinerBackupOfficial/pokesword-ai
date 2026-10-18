@@ -1,4 +1,4 @@
-/* main -- 420 functions verified to match the original.
+/* main -- 431 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -32,6 +32,51 @@ typedef unsigned long uintptr_t;
  * `str q0, [x0]` instead. Measured, clang 5.0.1 -O3. */
 struct Q2 { uint64x2_t a, b; };
 
+
+// sub_173a700  (orig 0x173a700, ret_only)
+void main_f_173a700() {}
+
+// sub_173abe0  (orig 0x173abe0, compare-pred)
+bool main_f_173abe0(void* a0) { return (int32_t)(*(uint64_t*)((char*)a0 + 220)) >= (int32_t)(*(uint64_t*)((char*)(*(uint64_t*)((char*)a0 + 56)) + 16)); }
+
+// sub_173ad90  (orig 0x173ad90, getter)
+uint32_t main_f_173ad90(uint64_t unused0, void* a1) { return *(uint32_t*)((char*)(a1) + 1512); }
+
+// sub_173ada0  (orig 0x173ada0, mov_ret)
+uint32_t main_f_173ada0() { return 1; }
+
+// sub_173adb0  (orig 0x173adb0, mov_ret)
+uint32_t main_f_173adb0() { return 1; }
+
+// sub_173afb0  (orig 0x173afb0, ret_only)
+void main_f_173afb0() {}
+
+// sub_173b0c0  (orig 0x173b0c0, ret_only)
+void main_f_173b0c0() {}
+
+// sub_173b2f0  (orig 0x173b2f0, ret_only)
+void main_f_173b2f0() {}
+
+// sub_173bb10  (orig 0x173bb10, straight)
+void main_f_173bb10(void* a0) {
+    *(uint32_t*)((char*)(a0) + 24) = -1;
+    *(uint32_t*)((char*)(a0) + 28) = -1;
+    *(uint32_t*)((char*)(a0) + 32) = 0;
+    *(uint32_t*)((char*)(a0) + 48) = -1;
+    *(uint32_t*)((char*)(a0) + 52) = -1;
+    *(uint32_t*)((char*)(a0) + 56) = 0;
+}
+
+// sub_173bb30  (orig 0x173bb30, ret_only)
+void main_f_173bb30() {}
+
+// sub_173bc80  (orig 0x173bc80, copy-chain-store)
+void main_f_173bc80(void* a0) {
+    uint32_t t0 = *(uint32_t*)((char*)a0 + 12);
+    *(uint32_t*)((char*)a0 + 8) = (uint32_t)(t0);
+    __asm__ __volatile__("" ::: "memory");
+    *(uint32_t*)((char*)a0 + 16) = 0;
+}
 
 // sub_173bd40  (orig 0x173bd40, copy-chain-store)
 void main_f_173bd40(void* a0) {

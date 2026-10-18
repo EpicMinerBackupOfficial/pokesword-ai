@@ -2,7 +2,7 @@
  "module": "sdk",
  "population": {
   "mov_ret": 622,
-  "tailcall": 984,
+  "tailcall": 1823,
   "straight": 516,
   "ret_only": 399,
   "setter": 176,
@@ -12,6 +12,7 @@
   "setter-chain": 119,
   "const-field-set": 13,
   "getter-chain": 146,
+  "guarded": 33,
   "struct-copy": 30,
   "copy-chain": 14,
   "strlit-ret": 55,
@@ -22,6 +23,66 @@
   "float_const": 3
  },
  "matched": [
+  {
+   "module": "sdk",
+   "addr": 1184320,
+   "size": 36,
+   "name": "sub_121240",
+   "shape": "guarded",
+   "ident": "f_121240",
+   "sig": "Pv",
+   "src": "void* f_121240(void* a0) {\n    void* p0 = (void*)((uintptr_t)(a0));\n    uint32_t k1 = 255;\n    uint8_t k2 = 0;\n    if (a0) {\n        *(uint64_t*)((char*)(a0)) = 4294967296;\n        *(uint16_t*)((char*)(p0) + 8) = (uint16_t)k1;\n        *(uint8_t*)((char*)(p0) + 42) = 0;\n        *(uint16_t*)((char*)(p0) + 40) = (uint16_t)k2;\n        *(uint8_t*)((char*)(p0) + 58) = 0;\n        return a0;\n    }\n    return 0;\n}\n",
+   "orig_insns": 9,
+   "new_insns": 9
+  },
+  {
+   "module": "sdk",
+   "addr": 1253520,
+   "size": 12,
+   "name": "sub_132090",
+   "shape": "guarded",
+   "ident": "f_132090",
+   "sig": "Pv",
+   "src": "uint32_t f_132090(void* a0) {\n    if (a0) {\n        return *(uint32_t*)((char*)(a0) + 4532L);\n    }\n    return 0;\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "sdk",
+   "addr": 3616800,
+   "size": 48,
+   "name": "sub_373020",
+   "shape": "guarded",
+   "ident": "f_373020",
+   "sig": "PvS_",
+   "src": "void* f_373020(void* a0, void* a1) {\n    void* p0 = (void*)((uintptr_t)(a1));\n    void* p1 = (void*)((uintptr_t)(a0));\n    if (a0) {\n        *(uint8_t*)((char*)(a0)) = *(uint8_t*)((char*)(a1));\n        *(uint8_t*)((char*)(p1) + 1) = *(uint8_t*)((char*)(p0) + 1);\n        *(uint16_t*)((char*)(p1) + 2) = *(uint16_t*)((char*)(p0) + 2);\n        *(uint32_t*)((char*)(p1) + 4) = *(uint32_t*)((char*)(p0) + 4);\n        *(uint64_t*)((char*)(p1) + 8) = *(uint64_t*)((char*)(p0) + 8);\n        return a0;\n    }\n    return 0;\n}\n",
+   "orig_insns": 12,
+   "new_insns": 12
+  },
+  {
+   "module": "sdk",
+   "addr": 3987888,
+   "size": 12,
+   "name": "sub_3cd9b0",
+   "shape": "guarded",
+   "ident": "f_3cd9b0",
+   "sig": "Pv",
+   "src": "uint32_t f_3cd9b0(void* a0) {\n    if (a0) {\n        return *(uint32_t*)((char*)(a0));\n    }\n    return 0;\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "sdk",
+   "addr": 4420800,
+   "size": 16,
+   "name": "sub_4374c0",
+   "shape": "guarded",
+   "ident": "f_4374c0",
+   "sig": "PvS_",
+   "src": "void* f_4374c0(void* a0, void* a1) {\n    if (a0) {\n        *(uint32_t*)((char*)(a1)) = *(uint32_t*)((char*)(a0) + 8);\n        return a0;\n    }\n    return 0;\n}\n",
+   "orig_insns": 4,
+   "new_insns": 4
+  },
   {
    "module": "sdk",
    "addr": 109440,

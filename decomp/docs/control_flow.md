@@ -1188,3 +1188,76 @@ Stripping also moves indices, so the guard index is recomputed AFTER the strip.
 Carrying it over would point the guard at whichever instruction shifted into the old
 slot: a plausible source testing the wrong condition, which is worse than
 declining.
+
+
+## The guard sense was NOT inverted -- and the real bug was the fallthrough's value
+
+Last beat I reported, from the miss list, that "the guard sense is inverted" and
+called it a wrong decompilation. **That was wrong**, and checking it end to end is
+what found the actual defect.
+
+`main+0xb327c0`:
+
+    retail   ldr w8, [x0, #0x8c] ; cmp w8, #1 ; b.eq #0xb327d4
+             mov w8, #5 ; str w8, [x0, #0x8c] ; ret
+
+    mine     if (*(uint32_t *)((char *)a0 + 140) != 1) { ... }
+
+`!=` is CORRECT. `CMP_GUARDS` already holds the negated operators --
+
+    "b.eq": "!=", "b.ne": "==", "b.lt": ">=", "b.ge": "<", ...
+
+-- so `_guard_test` applies the inversion properly and I misread a table that was
+doing the work. The `orig (b.eq) vs new (b.ne)` lines in the miss list are Clang
+choosing the other branch polarity for the same condition: a layout choice, the
+same family as the `+4` offset differences, not a semantic error.
+
+### What was actually wrong: the FALLTHROUGH's return value
+
+`_emit` had two arms keyed on `_gform`:
+
+    if _gform == "nz":
+        _oexpr = "0"          # the zero is PROVEN by the guard
+    else:
+        <render x0 from _gstate>
+
+and `_guard_test` returned `"nz"` for BOTH `cbz` and a `b.cond` compare. That is
+correct for `cbz` --
+
+    ldr x0, [x0, #0x50] ; cbz x0, ret    -- x0 is provably zero on the fallthrough
+
+-- and WRONG for a compare. `main+0xb327c0` loads into **w8** and compares against
+an immediate, so nothing is proven about x0, which is still the incoming argument.
+The generated body returned `0` where retail returns its argument: a wrong
+function, from source that read correctly.
+
+So the compare path now returns `"cmpnz"`. Same non-zero sense -- so the condition
+is spelled the same way -- but the fallthrough renders x0 instead of assuming zero.
+
+    measured, guarded shape, four modules
+
+        main       16 / 102  = 15.69%      (was 9 / 155 = 5.81%)
+        sdk         5 /  23  = 21.74%
+        subsdk0     4 /  11  = 36.36%
+        subsdk1     8 /  16  = 50.00%
+                  33 total, +28 banked
+
+Generation FELL, 155 -> 102, and that is the fix working: bodies whose fallthrough
+x0 is unknown now decline instead of emitting a body that returns the wrong value.
+A generator that produces fewer and correct bodies is better than one that produces
+more and wrong ones, and the second kind is exactly what the figure cannot see.
+
+### The new population: 7,763, not 1,379
+
+`shape_of` stopped claiming the bodies that carry an unconditional branch, which
+was right, but left them unlabelled. `work/switch_kind.py`:
+
+       2926  b FORWARD into the body (diamond)   -- if (c) { A } else { B }
+       2230  br (jump table / indirect)          -- a switch
+       2026  b BACKWARD (loop)
+        581  TWO unconditional branches
+       ----
+       7763   main 5750, sdk 917, subsdk0 720, subsdk1 376
+
+The DIAMOND at 2,926 is the next one: the guarded emitter already produces one arm
+and a fallthrough, so a second arm is a smaller step than a jump table is.

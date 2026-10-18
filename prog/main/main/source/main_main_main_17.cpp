@@ -2749,7 +2749,7 @@ void sub_1306020() { /* 0x1306020 */ }
 void sub_1306120() { /* 0x1306120 */ }
 void sub_1306220() { /* 0x1306220 */ }
 void Trad_Chinese() { /* 0x1306260 */ }
-void sub_1306cc0() { /* 0x1306cc0 */ }
+// sub_1306cc0: implemented in prog/matched/main/
 void sub_1306f20() { /* 0x1306f20 */ }
 void sub_1307060() { /* 0x1307060 */ }
 void sub_13070d0() { /* 0x13070d0 */ }

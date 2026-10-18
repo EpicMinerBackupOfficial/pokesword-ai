@@ -33,6 +33,21 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_ea2950  (orig 0xea2950, ret_only)
+void main_f_ea2950() {}
+
+// sub_ea2960  (orig 0xea2960, ret_only)
+void main_f_ea2960() {}
+
+// sub_ea2970  (orig 0xea2970, ret_only)
+void main_f_ea2970() {}
+
+// sub_ea2fe0  (orig 0xea2fe0, ret_only)
+void main_f_ea2fe0() {}
+
+// sub_ea3d10  (orig 0xea3d10, ptr_add)
+void* main_f_ea3d10(void* a0) { return (char*)a0 + 112; }
+
 // sub_ea3d20  (orig 0xea3d20, ptr_add)
 void* main_f_ea3d20(void* a0) { return (char*)a0 + 352; }
 
@@ -4903,6 +4918,16 @@ uint32_t main_f_ffa4c0(void* a0) { return *(uint32_t*)((char*)(a0) + 112); }
 // sub_ffa4d0  (orig 0xffa4d0, getter)
 uint32_t main_f_ffa4d0(void* a0) { return *(uint32_t*)((char*)(a0) + 116); }
 
+// sub_ffa4e0  (orig 0xffa4e0, guarded)
+void* main_f_ffa4e0(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    if ((*(uint32_t*)((char*)(a0) + 120)) == (8)) {
+        *(uint32_t*)((char*)(p0) + 120) = 9;
+        return a0;
+    }
+    return a0;
+}
+
 // sub_ffa640  (orig 0xffa640, compare-pred)
 bool main_f_ffa640(void* a0) { return (uint32_t)((*(uint64_t*)((char*)a0 + 120) | 1)) == (uint32_t)(9); }
 
@@ -7124,37 +7149,4 @@ void main_f_10906d0() {}
 
 // sub_10906e0  (orig 0x10906e0, ret_only)
 void main_f_10906e0() {}
-
-// sub_1091480  (orig 0x1091480, copy-chain-store)
-void main_f_1091480(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
-}
-
-// sub_1091550  (orig 0x1091550, copy-chain-store)
-void main_f_1091550(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
-}
-
-// sub_10935b0  (orig 0x10935b0, ret_only)
-void main_f_10935b0() {}
-
-// sub_10935c0  (orig 0x10935c0, ret_only)
-void main_f_10935c0() {}
-
-// sub_10935d0  (orig 0x10935d0, ret_only)
-void main_f_10935d0() {}
-
-// sub_1094370  (orig 0x1094370, copy-chain-store)
-void main_f_1094370(void* a0, void* a1) {
-    uint64_t t0 = *(uint64_t*)(char*)a0;
-    *(uint64_t*)(char*)a0 = 0;
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
-}
 

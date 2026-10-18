@@ -3152,8 +3152,8 @@ void sub_b32330() { /* 0xb32330 */ }
 void sub_b32350() { /* 0xb32350 */ }
 // sub_b327a0: implemented in prog/matched/main/
 // sub_b327b0: implemented in prog/matched/main/
-void sub_b327c0() { /* 0xb327c0 */ }
-void sub_b327e0() { /* 0xb327e0 */ }
+// sub_b327c0: implemented in prog/matched/main/
+// sub_b327e0: implemented in prog/matched/main/
 // sub_b32800: implemented in prog/matched/main/
 // sub_b32810: implemented in prog/matched/main/
 // sub_b32820: implemented in prog/matched/main/

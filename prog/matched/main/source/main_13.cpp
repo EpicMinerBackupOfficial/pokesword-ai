@@ -33,6 +33,39 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
+// sub_1091480  (orig 0x1091480, copy-chain-store)
+void main_f_1091480(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_1091550  (orig 0x1091550, copy-chain-store)
+void main_f_1091550(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
+// sub_10935b0  (orig 0x10935b0, ret_only)
+void main_f_10935b0() {}
+
+// sub_10935c0  (orig 0x10935c0, ret_only)
+void main_f_10935c0() {}
+
+// sub_10935d0  (orig 0x10935d0, ret_only)
+void main_f_10935d0() {}
+
+// sub_1094370  (orig 0x1094370, copy-chain-store)
+void main_f_1094370(void* a0, void* a1) {
+    uint64_t t0 = *(uint64_t*)(char*)a0;
+    *(uint64_t*)(char*)a0 = 0;
+    __asm__ __volatile__("" ::: "memory");
+    *(uint64_t*)(char*)a1 = (uint64_t)(t0);
+}
+
 // sub_1094440  (orig 0x1094440, copy-chain-store)
 void main_f_1094440(void* a0, void* a1) {
     uint64_t t0 = *(uint64_t*)(char*)a0;
@@ -7657,36 +7690,4 @@ void main_f_1264860(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t
 
 // sub_1266440  (orig 0x1266440, ret_only)
 void main_f_1266440() {}
-
-// sub_1266450  (orig 0x1266450, struct-copy)
-void main_f_1266450(void* a0, void* a1) {
-    struct u64x2 { uint64_t a, b; };
-    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
-    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
-    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = s0.a;
-}
-
-// sub_1266470  (orig 0x1266470, struct-copy)
-void main_f_1266470(void* a0, void* a1) {
-    struct u64x2 { uint64_t a, b; };
-    struct u64x2 s0 = *(struct u64x2*)(char*)a0;
-    uint64_t v1 = *(uint64_t*)((char*)a0 + 16);
-    *(struct u64x2*)((char*)a1 + 8) = (struct u64x2){ s0.b, v1 };
-    __asm__ __volatile__("" ::: "memory");
-    *(uint64_t*)(char*)a1 = s0.a;
-}
-
-// sub_1266d60  (orig 0x1266d60, ret_only)
-void main_f_1266d60() {}
-
-// sub_1266d70  (orig 0x1266d70, copy2)
-void main_f_1266d70(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_1266d80  (orig 0x1266d80, copy2)
-void main_f_1266d80(void* a0, void* a1) { *(uint64_t*)((char*)(a1)) = *(uint64_t*)((char*)(a0)); }
-
-// sub_1268210  (orig 0x1268210, ret_only)
-void main_f_1268210() {}
 

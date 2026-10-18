@@ -2,7 +2,7 @@
  "module": "subsdk0",
  "population": {
   "mov_ret": 288,
-  "tailcall": 115,
+  "tailcall": 315,
   "straight": 100,
   "ret_only": 215,
   "ptr_add": 18,
@@ -13,6 +13,7 @@
   "copy2": 4,
   "copy-chain": 6,
   "compare": 38,
+  "guarded": 17,
   "indexed-getter": 1,
   "struct-copy": 1,
   "getter-chain": 10,
@@ -20,6 +21,54 @@
   "strlit-ret": 4
  },
  "matched": [
+  {
+   "module": "subsdk0",
+   "addr": 178928,
+   "size": 36,
+   "name": "sub_2baf0",
+   "shape": "guarded",
+   "ident": "f_2baf0",
+   "sig": "Pv",
+   "src": "void* f_2baf0(void* a0) {\n    void* p0 = (void*)((uintptr_t)(a0));\n    uint32_t k1 = 255;\n    uint8_t k2 = 0;\n    if (a0) {\n        *(uint64_t*)((char*)(a0)) = 4294967296;\n        *(uint16_t*)((char*)(p0) + 8) = (uint16_t)k1;\n        *(uint8_t*)((char*)(p0) + 42) = 0;\n        *(uint16_t*)((char*)(p0) + 40) = (uint16_t)k2;\n        *(uint8_t*)((char*)(p0) + 58) = 0;\n        return a0;\n    }\n    return 0;\n}\n",
+   "orig_insns": 9,
+   "new_insns": 9
+  },
+  {
+   "module": "subsdk0",
+   "addr": 240608,
+   "size": 12,
+   "name": "sub_3abe0",
+   "shape": "guarded",
+   "ident": "f_3abe0",
+   "sig": "Pv",
+   "src": "uint32_t f_3abe0(void* a0) {\n    if (a0) {\n        return *(uint32_t*)((char*)(a0) + 4532L);\n    }\n    return 0;\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "subsdk0",
+   "addr": 2519792,
+   "size": 12,
+   "name": "sub_2672f0",
+   "shape": "guarded",
+   "ident": "f_2672f0",
+   "sig": "Pv",
+   "src": "uint32_t f_2672f0(void* a0) {\n    if (a0) {\n        return *(uint32_t*)((char*)(a0) + 8);\n    }\n    return 0;\n}\n",
+   "orig_insns": 3,
+   "new_insns": 3
+  },
+  {
+   "module": "subsdk0",
+   "addr": 2935264,
+   "size": 20,
+   "name": "sub_2cc9e0",
+   "shape": "guarded",
+   "ident": "f_2cc9e0",
+   "sig": "mPv",
+   "src": "void f_2cc9e0(uint64_t unused0, void* a1) {\n    void* p0 = (void*)((uintptr_t)(a1));\n    if (a1) {\n        *(uint32_t*)((char*)(p0)) = (*(uint32_t*)((char*)(a1))) + (1);\n        return;\n    }\n}\n",
+   "orig_insns": 5,
+   "new_insns": 5
+  },
   {
    "module": "subsdk0",
    "addr": 344080,

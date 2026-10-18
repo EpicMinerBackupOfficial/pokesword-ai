@@ -2357,7 +2357,7 @@ void nex_NexMatchJoinSessionJob_CompleteFailure_3() { /* 0x16f59d0 */ }
 void nex_NexMatchJoinSessionJob_CompleteFailure_4() { /* 0x16f5ae0 */ }
 void nex_NexMatchJoinSessionJob_CompleteFailure_5() { /* 0x16f5cd0 */ }
 void sub_16f5eb0() { /* 0x16f5eb0 */ }
-void sub_16f5fa0() { /* 0x16f5fa0 */ }
+// sub_16f5fa0: implemented in prog/matched/main/
 void NexMatchJoinSessionJob_GetStationLocation_3() { /* 0x16f5fc0 */ }
 // sub_16f61b0: implemented in prog/matched/main/
 // sub_16f61c0: implemented in prog/matched/main/
@@ -2530,7 +2530,7 @@ void nex_NexMatchRandomMatchmakeJob_CompleteFailure_2() { /* 0x170ad30 */ }
 void nex_NexMatchRandomMatchmakeJob_CompleteFailure_3() { /* 0x170ae40 */ }
 void nex_NexMatchRandomMatchmakeJob_CompleteFailure_4() { /* 0x170b040 */ }
 void sub_170b250() { /* 0x170b250 */ }
-void sub_170b390() { /* 0x170b390 */ }
+// sub_170b390: implemented in prog/matched/main/
 void NexMatchRandomMatchmakeJob_StartNatSession_3() { /* 0x170b3b0 */ }
 void nex_NexMatchRandomMatchmakeJob_CompleteFailure_5() { /* 0x170b5a0 */ }
 void NexMatchRandomMatchmakeJob_StartNatSession_4() { /* 0x170b780 */ }
@@ -3387,7 +3387,7 @@ void sub_17369b0() { /* 0x17369b0 */ }
 void sub_1736b60() { /* 0x1736b60 */ }
 void sub_1736bf0() { /* 0x1736bf0 */ }
 void sub_1736ce0() { /* 0x1736ce0 */ }
-void sub_1736d20() { /* 0x1736d20 */ }
+// sub_1736d20: implemented in prog/matched/main/
 void sub_1736d40() { /* 0x1736d40 */ }
 void sub_1736d70() { /* 0x1736d70 */ }
 void sub_1736d90() { /* 0x1736d90 */ }

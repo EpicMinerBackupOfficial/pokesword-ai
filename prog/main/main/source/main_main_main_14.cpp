@@ -606,7 +606,7 @@ void sub_ffa300() { /* 0xffa300 */ }
 void sub_ffa4b0() { /* 0xffa4b0 */ }
 // sub_ffa4c0: implemented in prog/matched/main/
 // sub_ffa4d0: implemented in prog/matched/main/
-void sub_ffa4e0() { /* 0xffa4e0 */ }
+// sub_ffa4e0: implemented in prog/matched/main/
 void sub_ffa500() { /* 0xffa500 */ }
 // sub_ffa640: implemented in prog/matched/main/
 void sub_ffa660() { /* 0xffa660 */ }

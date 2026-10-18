@@ -1,4 +1,4 @@
-/* subsdk0 -- 1015 functions verified to match the original.
+/* subsdk0 -- 1019 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -552,6 +552,22 @@ uint32_t subsdk0_f_2ba60() { return 32784; }
 // sub_2bab0  (orig 0x2bab0, mov_ret)
 uint32_t subsdk0_f_2bab0() { return 8208; }
 
+// sub_2baf0  (orig 0x2baf0, guarded)
+void* subsdk0_f_2baf0(void* a0) {
+    void* p0 = (void*)((uintptr_t)(a0));
+    uint32_t k1 = 255;
+    uint8_t k2 = 0;
+    if (a0) {
+        *(uint64_t*)((char*)(a0)) = 4294967296;
+        *(uint16_t*)((char*)(p0) + 8) = (uint16_t)k1;
+        *(uint8_t*)((char*)(p0) + 42) = 0;
+        *(uint16_t*)((char*)(p0) + 40) = (uint16_t)k2;
+        *(uint8_t*)((char*)(p0) + 58) = 0;
+        return a0;
+    }
+    return 0;
+}
+
 // sub_2ebb0  (orig 0x2ebb0, getter)
 uint32_t subsdk0_f_2ebb0(void* a0) { return *(uint32_t*)((char*)(a0) + 13456L); }
 
@@ -560,6 +576,14 @@ void subsdk0_f_32210(void* a0, uint64_t a1, uint64_t a2, uint64_t a3) { *(uint64
 
 // sub_34010  (orig 0x34010, ret_only)
 void subsdk0_f_34010() {}
+
+// sub_3abe0  (orig 0x3abe0, guarded)
+uint32_t subsdk0_f_3abe0(void* a0) {
+    if (a0) {
+        return *(uint32_t*)((char*)(a0) + 4532L);
+    }
+    return 0;
+}
 
 // sub_40b60  (orig 0x40b60, ret_only)
 void subsdk0_f_40b60() {}
@@ -3309,6 +3333,14 @@ uint32_t subsdk0_f_25f0a0() { return 1; }
 // sub_25f0b0  (orig 0x25f0b0, mov_ret)
 uint32_t subsdk0_f_25f0b0() { return 13; }
 
+// sub_2672f0  (orig 0x2672f0, guarded)
+uint32_t subsdk0_f_2672f0(void* a0) {
+    if (a0) {
+        return *(uint32_t*)((char*)(a0) + 8);
+    }
+    return 0;
+}
+
 // sub_26d220  (orig 0x26d220, straight)
 uint32_t subsdk0_f_26d220(void* a0, void* a1) {
     void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 664));
@@ -3656,6 +3688,15 @@ uint32_t subsdk0_f_2bb260() { return 1; }
 
 // sub_2cb290  (orig 0x2cb290, ret_only)
 void subsdk0_f_2cb290() {}
+
+// sub_2cc9e0  (orig 0x2cc9e0, guarded)
+void subsdk0_f_2cc9e0(uint64_t unused0, void* a1) {
+    void* p0 = (void*)((uintptr_t)(a1));
+    if (a1) {
+        *(uint32_t*)((char*)(p0)) = (*(uint32_t*)((char*)(a1))) + (1);
+        return;
+    }
+}
 
 // sub_2d6260  (orig 0x2d6260, straight-line)
 uint8_t subsdk0_f_2d6260(void* a0) { return ((*(uint8_t*)((char*)(a0) + 5656L) == 1) ? 1 : 0); }

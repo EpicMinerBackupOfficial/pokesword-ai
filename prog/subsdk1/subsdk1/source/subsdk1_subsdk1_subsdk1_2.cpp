@@ -114,9 +114,9 @@ void sub_35efe0() { /* 0x35efe0 */ }
 void sub_35f080_subsdk1_35f080() { /* 0x35f080 */ }
 void sub_35f390() { /* 0x35f390 */ }
 void sub_35f400() { /* 0x35f400 */ }
-void sub_35f430() { /* 0x35f430 */ }
-void sub_35f440() { /* 0x35f440 */ }
-void sub_35f450() { /* 0x35f450 */ }
+// sub_35f430: implemented in prog/matched/subsdk1/
+// sub_35f440: implemented in prog/matched/subsdk1/
+// sub_35f450: implemented in prog/matched/subsdk1/
 void sub_35f470() { /* 0x35f470 */ }
 void sub_35f560() { /* 0x35f560 */ }
 void sub_35f6d0() { /* 0x35f6d0 */ }
@@ -268,7 +268,7 @@ void sub_36b700() { /* 0x36b700 */ }
 void sub_36b870_subsdk1_36b870() { /* 0x36b870 */ }
 void sub_36b990() { /* 0x36b990 */ }
 void sub_36b9d0() { /* 0x36b9d0 */ }
-void sub_36ba30() { /* 0x36ba30 */ }
+// sub_36ba30: implemented in prog/matched/subsdk1/
 void vertexshader() { /* 0x36ba60 */ }
 void sub_36c2d0() { /* 0x36c2d0 */ }
 void sub_36c370() { /* 0x36c370 */ }
@@ -287,7 +287,7 @@ void sub_36cf80() { /* 0x36cf80 */ }
 void sub_36d000() { /* 0x36d000 */ }
 void sub_36d050() { /* 0x36d050 */ }
 void sub_36d080() { /* 0x36d080 */ }
-void sub_36d110() { /* 0x36d110 */ }
+// sub_36d110: implemented in prog/matched/subsdk1/
 void sub_36d120() { /* 0x36d120 */ }
 void sub_36d290() { /* 0x36d290 */ }
 void sub_36d310() { /* 0x36d310 */ }
@@ -303,7 +303,7 @@ void sub_36d4e0() { /* 0x36d4e0 */ }
 // sub_36d500: implemented in prog/matched/subsdk1/
 void sub_36d510() { /* 0x36d510 */ }
 void sub_36d530() { /* 0x36d530 */ }
-void sub_36d550_subsdk1_36d550() { /* 0x36d550 */ }
+// sub_36d550_subsdk1_36d550: implemented in prog/matched/subsdk1/
 void sub_36d560_subsdk1_36d560() { /* 0x36d560 */ }
 void sub_36d630() { /* 0x36d630 */ }
 void sub_36d6b0() { /* 0x36d6b0 */ }
@@ -329,7 +329,7 @@ void sub_36df00() { /* 0x36df00 */ }
 void sub_36df30() { /* 0x36df30 */ }
 void sub_36df60() { /* 0x36df60 */ }
 void sub_36df80() { /* 0x36df80 */ }
-void sub_36dfc0() { /* 0x36dfc0 */ }
+// sub_36dfc0: implemented in prog/matched/subsdk1/
 void sub_36dfd0() { /* 0x36dfd0 */ }
 void sub_36e060() { /* 0x36e060 */ }
 void sub_36e110() { /* 0x36e110 */ }
@@ -2888,7 +2888,7 @@ void sub_479220() { /* 0x479220 */ }
 void sub_479270() { /* 0x479270 */ }
 void sub_479290() { /* 0x479290 */ }
 void sub_4792c0() { /* 0x4792c0 */ }
-void sub_4793b0() { /* 0x4793b0 */ }
+// sub_4793b0: implemented in prog/matched/subsdk1/
 void sub_4793d0() { /* 0x4793d0 */ }
 void NV_shader_atomic_float64_2() { /* 0x4794c0 */ }
 void NV_shader_atomic_float64_3() { /* 0x479b80 */ }
