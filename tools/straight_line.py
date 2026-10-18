@@ -3786,6 +3786,28 @@ class StraightLine:
                 for _l in _inner[_dcut[1] - _ob:]:
                     _lines.append("    " + _l)
                 _lines.append("}")
+                # THE TRAILING RETURN, and it is load-bearing in a way the guarded
+                # path does not reveal.
+                #
+                # This branch returns EARLY -- before the guarded path appends its
+                # `return;` / `return <rexpr>;` -- so every generated diamond had
+                # NO return statement at all. Clang 5.0.1 at -O3 accepts that:
+                # falling off the end of a non-void function is UB, not an error,
+                # and -Wno-everything hides the diagnostic. It then emits a
+                # ZERO-BYTE body:
+                #
+                #     nm: 0000000000000000 0000000000000000 T _Z3f_tPvS_
+                #
+                # So the function compiles, the batch reports no error, and all 27
+                # candidates were rejected for a reason that has nothing to do with
+                # block layout. Controls under the same flags: the same if/else
+                # with a `return` emits 0x14 bytes; without one, nothing.
+                #
+                # This is the failure mode this project keeps meeting in a new
+                # costume -- a pipeline that CANNOT FAIL SILENTLY, or can succeed
+                # wrongly. A green batch is not evidence that a body was written.
+                _lines.append("    return;" if rct == "void"
+                              else "    return %s;" % rexpr)
                 return "%s %s(%s) {\n    %s\n}\n" % (
                     rct, ident, plist, "\n    ".join(_lines)), sig
             _lines.append("if (%s) {" % _cond)

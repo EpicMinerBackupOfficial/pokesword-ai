@@ -2191,11 +2191,109 @@ def gen_guarded(ins, end, ident):
     return out
 
 
+def _branch_target(ins, k):
+    """A branch target ADDRESS converted to an index into `ins`.
+
+    THE BASE IS THE LIST'S, NOT THE INSTRUCTION'S.
+
+    `work/diamond_bail.py` shipped a version using `(target - ins[k].address) // 4`
+    and reported 2 diamonds where the same conditions give 958, because subtracting
+    the instruction's own address yields the index MINUS k. Every count moved by
+    exactly k, which is what a stage counter is for.
+
+    The LAST comma-separated operand is the target: `tbz w2, #0, #0x16` has three
+    operands and the first version of `diamond_shape.py` parsed all of them as
+    one hex literal, which made 2,151 bodies vanish into "unparsed" and read as
+    "these are not diamonds".
+    """
+    if k >= len(ins):
+        return None
+    o = ins[k].op_str.strip().split(",")[-1].strip()
+    if not o.startswith("#"):
+        return None
+    try:
+        return (int(o[1:], 16) - ins[0].address) // 4
+    except ValueError:
+        return None
+
+
+def gen_diamond(ins, end, ident):
+    """A diamond: one conditional branch, two arms, one join.
+
+        <prefix>
+        b.cond  ARM_B
+        ARM_A
+        b       JOIN
+        ARM_B
+        <join>            <- may be the `ret`, or more straight-line code
+
+    `guard=` is the index of the conditional branch and `dcut=` the index of the
+    unconditional `b`, both WITHIN THE STRIPPED BODY, which is what `translate`
+    walks. Carrying the unstripped index over would point the guard at whichever
+    instruction shifted into the old slot -- a plausible source with the wrong
+    condition, which is worse than declining.
+
+    The arm order is the ORIGINAL's, not a choice. Clang will not invert a
+    conditional branch to make a block fall through
+    (MachineBasicBlock::updateTerminator returns rather than reversing), and with
+    no profile data MachineBlockPlacement keeps the topological order, which is
+    source order. So there is exactly one spelling to try.
+    """
+    import straight_line
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
+    mn = [x.mnemonic for x in body]
+    if mn.count("b") != 1:
+        return None
+    bi = mn.index("b")
+    if bi == 0 or bi >= len(body) - 1:
+        return None
+    conds = [k for k, x in enumerate(mn) if x in COND_BRANCH]
+    if len(conds) != 1:
+        return None
+    ci = conds[0]
+    if ci >= bi:
+        return None
+    # The conditional must SKIP to ARM_B, i.e. target the instruction after the
+    # `b`. If it falls THROUGH into ARM_A instead, the block is the `ret` and the
+    # guarded shape already owns it -- claiming it here would be claiming a
+    # population the guarded path reaches on its own.
+    if _branch_target(body, ci) != bi + 1:
+        return None
+    tb = _branch_target(body, bi)
+    if tb is None or tb <= bi or tb >= len(body):
+        return None
+    if tb != len(body) - 1 and not tb <= len(body) - 1:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(
+            ident, guard=ci, dcut=bi)
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    s = out[0] if isinstance(out, tuple) else out
+    # ASSERT THE ARTIFACT'S SHAPE AT PRODUCTION. A diamond that came out with no
+    # `else` is not a diamond: it is a guarded body, or -- worse -- the guarded
+    # block emitted unconditionally, which is a DIFFERENT FUNCTION. The registry
+    # is a cache nobody invalidates, so a bad artifact written here is emitted
+    # into prog/ long after this generator stopped producing it.
+    if "if (" not in s or "} else {" not in s:
+        return None
+    _head = s.split("{", 1)[0]
+    if _head.strip().startswith("void ") and "return " in s.replace("return;", ""):
+        return None
+    return out
+
+
+
 # Shape -> generator. Every shape `shape_of` can return must appear here, or
 # --all-shapes silently skips it.
 SHAPE_GENERATORS = dict(GENERATORS)
 SHAPE_GENERATORS["straight"] = gen_straight
 SHAPE_GENERATORS["guarded"] = gen_guarded
+SHAPE_GENERATORS["diamond"] = gen_diamond
 SHAPE_GENERATORS["tailcall"] = gen_tailcall
 SHAPE_GENERATORS["pair-ret"] = gen_pair_ret
 SHAPE_GENERATORS["fp-conv-store"] = gen_fp_conv_store
@@ -2667,6 +2765,22 @@ def shape_of(ins, end):
     # body is too short for the getter shape's exact-count test.
     if n == 3 and mn[0] == "add" and mn[1] in LOADS and mn[2] == "ret":
         return "indexed-getter"
+
+    # A DIAMOND: one unconditional `b`, one conditional branch before it, and the
+    # conditional skipping to the instruction AFTER the `b`. That last condition is
+    # what makes it a diamond rather than a guarded block, and it is the only
+    # difference -- so the test has to be exactly this or the shape name is a
+    # claim the body does not support.
+    #
+    # 958 bodies, measured by work/diamond_shape.py and re-measured independently
+    # by work/diamond_bail.py. 30 of them translate; the rest decline on `sp`
+    # memory (202), `blr` (168), length (163), and not-ending-in-`ret` (61).
+    if n >= 4 and mn.count("b") == 1:
+        _bi = mn.index("b")
+        _cs = [k for k, x in enumerate(mn) if x in COND_BRANCH]
+        if 0 < _bi < n - 1 and len(_cs) == 1 and _cs[0] < _bi and \
+                _branch_target(ins[:end], _cs[0]) == _bi + 1:
+            return "diamond"
 
     # `ldr xN, [x0] ; mov wM, #imm ; str wM, [xN, #o] ; ret` -- constant write
     # through a double pointer. 186 unmatched bodies, almost all flag fields.
