@@ -199,7 +199,7 @@ void sub_193a30() { /* 0x193a30 */ }
 void sub_193a90() { /* 0x193a90 */ }
 void sub_193ac0() { /* 0x193ac0 */ }
 void sub_193ad0() { /* 0x193ad0 */ }
-void sub_193e20() { /* 0x193e20 */ }
+// sub_193e20: implemented in prog/matched/sdk/
 void sub_193e30() { /* 0x193e30 */ }
 void sub_193e90() { /* 0x193e90 */ }
 void sub_193f10() { /* 0x193f10 */ }

@@ -5,6 +5,42 @@
 #include "main_main_main_20.h"
 
 namespace main {
+void sub_1576a00() { /* 0x1576a00 */ }
+void InstanceTable_28() { /* 0x1576a50 */ }
+void sub_1576c40() { /* 0x1576c40 */ }
+void sub_1577090() { /* 0x1577090 */ }
+void sub_15770e0() { /* 0x15770e0 */ }
+void InstanceTable_31() { /* 0x1577110 */ }
+void sub_1577370() { /* 0x1577370 */ }
+void sub_15778b0() { /* 0x15778b0 */ }
+void InstanceTable_34() { /* 0x1577970 */ }
+void sub_1577c60() { /* 0x1577c60 */ }
+void InstanceTable_35() { /* 0x1577d20 */ }
+void sub_1578010() { /* 0x1578010 */ }
+void sub_1578060() { /* 0x1578060 */ }
+void sub_1579240() { /* 0x1579240 */ }
+void InstanceTable_44() { /* 0x1579280 */ }
+void sub_15794f0() { /* 0x15794f0 */ }
+void sub_1579530() { /* 0x1579530 */ }
+void InstanceTable_45() { /* 0x1579610 */ }
+void sub_1579940() { /* 0x1579940 */ }
+void sub_1579990() { /* 0x1579990 */ }
+void InstanceTable_46() { /* 0x1579aa0 */ }
+void sub_1579e50() { /* 0x1579e50 */ }
+void sub_1579fc0() { /* 0x1579fc0 */ }
+void InstanceTable_47() { /* 0x157a020 */ }
+void InstanceTable_48() { /* 0x157a2c0 */ }
+void sub_157a4f0() { /* 0x157a4f0 */ }
+void InstanceTable_49() { /* 0x157a520 */ }
+void sub_157a7a0() { /* 0x157a7a0 */ }
+void sub_157a7d0() { /* 0x157a7d0 */ }
+void InstanceTable_50() { /* 0x157a800 */ }
+void sub_157aa10() { /* 0x157aa10 */ }
+void sub_157aa40() { /* 0x157aa40 */ }
+void InstanceTable_51() { /* 0x157aad0 */ }
+void sub_157ad40() { /* 0x157ad40 */ }
+void sub_157add0() { /* 0x157add0 */ }
+void sub_157ae00() { /* 0x157ae00 */ }
 void InstanceTable_55() { /* 0x157b450 */ }
 void sub_157b6a0() { /* 0x157b6a0 */ }
 void sub_157b6d0() { /* 0x157b6d0 */ }
@@ -587,8 +623,8 @@ void sub_15a8fe0() { /* 0x15a8fe0 */ }
 void SystemComponent() { /* 0x15a9060 */ }
 // sub_15a90e0: implemented in prog/matched/main/
 // sub_15a90f0: implemented in prog/matched/main/
-void sub_15a9100() { /* 0x15a9100 */ }
-void sub_15a9110() { /* 0x15a9110 */ }
+// sub_15a9100: implemented in prog/matched/main/
+// sub_15a9110: implemented in prog/matched/main/
 // sub_15a9120: implemented in prog/matched/main/
 // sub_15a9130: implemented in prog/matched/main/
 // sub_15a9140: implemented in prog/matched/main/
@@ -600,7 +636,7 @@ void sub_15a9110() { /* 0x15a9110 */ }
 // sub_15a91a0: implemented in prog/matched/main/
 // sub_15a91b0: implemented in prog/matched/main/
 // sub_15a91c0: implemented in prog/matched/main/
-void sub_15a91d0() { /* 0x15a91d0 */ }
+// sub_15a91d0: implemented in prog/matched/main/
 // sub_15a91e0: implemented in prog/matched/main/
 void sub_15a91f0() { /* 0x15a91f0 */ }
 // sub_15a9200: implemented in prog/matched/main/
@@ -1604,7 +1640,7 @@ void sub_15dd720() { /* 0x15dd720 */ }
 void InstanceTable_253() { /* 0x15dd760 */ }
 void sub_15dd850() { /* 0x15dd850 */ }
 void sub_15dd870() { /* 0x15dd870 */ }
-void sub_15dd8f0() { /* 0x15dd8f0 */ }
+// sub_15dd8f0: implemented in prog/matched/main/
 void sub_15dd900() { /* 0x15dd900 */ }
 void sub_15dd920() { /* 0x15dd920 */ }
 void sub_15dd970() { /* 0x15dd970 */ }
@@ -2047,7 +2083,7 @@ void sub_160a770() { /* 0x160a770 */ }
 void sub_160a800() { /* 0x160a800 */ }
 void sub_160a830() { /* 0x160a830 */ }
 void sub_160a8e0() { /* 0x160a8e0 */ }
-void sub_160a9a0() { /* 0x160a9a0 */ }
+// sub_160a9a0: implemented in prog/matched/main/
 void sub_160a9b0() { /* 0x160a9b0 */ }
 void sub_160a9c0() { /* 0x160a9c0 */ }
 void sub_160a9d0() { /* 0x160a9d0 */ }
@@ -2150,7 +2186,7 @@ void sub_160fe50() { /* 0x160fe50 */ }
 // sub_160ffd0: implemented in prog/matched/main/
 // sub_160ffe0: implemented in prog/matched/main/
 void sub_160fff0() { /* 0x160fff0 */ }
-void sub_1610000() { /* 0x1610000 */ }
+// sub_1610000: implemented in prog/matched/main/
 // sub_1610010: implemented in prog/matched/main/
 // sub_1610020: implemented in prog/matched/main/
 // sub_1610030: implemented in prog/matched/main/
@@ -2461,7 +2497,7 @@ void sub_16229d0() { /* 0x16229d0 */ }
 void sub_1622a00() { /* 0x1622a00 */ }
 void sub_1622a50() { /* 0x1622a50 */ }
 // sub_1622ba0: implemented in prog/matched/main/
-void sub_1622bc0() { /* 0x1622bc0 */ }
+// sub_1622bc0: implemented in prog/matched/main/
 // sub_1622bd0: implemented in prog/matched/main/
 void sub_1622bf0() { /* 0x1622bf0 */ }
 void sub_1622c30() { /* 0x1622c30 */ }
@@ -3139,9 +3175,9 @@ void sub_164ad50() { /* 0x164ad50 */ }
 void sub_164ad70() { /* 0x164ad70 */ }
 void sub_164ad80() { /* 0x164ad80 */ }
 void sub_164ad90() { /* 0x164ad90 */ }
-void sub_164ada0() { /* 0x164ada0 */ }
-void sub_164adb0() { /* 0x164adb0 */ }
-void sub_164adc0() { /* 0x164adc0 */ }
+// sub_164ada0: implemented in prog/matched/main/
+// sub_164adb0: implemented in prog/matched/main/
+// sub_164adc0: implemented in prog/matched/main/
 // sub_164add0: implemented in prog/matched/main/
 // sub_164ade0: implemented in prog/matched/main/
 void sub_164adf0() { /* 0x164adf0 */ }
@@ -3969,41 +4005,5 @@ void sub_166d190() { /* 0x166d190 */ }
 void sub_166d240() { /* 0x166d240 */ }
 // sub_166d2d0: implemented in prog/matched/main/
 void sub_166d2e0() { /* 0x166d2e0 */ }
-void sub_166d300() { /* 0x166d300 */ }
-void sub_166d320() { /* 0x166d320 */ }
-// sub_166d340: implemented in prog/matched/main/
-// sub_166d350: implemented in prog/matched/main/
-// sub_166d370: implemented in prog/matched/main/
-// sub_166d380: implemented in prog/matched/main/
-// sub_166d390: implemented in prog/matched/main/
-// sub_166d3a0: implemented in prog/matched/main/
-// sub_166d3b0: implemented in prog/matched/main/
-void sub_166d3c0() { /* 0x166d3c0 */ }
-void sub_166d400() { /* 0x166d400 */ }
-void sub_166d430() { /* 0x166d430 */ }
-// sub_166d890: implemented in prog/matched/main/
-void sub_166d8a0() { /* 0x166d8a0 */ }
-void sub_166d8f0() { /* 0x166d8f0 */ }
-void LanMatchUpdateSessionSettingJob_UpdateSessionSetting() { /* 0x166d920 */ }
-void LanMatchUpdateSessionSettingJob_WaitUpdateSessionSetting() { /* 0x166d9f0 */ }
-void sub_166db40() { /* 0x166db40 */ }
-void UpdateSessionSettingJob_CompleteProcess() { /* 0x166db70 */ }
-// sub_166dd10: implemented in prog/matched/main/
-void JoinMeshJob_SetupLocalPlayerInfo() { /* 0x166dd20 */ }
-// sub_166dd70: implemented in prog/matched/main/
-void sub_166dd80() { /* 0x166dd80 */ }
-void JoinMeshJob_CompleteProcess() { /* 0x166ddb0 */ }
-void CreateMeshJob_SetupLocalPlayerInfo() { /* 0x166ddd0 */ }
-// sub_166de50: implemented in prog/matched/main/
-void sub_166de60() { /* 0x166de60 */ }
-void sub_166de90() { /* 0x166de90 */ }
-void sub_166e020() { /* 0x166e020 */ }
-void sub_166e050() { /* 0x166e050 */ }
-// sub_166e080: implemented in prog/matched/main/
-// sub_166e090: implemented in prog/matched/main/
-void sub_166e990() { /* 0x166e990 */ }
-// sub_166eba0: implemented in prog/matched/main/
-// sub_166ebb0: implemented in prog/matched/main/
-// sub_166ebc0: implemented in prog/matched/main/
 
 }  // namespace main

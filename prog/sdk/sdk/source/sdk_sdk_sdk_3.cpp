@@ -1520,9 +1520,9 @@ void sub_2ba1f0() { /* 0x2ba1f0 */ }
 void sub_2ba220_sdk_2ba220() { /* 0x2ba220 */ }
 void sub_2ba2b0() { /* 0x2ba2b0 */ }
 void sub_2ba340() { /* 0x2ba340 */ }
-void sub_2ba400_sdk_2ba400() { /* 0x2ba400 */ }
+// sub_2ba400_sdk_2ba400: implemented in prog/matched/sdk/
 void sub_2ba410() { /* 0x2ba410 */ }
-void sub_2ba480() { /* 0x2ba480 */ }
+// sub_2ba480: implemented in prog/matched/sdk/
 void sub_2ba490() { /* 0x2ba490 */ }
 void sub_2ba5e0_sdk_2ba5e0() { /* 0x2ba5e0 */ }
 void sub_2ba5f0() { /* 0x2ba5f0 */ }

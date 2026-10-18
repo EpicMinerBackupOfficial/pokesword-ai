@@ -769,8 +769,8 @@ void sub_161c0() { /* 0x161c0 */ }
 void sub_16250() { /* 0x16250 */ }
 void sub_162b0() { /* 0x162b0 */ }
 void sub_16420() { /* 0x16420 */ }
-void sub_16440() { /* 0x16440 */ }
-void sub_16450() { /* 0x16450 */ }
+// sub_16440: implemented in prog/matched/sdk/
+// sub_16450: implemented in prog/matched/sdk/
 void unnamed_d_d() { /* 0x16460 */ }
 void unnamed_d_d_2() { /* 0x16740 */ }
 void unnamed_d_d_3() { /* 0x16a20 */ }
@@ -1460,7 +1460,7 @@ void sub_2f560() { /* 0x2f560 */ }
 void sub_2f580() { /* 0x2f580 */ }
 void sub_2f590() { /* 0x2f590 */ }
 void sub_2f5d0_sdk_2f5d0() { /* 0x2f5d0 */ }
-void sub_2f600() { /* 0x2f600 */ }
+// sub_2f600: implemented in prog/matched/sdk/
 void Allocated_buffers() { /* 0x2f610 */ }
 void sub_2f7c0() { /* 0x2f7c0 */ }
 void sub_2f870() { /* 0x2f870 */ }

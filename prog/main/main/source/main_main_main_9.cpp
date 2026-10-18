@@ -5,6 +5,42 @@
 #include "main_main_main_9.h"
 
 namespace main {
+void sub_a6a2d0() { /* 0xa6a2d0 */ }
+void sub_a6a330() { /* 0xa6a330 */ }
+void sub_a6a370() { /* 0xa6a370 */ }
+void sub_a6a3a0() { /* 0xa6a3a0 */ }
+void sub_a6a3c0() { /* 0xa6a3c0 */ }
+void sub_a6a550() { /* 0xa6a550 */ }
+void sub_a6a5b0() { /* 0xa6a5b0 */ }
+void sub_a6a5f0() { /* 0xa6a5f0 */ }
+void sub_a6a620() { /* 0xa6a620 */ }
+void sub_a6a640() { /* 0xa6a640 */ }
+void sub_a6a760() { /* 0xa6a760 */ }
+void sub_a6a7f0() { /* 0xa6a7f0 */ }
+void sub_a6a830() { /* 0xa6a830 */ }
+void sub_a6a860() { /* 0xa6a860 */ }
+void sub_a6a880() { /* 0xa6a880 */ }
+void sub_a6a9c0() { /* 0xa6a9c0 */ }
+void sub_a6ab00() { /* 0xa6ab00 */ }
+void sub_a6ab60() { /* 0xa6ab60 */ }
+void sub_a6aba0() { /* 0xa6aba0 */ }
+void sub_a6abd0() { /* 0xa6abd0 */ }
+void sub_a6abf0() { /* 0xa6abf0 */ }
+// sub_a6aca0: implemented in prog/matched/main/
+void sub_a6acb0() { /* 0xa6acb0 */ }
+void sub_a6acd0() { /* 0xa6acd0 */ }
+void sub_a6acf0() { /* 0xa6acf0 */ }
+void sub_a6ae30() { /* 0xa6ae30 */ }
+// sub_a6aee0: implemented in prog/matched/main/
+void sub_a6aef0() { /* 0xa6aef0 */ }
+void sub_a6af10() { /* 0xa6af10 */ }
+void sub_a6af30() { /* 0xa6af30 */ }
+void sub_a6b070() { /* 0xa6b070 */ }
+// sub_a6b100: implemented in prog/matched/main/
+void sub_a6b110() { /* 0xa6b110 */ }
+void sub_a6b130() { /* 0xa6b130 */ }
+void sub_a6b150() { /* 0xa6b150 */ }
+void sub_a6b1e0() { /* 0xa6b1e0 */ }
 void sub_a6b220() { /* 0xa6b220 */ }
 void sub_a6b250() { /* 0xa6b250 */ }
 void sub_a6b270() { /* 0xa6b270 */ }
@@ -2578,7 +2614,7 @@ void sub_b0f030() { /* 0xb0f030 */ }
 void sub_b0f080() { /* 0xb0f080 */ }
 // sub_b0f0a0: implemented in prog/matched/main/
 void sub_b0f0b0() { /* 0xb0f0b0 */ }
-void sub_b0f120() { /* 0xb0f120 */ }
+// sub_b0f120: implemented in prog/matched/main/
 void sub_b0f130() { /* 0xb0f130 */ }
 // sub_b0f150: implemented in prog/matched/main/
 // sub_b0f160: implemented in prog/matched/main/
@@ -2603,7 +2639,7 @@ void contents_btl_spot_data_holder_3() { /* 0xb0fa50 */ }
 void sub_b0fba0() { /* 0xb0fba0 */ }
 // sub_b0fbf0: implemented in prog/matched/main/
 void sub_b0fc00() { /* 0xb0fc00 */ }
-void sub_b0fc70() { /* 0xb0fc70 */ }
+// sub_b0fc70: implemented in prog/matched/main/
 void sub_b0fc80() { /* 0xb0fc80 */ }
 // sub_b0fca0: implemented in prog/matched/main/
 // sub_b0fcb0: implemented in prog/matched/main/
@@ -3387,7 +3423,7 @@ void sub_b46720() { /* 0xb46720 */ }
 void sub_b46790() { /* 0xb46790 */ }
 void sub_b46800() { /* 0xb46800 */ }
 void sub_b468b0() { /* 0xb468b0 */ }
-void sub_b46a10() { /* 0xb46a10 */ }
+// sub_b46a10: implemented in prog/matched/main/
 void sub_b46a30() { /* 0xb46a30 */ }
 void sub_b46b30() { /* 0xb46b30 */ }
 void sub_b46c30() { /* 0xb46c30 */ }
@@ -3399,10 +3435,10 @@ void sub_b47270() { /* 0xb47270 */ }
 void sub_b47510() { /* 0xb47510 */ }
 void sub_b477b0() { /* 0xb477b0 */ }
 void sub_b47a40() { /* 0xb47a40 */ }
-void sub_b47a50() { /* 0xb47a50 */ }
-void sub_b47a70() { /* 0xb47a70 */ }
-void sub_b47a80() { /* 0xb47a80 */ }
-void sub_b47a90() { /* 0xb47a90 */ }
+// sub_b47a50: implemented in prog/matched/main/
+// sub_b47a70: implemented in prog/matched/main/
+// sub_b47a80: implemented in prog/matched/main/
+// sub_b47a90: implemented in prog/matched/main/
 void sub_b47aa0() { /* 0xb47aa0 */ }
 void sub_b47ab0() { /* 0xb47ab0 */ }
 void sub_b47ac0() { /* 0xb47ac0 */ }
@@ -3969,41 +4005,5 @@ void sub_b6c780() { /* 0xb6c780 */ }
 void sub_b6c8a0() { /* 0xb6c8a0 */ }
 void sub_b6c990() { /* 0xb6c990 */ }
 void sub_b6cae0() { /* 0xb6cae0 */ }
-void sub_b6cb10() { /* 0xb6cb10 */ }
-void sub_b6cc60() { /* 0xb6cc60 */ }
-void sub_b6cc90() { /* 0xb6cc90 */ }
-void sub_b6d080() { /* 0xb6d080 */ }
-void sub_b6d300() { /* 0xb6d300 */ }
-void sub_b6d480() { /* 0xb6d480 */ }
-void sub_b6d6e0() { /* 0xb6d6e0 */ }
-void sub_b6dad0() { /* 0xb6dad0 */ }
-void sub_b6dd50() { /* 0xb6dd50 */ }
-void sub_b6ded0() { /* 0xb6ded0 */ }
-void sub_b6e130() { /* 0xb6e130 */ }
-void sub_b6e260() { /* 0xb6e260 */ }
-void sub_b6e390() { /* 0xb6e390 */ }
-void sub_b6e4c0() { /* 0xb6e4c0 */ }
-void sub_b6e610() { /* 0xb6e610 */ }
-void sub_b6e770() { /* 0xb6e770 */ }
-void sub_b6e8c0() { /* 0xb6e8c0 */ }
-void sub_b6e9b0() { /* 0xb6e9b0 */ }
-void sub_b6eb20() { /* 0xb6eb20 */ }
-void sub_b6ecb0() { /* 0xb6ecb0 */ }
-void sub_b6ee00() { /* 0xb6ee00 */ }
-void sub_b6ef40() { /* 0xb6ef40 */ }
-void sub_b6f0e0() { /* 0xb6f0e0 */ }
-void sub_b6f160() { /* 0xb6f160 */ }
-void sub_b6f1e0() { /* 0xb6f1e0 */ }
-void sub_b6f260() { /* 0xb6f260 */ }
-void sub_b6f2e0() { /* 0xb6f2e0 */ }
-void sub_b6f330() { /* 0xb6f330 */ }
-void sub_b6f380() { /* 0xb6f380 */ }
-void sub_b6f3d0() { /* 0xb6f3d0 */ }
-void sub_b6f420() { /* 0xb6f420 */ }
-void sub_b6f5f0() { /* 0xb6f5f0 */ }
-void sub_b6f7c0() { /* 0xb6f7c0 */ }
-// sub_b6f890: implemented in prog/matched/main/
-// sub_b6f8a0: implemented in prog/matched/main/
-// sub_b6f8b0: implemented in prog/matched/main/
 
 }  // namespace main

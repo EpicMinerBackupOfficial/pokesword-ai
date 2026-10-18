@@ -1222,3 +1222,78 @@ The 6,420 / 65,497 split is confirmed and is real:
 6,420 of those bodies already match. It is a mix, and the barrier rule above is
 what separates them -- a constant that reaches a RETURN is fine, one that reaches a
 call ARGUMENT is not.
+
+
+## INDIRECT TAIL CALLS LANDED: +758 bodies, 24.97% -> 25.47%
+
+    37,975 / 24.97%   ->   38,733 / 25.47%
+    401,476 bytes     ->   412,948 bytes
+
+    main 679/1174 = 57.84%     sdk 38/166 = 22.89%
+    subsdk0 13/55 = 23.64%      subsdk1 46/113 = 40.71%
+
+### What it took
+
+The direct tail-call path has rendered `return callee(a0, ...)` since it matched
+5,322 bodies. That needs a callee NAME, and a pointer loaded from memory has none,
+so all 1,762 declined with `Bail("tail body does not end in b")` -- which reads as
+"the translator cannot express this body" and is actually "the translator has one
+spelling of a tail call and it assumes a name".
+
+`br` is also structurally EASIER than `b` for byte identity: `b` carries a
+byte-offset immediate, so two differently-laid-out images can never agree on it,
+which is why the 30 diamonds that translate today are blocked on exactly that.
+`br` is a fixed 4-byte instruction with no immediate at all. Nothing to disagree
+about.
+
+### A regression that READ like a different regression
+
+The first working version cost 4,794 bodies:
+
+    main --all-shapes        BASE 24272   NOW 19478
+    main --shape tailcall    BASE 11550   NOW 5083   -6467
+
+A 6,467 loss attributed to a shape that claims 1,174. The obvious reading is "the
+new shape steals bodies from the old one". **That reading was wrong.**
+
+The cause was one identifier in the emitter. The tail-call emit hardcoded
+`"uint64_t"` as its return type, and it was changed to `rct` -- the type derived
+from the body's last value. A tail-call body has NO last value, because the branch
+IS the return, so `rct` is `void` for most thunks and the direct path stopped
+compiling.
+
+The fix is the conditional: an INDIRECT tail call must be `void` (the cast declares
+the callee `void`, and a `uint64_t` wrapper cannot return a void call), a DIRECT
+one keeps the literal. Return types are absent from the Itanium mangling, so the
+literal costs nothing.
+
+The lesson is the one this project keeps paying for: **a number that moves in the
+wrong direction gets explained, and the explanation has to be the RIGHT one.** The
+first explanation had a plausible mechanism and evidence pointing at it -- a shape
+with a much smaller count -- and was wrong. The right one required stashing
+`tools/` and measuring the baseline directly.
+
+### Also: a batch compile error is not one failed candidate
+
+    error: cannot initialize return object of type 'uint64_t'
+           with an rvalue of type 'void'
+
+All four modules reported it and NONE reported a match, because the harness
+compiles in batches: one bad candidate takes every candidate sharing the
+translation unit.
+
+And the arity scan counted the BRANCH REGISTER as an argument, so
+
+    ldr x8, [x0] ; ldr x2, [x8, #0x40] ; br x2
+
+produced a three-argument call that passed the function pointer to itself as
+argument three. Wrong, plausible, and caught by no shape assertion.
+
+## Still blocked
+
+  * 147 indirect tail calls that SET a constant argument. Clang 5.0.1 emits
+    `orr xN, xzr, #imm` into an opaque callee's argument register and never `mov`,
+    across four barrier placements and six argument types. No C moves it.
+  * The 1,513 candidates this shape generates but does not match -- 58% overall
+    miss rate on the shape.
+  * 2,689 diamonds, 3,404 loops containing a call, 102 jump tables.

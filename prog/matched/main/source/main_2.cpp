@@ -33,14 +33,8 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
-namespace main { uint64_t sub_c37f30(uintptr_t); }
-namespace main { void sub_c3b730(); }
-namespace main { void sub_c3cbc0(); }
-namespace main { void sub_c3d130(); }
-namespace main { uint64_t sub_c3cbc0(uintptr_t); }
-namespace main { void sub_c3e6e0(); }
-namespace main { uint64_t sub_c3fc20(uintptr_t); }
 namespace main { void sub_c3fc20(); }
+namespace main { uint64_t sub_c3fc20(uintptr_t); }
 namespace main { void sub_c42080(); }
 namespace main { void sub_c41c60(); }
 namespace main { uint64_t sub_c41c60(uintptr_t); }
@@ -661,76 +655,13 @@ namespace main { uint64_t sub_fa3a90(uintptr_t); }
 namespace main { void sub_fa55b0(); }
 namespace main { void sub_fa7890(); }
 namespace main { void sub_fa7a80(); }
-
-// sub_c380a0  (orig 0xc380a0, tailcall)
-uint64_t main_f_c380a0(void* a0) {
-    return main::sub_c37f30(((uintptr_t)((char*)(a0) - 80)));
-}
-
-// sub_c380b0  (orig 0xc380b0, tailcall)
-uint64_t main_f_c380b0(void* a0) {
-    return main::sub_c37f30(((uintptr_t)((char*)(a0) - 80)));
-}
-
-// sub_c3b540  (orig 0xc3b540, tailcall)
-void main_f_c3b540() { main::sub_c3b730(); }
-
-// sub_c3b630  (orig 0xc3b630, tailcall)
-void main_f_c3b630() { main::sub_c3b730(); }
-
-// sub_c3b640  (orig 0xc3b640, tailcall)
-void main_f_c3b640() { main::sub_c3b730(); }
-
-// sub_c3cdf0  (orig 0xc3cdf0, tailcall)
-void main_f_c3cdf0() { main::sub_c3cbc0(); }
-
-// sub_c3ce00  (orig 0xc3ce00, tailcall)
-void main_f_c3ce00() { main::sub_c3d130(); }
-
-// sub_c3ce10  (orig 0xc3ce10, tailcall)
-uint64_t main_f_c3ce10(void* a0) {
-    return main::sub_c3cbc0(((uintptr_t)((char*)(a0) - 72)));
-}
-
-// sub_c3ce20  (orig 0xc3ce20, tailcall)
-uint64_t main_f_c3ce20(void* a0) {
-    return main::sub_c3cbc0(((uintptr_t)((char*)(a0) - 72)));
-}
-
-// sub_c3ce30  (orig 0xc3ce30, tailcall)
-void main_f_c3ce30() { main::sub_c3d130(); }
-
-// sub_c3ce40  (orig 0xc3ce40, tailcall)
-void main_f_c3ce40() { main::sub_c3d130(); }
-
-// sub_c3ce50  (orig 0xc3ce50, tailcall)
-uint64_t main_f_c3ce50(void* a0) {
-    return main::sub_c3cbc0(((uintptr_t)((char*)(a0) - 80)));
-}
-
-// sub_c3ce60  (orig 0xc3ce60, tailcall)
-uint64_t main_f_c3ce60(void* a0) {
-    return main::sub_c3cbc0(((uintptr_t)((char*)(a0) - 80)));
-}
-
-// sub_c3e6b0  (orig 0xc3e6b0, tailcall)
-void main_f_c3e6b0() { main::sub_c3e6e0(); }
-
-// sub_c3e6c0  (orig 0xc3e6c0, tailcall)
-void main_f_c3e6c0() { main::sub_c3e6e0(); }
-
-// sub_c3e6d0  (orig 0xc3e6d0, tailcall)
-void main_f_c3e6d0() { main::sub_c3e6e0(); }
-
-// sub_c3fd40  (orig 0xc3fd40, tailcall)
-uint64_t main_f_c3fd40(void* a0) {
-    return main::sub_c3fc20(((uintptr_t)((char*)(a0) - 72)));
-}
-
-// sub_c3fd50  (orig 0xc3fd50, tailcall)
-uint64_t main_f_c3fd50(void* a0) {
-    return main::sub_c3fc20(((uintptr_t)((char*)(a0) - 80)));
-}
+namespace main { uint64_t sub_fa7890(uintptr_t); }
+namespace main { uint64_t sub_fa7ec0(uintptr_t); }
+namespace main { void sub_faa8a0(); }
+namespace main { void sub_faaba0(); }
+namespace main { uint64_t sub_faa8a0(uintptr_t); }
+namespace main { void sub_fadda0(); }
+namespace main { void sub_fadfe0(); }
 
 // sub_c3fd60  (orig 0xc3fd60, tailcall)
 void main_f_c3fd60() { main::sub_c3fc20(); }
@@ -8838,4 +8769,78 @@ void main_f_fa7a00() { main::sub_fa7890(); }
 
 // sub_fa7a10  (orig 0xfa7a10, tailcall)
 void main_f_fa7a10() { main::sub_fa7a80(); }
+
+// sub_fa7a20  (orig 0xfa7a20, tailcall)
+uint64_t main_f_fa7a20(void* a0) {
+    return main::sub_fa7890(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_fa7a30  (orig 0xfa7a30, tailcall)
+uint64_t main_f_fa7a30(void* a0) {
+    return main::sub_fa7890(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_fa7a40  (orig 0xfa7a40, tailcall)
+void main_f_fa7a40() { main::sub_fa7a80(); }
+
+// sub_fa7a50  (orig 0xfa7a50, tailcall)
+void main_f_fa7a50() { main::sub_fa7a80(); }
+
+// sub_fa7a60  (orig 0xfa7a60, tailcall)
+uint64_t main_f_fa7a60(void* a0) {
+    return main::sub_fa7890(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_fa7a70  (orig 0xfa7a70, tailcall)
+uint64_t main_f_fa7a70(void* a0) {
+    return main::sub_fa7890(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_fa80d0  (orig 0xfa80d0, tailcall)
+uint64_t main_f_fa80d0(void* a0) {
+    return main::sub_fa7ec0(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_fa80e0  (orig 0xfa80e0, tailcall)
+uint64_t main_f_fa80e0(void* a0) {
+    return main::sub_fa7ec0(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_faaa00  (orig 0xfaaa00, tailcall)
+void main_f_faaa00() { main::sub_faa8a0(); }
+
+// sub_faaa10  (orig 0xfaaa10, tailcall)
+void main_f_faaa10() { main::sub_faaba0(); }
+
+// sub_faaa20  (orig 0xfaaa20, tailcall)
+uint64_t main_f_faaa20(void* a0) {
+    return main::sub_faa8a0(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_faaa30  (orig 0xfaaa30, tailcall)
+uint64_t main_f_faaa30(void* a0) {
+    return main::sub_faa8a0(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_faaa40  (orig 0xfaaa40, tailcall)
+void main_f_faaa40() { main::sub_faaba0(); }
+
+// sub_faaa50  (orig 0xfaaa50, tailcall)
+void main_f_faaa50() { main::sub_faaba0(); }
+
+// sub_faaa60  (orig 0xfaaa60, tailcall)
+uint64_t main_f_faaa60(void* a0) {
+    return main::sub_faa8a0(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_faaa70  (orig 0xfaaa70, tailcall)
+uint64_t main_f_faaa70(void* a0) {
+    return main::sub_faa8a0(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_fadf60  (orig 0xfadf60, tailcall)
+void main_f_fadf60() { main::sub_fadda0(); }
+
+// sub_fadf70  (orig 0xfadf70, tailcall)
+void main_f_fadf70() { main::sub_fadfe0(); }
 

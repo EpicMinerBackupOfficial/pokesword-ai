@@ -1021,7 +1021,7 @@ void sub_2b7c20() { /* 0x2b7c20 */ }
 void sub_2b7c90() { /* 0x2b7c90 */ }
 void sub_2b7cc0() { /* 0x2b7cc0 */ }
 void sub_2b7cf0() { /* 0x2b7cf0 */ }
-void sub_2b7d00() { /* 0x2b7d00 */ }
+// sub_2b7d00: implemented in prog/matched/subsdk0/
 void sub_2b7d10() { /* 0x2b7d10 */ }
 void sub_2b7d90() { /* 0x2b7d90 */ }
 // hw_vic: implemented in prog/matched/subsdk0/
@@ -1484,7 +1484,7 @@ void sub_33b3c0() { /* 0x33b3c0 */ }
 void sub_33b480() { /* 0x33b480 */ }
 void sub_33b5d0() { /* 0x33b5d0 */ }
 void sub_33b860() { /* 0x33b860 */ }
-void sub_33ba60() { /* 0x33ba60 */ }
+// sub_33ba60: implemented in prog/matched/subsdk0/
 void sub_33ba80() { /* 0x33ba80 */ }
 void sub_33c360() { /* 0x33c360 */ }
 void sub_33c450() { /* 0x33c450 */ }

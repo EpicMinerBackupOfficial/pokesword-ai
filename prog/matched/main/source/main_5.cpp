@@ -1,4 +1,4 @@
-/* main -- 390 functions verified to match the original.
+/* main -- 372 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -33,14 +33,9 @@ typedef unsigned long uintptr_t;
 struct Q2 { uint64x2_t a, b; };
 
 
-namespace main { uint64_t Client_call_close(uintptr_t); }
-namespace main { uint64_t sub_162a5a0(uintptr_t); }
-namespace main { uint64_t sub_162a4f0(uintptr_t); }
-namespace main { void sub_15b6e10(); }
-namespace main { uint64_t sub_15bab00(uintptr_t); }
-namespace main { void sub_162cae0(); }
 namespace main { void sub_15cac40(); }
 extern void main_f_15bb240();
+namespace main { void sub_15b6e10(); }
 namespace main { void sub_1636d00(); }
 namespace main { uint64_t sub_164a700(uintptr_t); }
 namespace main { uint64_t sub_1646670(uintptr_t); }
@@ -258,70 +253,6 @@ namespace main { uint64_t sub_17a9da0(uintptr_t); }
 namespace main { void uConstantBufferForVertexShader(); }
 extern void main_f_17913f0();
 namespace main { uint64_t sub_17d2b10(uintptr_t); }
-
-// sub_1617d70  (orig 0x1617d70, tailcall)
-uint64_t main_f_1617d70(void* a0) {
-    return main::Client_call_close(((uintptr_t)((char*)(a0) + 16)));
-}
-
-// sub_1617d80  (orig 0x1617d80, tailcall)
-uint64_t main_f_1617d80(void* a0) {
-    return main::sub_162a5a0(((uintptr_t)((char*)(a0) + 16)));
-}
-
-// sub_1617da0  (orig 0x1617da0, tailcall)
-uint64_t main_f_1617da0(void* a0) {
-    return main::sub_162a4f0(((uintptr_t)((char*)(a0) + 16)));
-}
-
-// sub_16184f0  (orig 0x16184f0, tailcall)
-void main_f_16184f0() { main::sub_15b6e10(); }
-
-// sub_1621f60  (orig 0x1621f60, tailcall)
-void main_f_1621f60() { main::sub_15b6e10(); }
-
-// sub_1622060  (orig 0x1622060, tailcall)
-uint64_t main_f_1622060(void* a0) {
-    return main::sub_15bab00(((uintptr_t)((char*)(a0) + 16)));
-}
-
-// sub_1622140  (orig 0x1622140, tailcall)
-uint64_t main_f_1622140(void* a0) {
-    return main::sub_15bab00(((uintptr_t)((char*)(a0) + 320)));
-}
-
-// sub_1622480  (orig 0x1622480, tailcall)
-void main_f_1622480() { main::sub_15b6e10(); }
-
-// sub_1622bb0  (orig 0x1622bb0, tailcall)
-void main_f_1622bb0() { main::sub_15b6e10(); }
-
-// sub_1622be0  (orig 0x1622be0, tailcall)
-void main_f_1622be0() { main::sub_15b6e10(); }
-
-// sub_1624b20  (orig 0x1624b20, tailcall)
-void main_f_1624b20() { main::sub_15b6e10(); }
-
-// sub_1624bc0  (orig 0x1624bc0, tailcall)
-void main_f_1624bc0() { main::sub_15b6e10(); }
-
-// sub_1624c20  (orig 0x1624c20, tailcall)
-void main_f_1624c20() { main::sub_15b6e10(); }
-
-// sub_1626e90  (orig 0x1626e90, tailcall)
-void main_f_1626e90() { main::sub_15b6e10(); }
-
-// sub_162c180  (orig 0x162c180, tailcall)
-void main_f_162c180() { main::sub_162cae0(); }
-
-// sub_162d870  (orig 0x162d870, tailcall)
-void main_f_162d870() { main::sub_15b6e10(); }
-
-// sub_162d890  (orig 0x162d890, tailcall)
-void main_f_162d890() { main::sub_15b6e10(); }
-
-// sub_162ee50  (orig 0x162ee50, tailcall)
-void main_f_162ee50() { main::sub_15b6e10(); }
 
 // sub_162ef90  (orig 0x162ef90, tailcall)
 void main_f_162ef90() { main::sub_15cac40(); }

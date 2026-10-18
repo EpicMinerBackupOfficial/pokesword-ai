@@ -3147,7 +3147,7 @@ void sub_4bdcc0() { /* 0x4bdcc0 */ }
 void sub_4bdd00() { /* 0x4bdd00 */ }
 void sub_4bdd40() { /* 0x4bdd40 */ }
 void sub_4bdd80() { /* 0x4bdd80 */ }
-void sub_4bddf0() { /* 0x4bddf0 */ }
+// sub_4bddf0: implemented in prog/matched/subsdk1/
 void sub_4bde00() { /* 0x4bde00 */ }
 void sub_4bde70() { /* 0x4bde70 */ }
 void sub_4bdec0_subsdk1_4bdec0() { /* 0x4bdec0 */ }

@@ -5,24 +5,6 @@
 #include "tailthunk_main_main_1.h"
 
 namespace main {
-// sub_c380a0: implemented in prog/matched/main/
-// sub_c380b0: implemented in prog/matched/main/
-// sub_c3b540: implemented in prog/matched/main/
-// sub_c3b630: implemented in prog/matched/main/
-// sub_c3b640: implemented in prog/matched/main/
-// sub_c3cdf0: implemented in prog/matched/main/
-// sub_c3ce00: implemented in prog/matched/main/
-// sub_c3ce10: implemented in prog/matched/main/
-// sub_c3ce20: implemented in prog/matched/main/
-// sub_c3ce30: implemented in prog/matched/main/
-// sub_c3ce40: implemented in prog/matched/main/
-// sub_c3ce50: implemented in prog/matched/main/
-// sub_c3ce60: implemented in prog/matched/main/
-// sub_c3e6b0: implemented in prog/matched/main/
-// sub_c3e6c0: implemented in prog/matched/main/
-// sub_c3e6d0: implemented in prog/matched/main/
-// sub_c3fd40: implemented in prog/matched/main/
-// sub_c3fd50: implemented in prog/matched/main/
 // sub_c3fd60: implemented in prog/matched/main/
 // sub_c3fd70: implemented in prog/matched/main/
 // sub_c3fd80: implemented in prog/matched/main/
@@ -4005,5 +3987,23 @@ namespace main {
 // sub_132e1c0: implemented in prog/matched/main/
 // sub_132e1d0: implemented in prog/matched/main/
 // sub_132e1e0: implemented in prog/matched/main/
+// sub_132e1f0: implemented in prog/matched/main/
+// sub_132e200: implemented in prog/matched/main/
+// sub_132e210: implemented in prog/matched/main/
+// sub_132e220: implemented in prog/matched/main/
+// sub_132e230: implemented in prog/matched/main/
+// sub_132fee0: implemented in prog/matched/main/
+// sub_132fef0: implemented in prog/matched/main/
+// sub_132ff00: implemented in prog/matched/main/
+// sub_132ff10: implemented in prog/matched/main/
+// sub_132ff20: implemented in prog/matched/main/
+// sub_132ff30: implemented in prog/matched/main/
+// sub_132ff40: implemented in prog/matched/main/
+// sub_132ff50: implemented in prog/matched/main/
+// sub_13322e0: implemented in prog/matched/main/
+// sub_13323e0: implemented in prog/matched/main/
+// sub_13323f0: implemented in prog/matched/main/
+// sub_1332400: implemented in prog/matched/main/
+// sub_1332410: implemented in prog/matched/main/
 
 }  // namespace main

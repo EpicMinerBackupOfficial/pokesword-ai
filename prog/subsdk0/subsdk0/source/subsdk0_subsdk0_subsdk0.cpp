@@ -2275,8 +2275,8 @@ void sub_108190() { /* 0x108190 */ }
 void sub_1081a0() { /* 0x1081a0 */ }
 void sub_1081b0() { /* 0x1081b0 */ }
 void sub_1081f0() { /* 0x1081f0 */ }
-void sub_108240() { /* 0x108240 */ }
-void sub_108260() { /* 0x108260 */ }
+// sub_108240: implemented in prog/matched/subsdk0/
+// sub_108260: implemented in prog/matched/subsdk0/
 void sub_108280() { /* 0x108280 */ }
 void sub_108290() { /* 0x108290 */ }
 void sub_108300() { /* 0x108300 */ }
@@ -3444,7 +3444,7 @@ void sub_12a130() { /* 0x12a130 */ }
 void sub_12a140() { /* 0x12a140 */ }
 void sub_12a150() { /* 0x12a150 */ }
 void sub_12a160() { /* 0x12a160 */ }
-void sub_12a170() { /* 0x12a170 */ }
+// sub_12a170: implemented in prog/matched/subsdk0/
 void sub_12a180() { /* 0x12a180 */ }
 void sub_12a190() { /* 0x12a190 */ }
 void sub_12a1a0() { /* 0x12a1a0 */ }
@@ -3554,7 +3554,7 @@ void ARTPSource() { /* 0x12eac0 */ }
 void sub_12ee60() { /* 0x12ee60 */ }
 void sub_12eec0() { /* 0x12eec0 */ }
 void rtp_time_2() { /* 0x12eff0 */ }
-void sub_12f090() { /* 0x12f090 */ }
+// sub_12f090: implemented in prog/matched/subsdk0/
 void sub_12f0a0() { /* 0x12f0a0 */ }
 void sub_12f180() { /* 0x12f180 */ }
 void sub_12f2c0() { /* 0x12f2c0 */ }

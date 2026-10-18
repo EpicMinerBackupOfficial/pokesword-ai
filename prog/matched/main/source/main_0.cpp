@@ -138,12 +138,6 @@ namespace main { uint64_t sub_e0fa0(uintptr_t); }
 namespace main { uint64_t sub_2b2630(uintptr_t); }
 namespace main { uint64_t ScClothFabricCore(uintptr_t); }
 namespace main { uint64_t ScClothFabricCore_2(uintptr_t); }
-namespace main { uint64_t sub_2b3500(uintptr_t); }
-namespace main { uint64_t sub_2b3510(uintptr_t); }
-namespace main { uint64_t sub_2b3520(uintptr_t); }
-namespace main { uint64_t sub_2b3530(uintptr_t); }
-namespace main { uint64_t sub_2b3540(uintptr_t); }
-namespace main { uint64_t sub_2b3550(uintptr_t); }
 namespace main { uint64_t sub_2b3560(uintptr_t); }
 namespace main { uint64_t sub_2b37c0(uintptr_t); }
 namespace main { uint64_t sub_2b3870(uintptr_t); }
@@ -155,21 +149,10 @@ namespace main { uint64_t ScbParticleSystem_3(uintptr_t); }
 namespace main { uint64_t sub_2a9b80(uintptr_t); }
 namespace main { uint64_t sub_2a9c80(uintptr_t); }
 namespace main { uint64_t sub_2a97c0(uintptr_t); }
-namespace main { uint64_t sub_2af150(uintptr_t); }
-namespace main { uint64_t sub_2b0ca0(uintptr_t); }
-namespace main { uint64_t sub_2b0d70(uintptr_t); }
-namespace main { uint64_t sub_2b0d80(uintptr_t); }
-namespace main { uint64_t sub_2b0d90(uintptr_t); }
-namespace main { uint64_t sub_2b1400(uintptr_t); }
-namespace main { uint64_t sub_2b1410(uintptr_t); }
-namespace main { uint64_t sub_2b18d0(uintptr_t); }
 namespace main { uint64_t sub_2b07d0(uintptr_t); }
 namespace main { uint64_t sub_2ae5d0(uintptr_t); }
 namespace main { uint64_t sub_d90c0(uintptr_t); }
 namespace main { uint64_t sub_d5ed0(uintptr_t); }
-namespace main { uint64_t sub_2e9ac0(uintptr_t); }
-namespace main { uint64_t sub_2e9b40(uintptr_t); }
-namespace main { uint64_t sub_2e9bb0(uintptr_t); }
 namespace main { uint64_t sub_2df880(uintptr_t); }
 namespace main { uint64_t sub_2df8d0(uintptr_t); }
 namespace main { uint64_t ScbScene_4(uintptr_t); }
@@ -403,7 +386,6 @@ namespace main { uint64_t sub_5b2530(uintptr_t); }
 namespace main { void sub_5b2f90(); }
 namespace main { uint64_t sub_5b6b20(uintptr_t); }
 namespace main { uint64_t sub_5b6eb0(uintptr_t); }
-namespace main { uint64_t sub_5ac270(uintptr_t); }
 namespace main { void sub_5bf500(); }
 namespace main { uint64_t sub_5bf500(uintptr_t); }
 namespace main { void sub_5c1b90(); }
@@ -900,6 +882,11 @@ namespace main { void sub_8efc70(); }
 namespace main { uint64_t sub_8efb20(uintptr_t); }
 namespace main { void sub_8f44e0(); }
 namespace main { void sub_8f49d0(); }
+namespace main { void sub_8fac70(); }
+namespace main { void sub_8fb040(); }
+namespace main { uint64_t sub_8fac70(uintptr_t); }
+namespace main { void sub_8f0b90(); }
+namespace main { void sub_900ec0(); }
 
 // sub_1e0  (orig 0x1e0, tailcall)
 void main_f_1e0() { main_f_210(); }
@@ -1358,36 +1345,6 @@ uint64_t main_f_e5740(void* a0) {
     return main::ScClothFabricCore_2(((uintptr_t)((char*)(a0) + 32)));
 }
 
-// sub_e5750  (orig 0xe5750, tailcall)
-uint64_t main_f_e5750(void* a0) {
-    return main::sub_2b3500(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_e5760  (orig 0xe5760, tailcall)
-uint64_t main_f_e5760(void* a0) {
-    return main::sub_2b3510(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_e5770  (orig 0xe5770, tailcall)
-uint64_t main_f_e5770(void* a0) {
-    return main::sub_2b3520(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_e5780  (orig 0xe5780, tailcall)
-uint64_t main_f_e5780(void* a0) {
-    return main::sub_2b3530(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_e5790  (orig 0xe5790, tailcall)
-uint64_t main_f_e5790(void* a0) {
-    return main::sub_2b3540(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_e57a0  (orig 0xe57a0, tailcall)
-uint64_t main_f_e57a0(void* a0) {
-    return main::sub_2b3550(((uintptr_t)((char*)(a0) + 32)));
-}
-
 // sub_e57b0  (orig 0xe57b0, tailcall)
 uint64_t main_f_e57b0(void* a0) {
     return main::sub_2b3560(((uintptr_t)((char*)(a0) + 32)));
@@ -1499,46 +1456,6 @@ uint64_t main_f_e8fb0(void* a0) {
     return main::sub_e0cc0(((uintptr_t)((char*)(a0) + 24)));
 }
 
-// sub_e9460  (orig 0xe9460, tailcall)
-uint64_t main_f_e9460(void* a0) {
-    return main::sub_2af150(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_e9540  (orig 0xe9540, tailcall)
-uint64_t main_f_e9540(void* a0) {
-    return main::sub_2b0ca0(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_e9700  (orig 0xe9700, tailcall)
-uint64_t main_f_e9700(void* a0) {
-    return main::sub_2b0d70(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_e9710  (orig 0xe9710, tailcall)
-uint64_t main_f_e9710(void* a0) {
-    return main::sub_2b0d80(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_e97f0  (orig 0xe97f0, tailcall)
-uint64_t main_f_e97f0(void* a0) {
-    return main::sub_2b0d90(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_eb0f0  (orig 0xeb0f0, tailcall)
-uint64_t main_f_eb0f0(void* a0) {
-    return main::sub_2b1400(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_eb1d0  (orig 0xeb1d0, tailcall)
-uint64_t main_f_eb1d0(void* a0) {
-    return main::sub_2b1410(((uintptr_t)((char*)(a0) + 64)));
-}
-
-// sub_ebde0  (orig 0xebde0, tailcall)
-uint64_t main_f_ebde0(void* a0) {
-    return main::sub_2b18d0(((uintptr_t)((char*)(a0) + 64)));
-}
-
 // sub_eccc0  (orig 0xeccc0, tailcall)
 void main_f_eccc0() { main::sub_e1dc0(); }
 
@@ -1621,21 +1538,6 @@ uint64_t main_f_f4f60(void* a0) {
 // sub_f4f70  (orig 0xf4f70, tailcall)
 uint64_t main_f_f4f70(void* a0) {
     return main::sub_e0fa0(((uintptr_t)((char*)(a0) + 24)));
-}
-
-// sub_fa860  (orig 0xfa860, tailcall)
-uint64_t main_f_fa860(void* a0) {
-    return main::sub_2e9ac0(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_fa8b0  (orig 0xfa8b0, tailcall)
-uint64_t main_f_fa8b0(void* a0) {
-    return main::sub_2e9b40(((uintptr_t)((char*)(a0) + 32)));
-}
-
-// sub_fa900  (orig 0xfa900, tailcall)
-uint64_t main_f_fa900(void* a0) {
-    return main::sub_2e9bb0(((uintptr_t)((char*)(a0) + 32)));
 }
 
 // sub_fa950  (orig 0xfa950, tailcall)
@@ -3618,11 +3520,6 @@ uint64_t main_f_5b50f0(void* a0) {
 // sub_5b5120  (orig 0x5b5120, tailcall)
 uint64_t main_f_5b5120(void* a0) {
     return main::sub_5b6eb0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 432))));
-}
-
-// sub_5be030  (orig 0x5be030, tailcall)
-uint64_t main_f_5be030(void* a0) {
-    return main::sub_5ac270(((uintptr_t)(*(uint64_t*)((char*)(a0) + 144))));
 }
 
 // sub_5bf670  (orig 0x5bf670, tailcall)
@@ -8753,4 +8650,72 @@ void main_f_8f4960() { main::sub_8f49d0(); }
 uint64_t main_f_8f4970(void* a0) {
     return main::sub_e7feb0(((uintptr_t)((char*)(a0) - 72)));
 }
+
+// sub_8f4980  (orig 0x8f4980, tailcall)
+uint64_t main_f_8f4980(void* a0) {
+    return main::sub_e7feb0(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_8f4990  (orig 0x8f4990, tailcall)
+void main_f_8f4990() { main::sub_8f49d0(); }
+
+// sub_8f49a0  (orig 0x8f49a0, tailcall)
+void main_f_8f49a0() { main::sub_8f49d0(); }
+
+// sub_8f49b0  (orig 0x8f49b0, tailcall)
+uint64_t main_f_8f49b0(void* a0) {
+    return main::sub_e7feb0(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_8f49c0  (orig 0x8f49c0, tailcall)
+uint64_t main_f_8f49c0(void* a0) {
+    return main::sub_e7feb0(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_8fae70  (orig 0x8fae70, tailcall)
+void main_f_8fae70() { main::sub_8fac70(); }
+
+// sub_8fae80  (orig 0x8fae80, tailcall)
+void main_f_8fae80() { main::sub_8fb040(); }
+
+// sub_8fae90  (orig 0x8fae90, tailcall)
+uint64_t main_f_8fae90(void* a0) {
+    return main::sub_8fac70(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_8faea0  (orig 0x8faea0, tailcall)
+uint64_t main_f_8faea0(void* a0) {
+    return main::sub_8fac70(((uintptr_t)((char*)(a0) - 72)));
+}
+
+// sub_8faeb0  (orig 0x8faeb0, tailcall)
+void main_f_8faeb0() { main::sub_8fb040(); }
+
+// sub_8faec0  (orig 0x8faec0, tailcall)
+void main_f_8faec0() { main::sub_8fb040(); }
+
+// sub_8faed0  (orig 0x8faed0, tailcall)
+uint64_t main_f_8faed0(void* a0) {
+    return main::sub_8fac70(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_8faee0  (orig 0x8faee0, tailcall)
+uint64_t main_f_8faee0(void* a0) {
+    return main::sub_8fac70(((uintptr_t)((char*)(a0) - 80)));
+}
+
+// sub_8fb3e0  (orig 0x8fb3e0, tailcall)
+void main_f_8fb3e0() { main::sub_ce0(); }
+
+// sub_8fdc80  (orig 0x8fdc80, tailcall)
+void main_f_8fdc80() { main::sub_8f0b90(); }
+
+// sub_900a40  (orig 0x900a40, tailcall)
+void main_f_900a40() { main::sub_900ec0(); }
+
+// sub_900c10  (orig 0x900c10, tailcall)
+void main_f_900c10() { main::sub_900ec0(); }
+
+// sub_900c20  (orig 0x900c20, tailcall)
+void main_f_900c20() { main::sub_900ec0(); }
 

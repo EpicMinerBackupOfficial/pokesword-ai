@@ -125,12 +125,6 @@ namespace main {
 // sub_e5720: implemented in prog/matched/main/
 // sub_e5730: implemented in prog/matched/main/
 // sub_e5740: implemented in prog/matched/main/
-// sub_e5750: implemented in prog/matched/main/
-// sub_e5760: implemented in prog/matched/main/
-// sub_e5770: implemented in prog/matched/main/
-// sub_e5780: implemented in prog/matched/main/
-// sub_e5790: implemented in prog/matched/main/
-// sub_e57a0: implemented in prog/matched/main/
 // sub_e57b0: implemented in prog/matched/main/
 // sub_e57c0: implemented in prog/matched/main/
 // sub_e57d0: implemented in prog/matched/main/
@@ -154,14 +148,6 @@ namespace main {
 // sub_e8e30: implemented in prog/matched/main/
 // sub_e8e40: implemented in prog/matched/main/
 // sub_e8fb0: implemented in prog/matched/main/
-// sub_e9460: implemented in prog/matched/main/
-// sub_e9540: implemented in prog/matched/main/
-// sub_e9700: implemented in prog/matched/main/
-// sub_e9710: implemented in prog/matched/main/
-// sub_e97f0: implemented in prog/matched/main/
-// sub_eb0f0: implemented in prog/matched/main/
-// sub_eb1d0: implemented in prog/matched/main/
-// sub_ebde0: implemented in prog/matched/main/
 // sub_eccc0: implemented in prog/matched/main/
 // sub_ed280: implemented in prog/matched/main/
 // sub_ed290: implemented in prog/matched/main/
@@ -180,9 +166,6 @@ namespace main {
 // sub_f49c0: implemented in prog/matched/main/
 // sub_f4f60: implemented in prog/matched/main/
 // sub_f4f70: implemented in prog/matched/main/
-// sub_fa860: implemented in prog/matched/main/
-// sub_fa8b0: implemented in prog/matched/main/
-// sub_fa900: implemented in prog/matched/main/
 // sub_fa950: implemented in prog/matched/main/
 // sub_faa40: implemented in prog/matched/main/
 // sub_fab30: implemented in prog/matched/main/
@@ -695,7 +678,6 @@ namespace main {
 // sub_5b2f20: implemented in prog/matched/main/
 // sub_5b50f0: implemented in prog/matched/main/
 // sub_5b5120: implemented in prog/matched/main/
-// sub_5be030: implemented in prog/matched/main/
 // sub_5bf670: implemented in prog/matched/main/
 // sub_5bf6f0: implemented in prog/matched/main/
 // sub_5bf700: implemented in prog/matched/main/
@@ -4005,5 +3987,23 @@ namespace main {
 // sub_c38070: implemented in prog/matched/main/
 // sub_c38080: implemented in prog/matched/main/
 // sub_c38090: implemented in prog/matched/main/
+// sub_c380a0: implemented in prog/matched/main/
+// sub_c380b0: implemented in prog/matched/main/
+// sub_c3b540: implemented in prog/matched/main/
+// sub_c3b630: implemented in prog/matched/main/
+// sub_c3b640: implemented in prog/matched/main/
+// sub_c3cdf0: implemented in prog/matched/main/
+// sub_c3ce00: implemented in prog/matched/main/
+// sub_c3ce10: implemented in prog/matched/main/
+// sub_c3ce20: implemented in prog/matched/main/
+// sub_c3ce30: implemented in prog/matched/main/
+// sub_c3ce40: implemented in prog/matched/main/
+// sub_c3ce50: implemented in prog/matched/main/
+// sub_c3ce60: implemented in prog/matched/main/
+// sub_c3e6b0: implemented in prog/matched/main/
+// sub_c3e6c0: implemented in prog/matched/main/
+// sub_c3e6d0: implemented in prog/matched/main/
+// sub_c3fd40: implemented in prog/matched/main/
+// sub_c3fd50: implemented in prog/matched/main/
 
 }  // namespace main

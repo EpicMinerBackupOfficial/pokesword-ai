@@ -5,6 +5,42 @@
 #include "main_main_main_13.h"
 
 namespace main {
+void sub_ed3520() { /* 0xed3520 */ }
+void sub_ed3550() { /* 0xed3550 */ }
+void sub_ed3940() { /* 0xed3940 */ }
+void sub_ed3960() { /* 0xed3960 */ }
+void sub_ed3a40() { /* 0xed3a40 */ }
+void sub_ed3e40() { /* 0xed3e40 */ }
+// sub_ed3e50: implemented in prog/matched/main/
+void sub_ed3e60() { /* 0xed3e60 */ }
+void sub_ed3eb0() { /* 0xed3eb0 */ }
+void sub_ed3ed0() { /* 0xed3ed0 */ }
+void sub_ed4d10() { /* 0xed4d10 */ }
+void sub_ed4d80() { /* 0xed4d80 */ }
+void sub_ed4df0() { /* 0xed4df0 */ }
+void sub_ed4e60() { /* 0xed4e60 */ }
+void sub_ed4ed0() { /* 0xed4ed0 */ }
+void sub_ed4f40() { /* 0xed4f40 */ }
+void sub_ed4fb0() { /* 0xed4fb0 */ }
+void sub_ed5020() { /* 0xed5020 */ }
+void sub_ed5090() { /* 0xed5090 */ }
+void sub_ed5100() { /* 0xed5100 */ }
+void sub_ed5370() { /* 0xed5370 */ }
+void sub_ed5a40() { /* 0xed5a40 */ }
+void ZPrePath() { /* 0xed62e0 */ }
+void sub_ed63d0() { /* 0xed63d0 */ }
+void sub_ed65f0() { /* 0xed65f0 */ }
+void PfxEffectMaskCopyPath() { /* 0xed6830 */ }
+void FirstResolvePath() { /* 0xed6e00 */ }
+void sub_ed70c0() { /* 0xed70c0 */ }
+void sub_ed7300() { /* 0xed7300 */ }
+void sub_ed74f0() { /* 0xed74f0 */ }
+void DummyTex_2() { /* 0xed76e0 */ }
+void sub_ed7b00() { /* 0xed7b00 */ }
+void sub_ed82e0() { /* 0xed82e0 */ }
+void sub_ed85d0() { /* 0xed85d0 */ }
+void sub_ed86b0() { /* 0xed86b0 */ }
+void sub_ed87e0() { /* 0xed87e0 */ }
 void sub_ed88c0() { /* 0xed88c0 */ }
 void sub_ed89a0() { /* 0xed89a0 */ }
 void sub_ed8aa0() { /* 0xed8aa0 */ }
@@ -2133,7 +2169,7 @@ void sub_f7ceb0() { /* 0xf7ceb0 */ }
 void sub_f7cf20() { /* 0xf7cf20 */ }
 void StateReceiveBase() { /* 0xf7cfd0 */ }
 void optionbar_4() { /* 0xf7d0f0 */ }
-void sub_f7d670() { /* 0xf7d670 */ }
+// sub_f7d670: implemented in prog/matched/main/
 void sub_f7d680() { /* 0xf7d680 */ }
 void sub_f7d8d0() { /* 0xf7d8d0 */ }
 // sub_f7dbc0: implemented in prog/matched/main/
@@ -2491,7 +2527,7 @@ void sub_f89300() { /* 0xf89300 */ }
 void sub_f895a0() { /* 0xf895a0 */ }
 void StateSelectReceiveDataBase() { /* 0xf89770 */ }
 void optionbar_7() { /* 0xf89880 */ }
-void sub_f89c80() { /* 0xf89c80 */ }
+// sub_f89c80: implemented in prog/matched/main/
 // sub_f89c90: implemented in prog/matched/main/
 void sub_f89ca0() { /* 0xf89ca0 */ }
 // sub_f89dd0: implemented in prog/matched/main/
@@ -3969,41 +4005,5 @@ void sub_fdd370() { /* 0xfdd370 */ }
 void sub_fdd410() { /* 0xfdd410 */ }
 void sub_fdd4a0() { /* 0xfdd4a0 */ }
 void sub_fdd550() { /* 0xfdd550 */ }
-void sub_fdd5e0() { /* 0xfdd5e0 */ }
-void sub_fdd7a0() { /* 0xfdd7a0 */ }
-void sub_fdd9e0() { /* 0xfdd9e0 */ }
-void ConfirmQuit() { /* 0xfdda60 */ }
-void sub_fddbf0() { /* 0xfddbf0 */ }
-void sub_fddd60() { /* 0xfddd60 */ }
-void sub_fddf40() { /* 0xfddf40 */ }
-void sub_fddfc0() { /* 0xfddfc0 */ }
-void sub_fde050() { /* 0xfde050 */ }
-void sub_fde0d0() { /* 0xfde0d0 */ }
-void sub_fde170() { /* 0xfde170 */ }
-void sub_fde1f0() { /* 0xfde1f0 */ }
-void sub_fde3a0() { /* 0xfde3a0 */ }
-void DetermineLeader() { /* 0xfde420 */ }
-void DetermineRegulation() { /* 0xfde570 */ }
-void sub_fde970() { /* 0xfde970 */ }
-void sub_fde990() { /* 0xfde990 */ }
-void sub_fdea00() { /* 0xfdea00 */ }
-void sub_fdea80() { /* 0xfdea80 */ }
-void sub_fdeaf0() { /* 0xfdeaf0 */ }
-void sub_fdeb80() { /* 0xfdeb80 */ }
-void sub_fdebf0() { /* 0xfdebf0 */ }
-void sub_fded90() { /* 0xfded90 */ }
-void AnyoneLeftNotice_3() { /* 0xfdee10 */ }
-void sub_fdef20() { /* 0xfdef20 */ }
-void sub_fdeff0() { /* 0xfdeff0 */ }
-void sub_fdf010() { /* 0xfdf010 */ }
-void sub_fdf080() { /* 0xfdf080 */ }
-void sub_fdf100() { /* 0xfdf100 */ }
-void sub_fdf170() { /* 0xfdf170 */ }
-void sub_fdf200() { /* 0xfdf200 */ }
-void sub_fdf270() { /* 0xfdf270 */ }
-void sub_fdf410() { /* 0xfdf410 */ }
-void DeterminePlayerPos() { /* 0xfdf490 */ }
-void AnyoneLeftNotice_4() { /* 0xfdf660 */ }
-void sub_fdf820() { /* 0xfdf820 */ }
 
 }  // namespace main

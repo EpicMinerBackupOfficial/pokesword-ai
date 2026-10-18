@@ -300,6 +300,18 @@ uint64_t sdk_f_12dc0(void* a0) { return *(uint64_t*)((char*)(a0) + 16); }
 // sub_13450  (orig 0x13450, mov_ret)
 uint32_t sdk_f_13450() { return 52; }
 
+// sub_16440  (orig 0x16440, indirect-tailcall)
+void sdk_f_16440(void* a0, uint64_t a1, uint32_t a2) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0)));
+    return ((void (*)(uintptr_t, uintptr_t, uintptr_t))((void *)((uintptr_t)(*(uint64_t*)((char*)(p0) + 224)))))(((uintptr_t)(a0)), ((uintptr_t)(a1)), ((uintptr_t)((((uint32_t)a2)) & (1))));
+}
+
+// sub_16450  (orig 0x16450, indirect-tailcall)
+void sdk_f_16450(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0)));
+    return ((void (*)(uintptr_t))((void *)((uintptr_t)(*(uint64_t*)((char*)(p0) + 232)))))(((uintptr_t)(a0)));
+}
+
 // sub_1ab70  (orig 0x1ab70, ptr_add)
 void* sdk_f_1ab70(void* a0) { return (char*)a0 + 8; }
 
@@ -407,6 +419,12 @@ uint64_t sdk_f_2e3c0(void* a0) { return (8) + ((*(uint64_t*)((char*)(a0) + 24)) 
 
 // sub_2ec90  (orig 0x2ec90, getter)
 uint32_t sdk_f_2ec90(void* a0) { return *(uint32_t*)((char*)(a0) + 200); }
+
+// sub_2f600  (orig 0x2f600, indirect-tailcall)
+void sdk_f_2f600(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0)));
+    return ((void (*)(uintptr_t))((void *)((uintptr_t)(*(uint64_t*)((char*)(p0) + 112)))))(((uintptr_t)(*(uint64_t*)((char*)(a0)))));
+}
 
 // sub_2fa60  (orig 0x2fa60, ret_only)
 void sdk_f_2fa60() {}
@@ -6826,6 +6844,12 @@ uint32_t sdk_f_7c170(void* a0) { return *(uint32_t*)((char*)(a0) + 140); }
 // sub_7c8b0  (orig 0x7c8b0, getter)
 uint64_t sdk_f_7c8b0(void* a0) { return *(uint64_t*)((char*)(a0) + 144); }
 
+// sub_7d810  (orig 0x7d810, indirect-tailcall)
+void sdk_f_7d810(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0)));
+    return ((void (*)(uintptr_t))((void *)((uintptr_t)(*(uint64_t*)((char*)(p0) + 8)))))(((uintptr_t)(a0)));
+}
+
 // sub_7e9e0  (orig 0x7e9e0, getter)
 uint64_t sdk_f_7e9e0(void* a0) { return *(uint64_t*)((char*)(a0)); }
 
@@ -10944,16 +10968,4 @@ uint32_t sdk_f_171a20(void* a0) { return *(uint32_t*)((char*)(a0) + 32); }
 
 // sub_171b50  (orig 0x171b50, compare)
 bool sdk_f_171b50(void* a0) { return (uint64_t)(*(uint64_t*)((char*)(a0) + 16)) != (uint64_t)(0); }
-
-// sub_171ba0  (orig 0x171ba0, getter)
-uint32_t sdk_f_171ba0(void* a0) { return *(uint32_t*)((char*)(a0) + 32); }
-
-// sub_171bb0  (orig 0x171bb0, getter)
-uint32_t sdk_f_171bb0(void* a0) { return *(uint32_t*)((char*)(a0) + 36); }
-
-// sub_171bc0  (orig 0x171bc0, getter)
-uint32_t sdk_f_171bc0(void* a0) { return *(uint32_t*)((char*)(a0) + 40); }
-
-// sub_171dc0  (orig 0x171dc0, ret_only)
-void sdk_f_171dc0() {}
 

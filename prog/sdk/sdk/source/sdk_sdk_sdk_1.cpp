@@ -164,7 +164,7 @@ void sub_7d560() { /* 0x7d560 */ }
 void sub_7d570() { /* 0x7d570 */ }
 void sub_7d5f0() { /* 0x7d5f0 */ }
 void sub_7d700() { /* 0x7d700 */ }
-void sub_7d810() { /* 0x7d810 */ }
+// sub_7d810: implemented in prog/matched/sdk/
 void sub_7d820() { /* 0x7d820 */ }
 void sub_7d8d0() { /* 0x7d8d0 */ }
 void sub_7d9c0() { /* 0x7d9c0 */ }

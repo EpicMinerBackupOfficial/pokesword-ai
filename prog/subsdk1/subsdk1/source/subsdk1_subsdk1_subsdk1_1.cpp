@@ -2615,7 +2615,7 @@ void sub_2c7ef0() { /* 0x2c7ef0 */ }
 void sub_2c7fa0() { /* 0x2c7fa0 */ }
 void Set_input_primitive_to_patches_of_size_4() { /* 0x2c7fc0 */ }
 void sub_2c8080() { /* 0x2c8080 */ }
-void sub_2c8120() { /* 0x2c8120 */ }
+// sub_2c8120: implemented in prog/matched/subsdk1/
 void sub_2c8130() { /* 0x2c8130 */ }
 void sub_2c8210() { /* 0x2c8210 */ }
 void sub_2c8240() { /* 0x2c8240 */ }

@@ -5,24 +5,6 @@
 #pragma once
 
 namespace main {
-void sub_c380a0();  // 0xc380a0
-void sub_c380b0();  // 0xc380b0
-void sub_c3b540();  // 0xc3b540
-void sub_c3b630();  // 0xc3b630
-void sub_c3b640();  // 0xc3b640
-void sub_c3cdf0();  // 0xc3cdf0
-void sub_c3ce00();  // 0xc3ce00
-void sub_c3ce10();  // 0xc3ce10
-void sub_c3ce20();  // 0xc3ce20
-void sub_c3ce30();  // 0xc3ce30
-void sub_c3ce40();  // 0xc3ce40
-void sub_c3ce50();  // 0xc3ce50
-void sub_c3ce60();  // 0xc3ce60
-void sub_c3e6b0();  // 0xc3e6b0
-void sub_c3e6c0();  // 0xc3e6c0
-void sub_c3e6d0();  // 0xc3e6d0
-void sub_c3fd40();  // 0xc3fd40
-void sub_c3fd50();  // 0xc3fd50
 void sub_c3fd60();  // 0xc3fd60
 void sub_c3fd70();  // 0xc3fd70
 void sub_c3fd80();  // 0xc3fd80
@@ -4005,5 +3987,23 @@ void sub_132c670();  // 0x132c670
 void sub_132e1c0();  // 0x132e1c0
 void sub_132e1d0();  // 0x132e1d0
 void sub_132e1e0();  // 0x132e1e0
+void sub_132e1f0();  // 0x132e1f0
+void sub_132e200();  // 0x132e200
+void sub_132e210();  // 0x132e210
+void sub_132e220();  // 0x132e220
+void sub_132e230();  // 0x132e230
+void sub_132fee0();  // 0x132fee0
+void sub_132fef0();  // 0x132fef0
+void sub_132ff00();  // 0x132ff00
+void sub_132ff10();  // 0x132ff10
+void sub_132ff20();  // 0x132ff20
+void sub_132ff30();  // 0x132ff30
+void sub_132ff40();  // 0x132ff40
+void sub_132ff50();  // 0x132ff50
+void sub_13322e0();  // 0x13322e0
+void sub_13323e0();  // 0x13323e0
+void sub_13323f0();  // 0x13323f0
+void sub_1332400();  // 0x1332400
+void sub_1332410();  // 0x1332410
 
 }  // namespace main

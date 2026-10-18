@@ -741,7 +741,7 @@ void sub_4a5ba0() { /* 0x4a5ba0 */ }
 void sub_4a5bf8() { /* 0x4a5bf8 */ }
 void sub_4a5c50() { /* 0x4a5c50 */ }
 void sub_4a5c58() { /* 0x4a5c58 */ }
-void sub_4a5d50() { /* 0x4a5d50 */ }
+// sub_4a5d50: implemented in prog/matched/sdk/
 void sub_4a5d60() { /* 0x4a5d60 */ }
 void popTrailingNodeArray_5() { /* 0x4a5d68 */ }
 void wchar_t_fn() { /* 0x4a8340 */ }
@@ -785,7 +785,7 @@ void decltype_fn() { /* 0x4ac738 */ }
 void sub_4ac948() { /* 0x4ac948 */ }
 void anonymous_namespace() { /* 0x4acc00 */ }
 void sub_4ace40() { /* 0x4ace40 */ }
-void sub_4acf38() { /* 0x4acf38 */ }
+// sub_4acf38: implemented in prog/matched/sdk/
 void sub_4acf48() { /* 0x4acf48 */ }
 void unnamed_35_sdk_4acf50() { /* 0x4acf50 */ }
 void sub_4ae200() { /* 0x4ae200 */ }
@@ -795,7 +795,7 @@ void sub_4ae358() { /* 0x4ae358 */ }
 void operator_fn_3() { /* 0x4ae360 */ }
 void sub_4ae430() { /* 0x4ae430 */ }
 void sub_4ae438() { /* 0x4ae438 */ }
-void sub_4ae4f0() { /* 0x4ae4f0 */ }
+// sub_4ae4f0: implemented in prog/matched/sdk/
 void sub_4ae500() { /* 0x4ae500 */ }
 void sub_4ae508() { /* 0x4ae508 */ }
 void sub_4ae610() { /* 0x4ae610 */ }
@@ -850,10 +850,10 @@ void sub_4b0c58() { /* 0x4b0c58 */ }
 void sub_4b0c60() { /* 0x4b0c60 */ }
 void sub_4b0e80() { /* 0x4b0e80 */ }
 void sub_4b0e88() { /* 0x4b0e88 */ }
-void sub_4b0f28() { /* 0x4b0f28 */ }
+// sub_4b0f28: implemented in prog/matched/sdk/
 void sub_4b0f38() { /* 0x4b0f38 */ }
 void sub_4b0f40() { /* 0x4b0f40 */ }
-void sub_4b1008() { /* 0x4b1008 */ }
+// sub_4b1008: implemented in prog/matched/sdk/
 void sub_4b1018() { /* 0x4b1018 */ }
 void sub_4b1020() { /* 0x4b1020 */ }
 void sub_4b1148() { /* 0x4b1148 */ }
@@ -2402,7 +2402,7 @@ void sub_50bb00() { /* 0x50bb00 */ }
 void sub_50bb70() { /* 0x50bb70 */ }
 void sub_50bc40() { /* 0x50bc40 */ }
 void sub_50bcb0() { /* 0x50bcb0 */ }
-void sub_50bd20() { /* 0x50bd20 */ }
+// sub_50bd20: implemented in prog/matched/sdk/
 void sub_50bd30() { /* 0x50bd30 */ }
 void sub_50bd68() { /* 0x50bd68 */ }
 void sub_50bd88() { /* 0x50bd88 */ }
