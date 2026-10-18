@@ -196,6 +196,27 @@ MAX_ARG = 7           # AArch64 passes integer/pointer arguments in x0..x7.
 MUL_MNEMONICS = ("mul", "madd", "msub", "mneg",
                  "smull", "umull", "smaddl", "umaddl", "smsubl", "umsubl")
 # mnem -> (C operator, accumulator is subtracted?, 32x32->64 widening?)
+# Floating-point arithmetic. Measured before implemented, per the rule this
+# project has been bitten by more than once -- `work/fp_recipe.py`:
+#
+#     double a1, a2, r;  r = a1 + a2;   ->  fadd
+#     float  a1, a2, r;  r = a1 + a2;   ->  fadd      (the SINGLE form)
+#     double a1, a2, r;  r = a1 * a2;   ->  fmul
+#     double a1, a2, r;  r = a1 - a2;   ->  fsub
+#     float  a1;   double r;  r = a1;   ->  fcvt      (already `fpun`)
+#     double a1;   float  r;  r = a1;   ->  fcvt      (already `fpun`)
+#
+# The load-bearing line is the second: `s0` and `d0` are the SAME STORAGE, so a
+# `float` local and a `double` local are a pun rather than two values, and `fadd`
+# has two distinct encodings. THE WIDTH OF THE LOCAL DECIDES WHICH -- the same rule
+# as the store-width and register-class rules already in this file.
+#
+# `faddp` is NOT here: pairwise addition is an operation on a VECTOR, and scalar
+# `a1 + a2` compiles to plain `fadd`. `work/fp_recipe.py` confirmed it. A vector
+# form is a different value kind and is not claimed.
+FP_ARITH_MNEMONICS = ("fadd", "fsub", "fmul", "fdiv")
+FP_OPS = {"fadd": "+", "fsub": "-", "fmul": "*", "fdiv": "/"}
+
 MUL_OPS = {
     "mul":   ("*", False, False),
     "madd":  ("*", False, False),
@@ -666,6 +687,7 @@ class StraightLine:
                     and i.mnemonic not in COND_MNEMONICS
                     and i.mnemonic not in MUL_MNEMONICS
                     and i.mnemonic not in WIDEN_MNEMONICS
+                    and i.mnemonic not in FP_ARITH_MNEMONICS
                     and i.mnemonic not in DIV_MNEMONICS
                     and i.mnemonic not in FP_MNEMONICS):
                 raise Bail("unsupported mnemonic %r" % (i.mnemonic,))
@@ -2006,6 +2028,42 @@ class StraightLine:
             # `state` if there is one, otherwise `_value_arg`, because an incoming
             # argument has no state entry and requiring one declined every
             # `mul x8, x8, x1`-shaped body as "not a known register".
+            if mn in FP_ARITH_MNEMONICS:
+                # `fadd dD, dN, dM` -- three operands, no accumulator, and the
+                # destination register's CLASS picks the width. `s` is single,
+                # `d` is double, `q` is a pair of doubles, and `q` is not modelled
+                # because `faddp`/`fmul v` are vector operations that scalar C does
+                # not produce (measured, see FP_ARITH_MNEMONICS).
+                ops = split_ops(i.op_str)
+                if len(ops) != 3:
+                    raise Bail("%s with %d operands is not modelled"
+                               % (mn, len(ops)))
+                dst, o1, o2 = ops
+                _dcl = dst.strip()[:1]
+                if _dcl not in ("s", "d"):
+                    raise Bail("%s destination %r is not a scalar FP register"
+                               % (mn, dst))
+                ct = "float" if _dcl == "s" else "double"
+
+                def _foperand(reg, _mn=mn):
+                    v = state.get(wreg(reg.strip()))
+                    if v is None:
+                        raise Bail("%s operand %r is not a value"
+                                   % (_mn, reg))
+                    # `fpun` is a pun, `fpneg` a negation, `expr` a previous
+                    # arithmetic result, `load` a field. A bare `imm` would be an
+                    # integer literal in an FP operation, which is not a thing.
+                    if v[0] not in ("load", "expr", "arg", "argval",
+                                    "fpun", "fpneg", "local"):
+                        raise Bail("%s on a %r value is not FP arithmetic"
+                                   % (_mn, v[0]))
+                    return v
+
+                a = _foperand(o1)
+                b = _foperand(o2)
+                state[wreg(dst.strip())] = ("expr", FP_OPS[mn], a, b, ct)
+                continue
+
             if mn in MUL_MNEMONICS:
                 ops = split_ops(i.op_str)
                 op_sym, acc_sub, widening = MUL_OPS[mn]
