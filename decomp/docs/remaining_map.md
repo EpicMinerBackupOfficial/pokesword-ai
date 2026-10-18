@@ -1460,3 +1460,76 @@ Measure the recipe for `ldr xD, [xN, #off]!` before writing the handler, as with
 every other one: if Clang cannot be made to emit the writeback form from C, then
 29,556 is another population claimed and not reachable, and finding that out is
 cheaper than writing the handler.
+
+
+## WRITEBACK: the recipe EXISTS, the handler regresses, and it needs LIVENESS
+
+Last beat named the next move: measure the recipe for `ldr xD, [xN, #off]!` before
+writing the handler, because if Clang cannot be made to emit it then 29,556 is
+another claimed-but-unreachable population. Measured:
+
+    work/wb_recipe.py, clang 5.0.1 -O3
+
+    pre: assign then update          ldr x8, [x0, #-48]!    <== WRITEBACK
+    pre: array index then bump       ldr x8, [x0, #-48]!    <== WRITEBACK
+    pre: update FIRST, then deref    sub x8, x0, #48 ; ldr x8, [x8]
+    pre: pointer arithmetic with +=  sub x8, x0, #48 ; ldr x8, [x8]
+    post: deref then advance         ldr x8, [x0], #8       <== WRITEBACK
+
+    retail main 0x308690:  ldr x8, [x0, #-0x30]!
+
+Both forms are reachable, and the spelling is the obvious one. Two of the five
+produce the writeback and two do not, and WHICH of the two you picked is the whole
+question: materialise the pointer first and Clang folds it into a separate `sub`,
+which is a different instruction sequence. Dereference-and-then-update is the one
+that keeps the addressing mode.
+
+### The handler was written, and it cost 309 bodies
+
+    straight_line.py: peel `!` / `], #off` off the operand before parsing, emit
+    the load as before, then set the base register to an `expr` on its own
+    previous value.
+
+    all-shapes        BEFORE    AFTER     delta
+      main             24951    24799      -152
+      sdk               3255     3148      -107
+      subsdk0            980      930       -50
+      subsdk1           1375     1375         0
+                   ------------------------------
+                                 net        -309
+
+**So the implementation was reverted and the baseline re-verified at exactly
+24951 / 3255 / 980 / 1375.** Nothing is committed that loses bodies.
+
+The cause is liveness, and it is a real requirement rather than a tuning knob. A
+writeback writes the base register, so the base is no longer the value the walk
+recorded for it -- every later read of that register now renders the `expr`
+instead of the load it used to be. In a body where the base is READ AGAIN
+afterwards, that is correct and is what retail does. In a body where the updated
+value is never used, the old rendering was right and the new one forces a
+materialisation that did not match.
+
+Retail emits the `!` either way -- the writeback is in the ENCODING whether or not
+the value is live -- so this cannot be fixed by dropping the update when it looks
+dead. It needs a real liveness pass over the base register:
+
+    for each indexed load with a writeback:
+        if the base register is read by any LATER instruction   -> emit the update
+        else                                                  -> emit the load in a
+                                                               form that still carries
+                                                               the `!` addressing mode
+
+which is the same class of question as the `ldp` pair-position search and the
+`mov` pin placement, and it is why those took a probe each rather than a guess.
+
+### What is settled, and what is not
+
+Settled: 29,556 bodies are REACHABLE. Clang 5.0.1 emits both writeback forms, and
+retail's exact `ldr x8, [x0, #-0x30]!` is among them. This is not another dead
+population like the MOVZ-into-an-argument finding and the positional callee
+register; those were provably out of reach from C and this is not.
+
+Not settled: the handler needs a liveness pass, and that is a larger piece of work
+than the emit. It is the largest reachable population in the project, so it is
+worth doing properly rather than shipping the emit alone and regressing 309 bodies
+to find out.
