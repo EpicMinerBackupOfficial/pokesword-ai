@@ -826,3 +826,52 @@ never the expensive part. Building it now would produce a generator whose yield 
 cannot express.
 
 FP arithmetic first, then the `else`. That order is measured, not preferred.
+
+
+## FP arithmetic landed: +85 bodies, 24.92% -> 24.97%
+
+The previous beat concluded the diamonds were not worth building because their arms
+are outside the translator's vocabulary, and that FP arithmetic was the missing
+capability behind two populations at once. Both halves of that were right.
+
+    37,890 / 24.92%   ->   37,975 / 24.97%
+    399,896 bytes     ->   401,476 bytes
+
+    main 24271/26589 = 91.28%     sdk 3220/3648 = 88.27%
+    subsdk0 965/1021 = 94.52%    subsdk1 1329/1533 = 86.69%
+
+### Measured before implemented, which is the rule this project keeps relearning
+
+`work/fp_recipe.py`, before a handler was written:
+
+    double a1, a2, r;  r = a1 + a2;   ->  fadd
+    float  a1, a2, r;  r = a1 + a2;   ->  fadd       the SINGLE form
+    double a1, a2, r;  r = a1 * a2;   ->  fmul
+    double a1, a2, r;  r = a1 - a2;   ->  fsub
+    float  a1;   double r;  r = a1;   ->  fcvt       already modelled as `fpun`
+    double a1;   float  r;  r = a1;   ->  fcvt       ditto
+    faddp d0, d1, d2                  ->  NOT PRODUCED
+
+The load-bearing line is the second. `s0` and `d0` are the SAME STORAGE, so a
+`float` local and a `double` local are a pun rather than two values, and `fadd` has
+two distinct encodings. **The width of the local decides which** -- the same rule
+as the store-width and register-class rules already in this file, found a third
+time in a new place.
+
+And `faddp` is NOT in the handler: pairwise addition is an operation on a VECTOR,
+and scalar `a1 + a2` compiles to plain `fadd`. A vector form is a different value
+kind and is not claimed.
+
+### What is still not modelled
+
+  * `faddp` / `fmul v.` / `fmla` -- VECTOR FP. Needs a `float64x2_t` value kind,
+    and `faddp` is how a pairwise add of two doubles is spelled. `work/gap_what.py`
+    style measurement first: how many of the remaining `faddp` bodies are a simple
+    pairwise add of two doubles.
+  * `bl` inside an `else` -- the second-largest cause in the diamond arms. The call
+    path exists; it is the `else` that does not.
+  * `adrp` in a diamond's prefix -- 1,037 of the mnemonics that put a region
+    outside the vocabulary.
+
+So the order is unchanged and now has one fewer item in front of it: FP arithmetic
+done, the `else` next, and the vector FP form after both.
