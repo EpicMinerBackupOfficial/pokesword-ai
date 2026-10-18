@@ -529,7 +529,33 @@ def supervise(argv, restart_delay, max_delay,
                 rc = child.poll()
                 if rc is not None:
                     break
-                time.sleep(min(5, max(1, interval)))
+                # Poll every 5s, NOT `interval`. This line was
+                # `time.sleep(min(5, max(1, interval)))` and `supervise` has no
+                # `interval` parameter -- its signature is
+                #
+                #     supervise(argv, restart_delay, max_delay,
+                #                with_ping=False, ping_interval=...)
+                #
+                # so this raised `NameError: name 'interval' is not defined` on
+                # EVERY cycle of the inner wait loop, where the docstring's "Nothing
+                # in here may raise" swallowed it and treated the child as dead.
+                #
+                # The observable consequence, from work/ping.log:
+                #
+                #     watchdog: supervise error NameError: name 'interval' is not defined
+                #     watchdog: restart #6065 in 10s
+                #     supervisor already running as pid 22836 -- not starting a second.
+                #
+                # 6,065 restarts, each one refusing to start a second supervisor
+                # because the first was alive -- so the watchdog looked healthy
+                # (`--status` said "watchdog yes, stamp age 6s"), the tier-2 pid
+                # churned, and the ping chain below went stale for 3.5 days
+                # (306,593s) with every tier reporting fine.
+                #
+                # The poll interval was never meant to be the beat interval: this is
+                # how often the watchdog asks "has the child exited", and 5s is the
+                # answer. The BEAT interval is `ping_interval`, and it is used below.
+                time.sleep(min(5, max(1, 5)))
                 write_json(STAMP, {"watchdog_pid": os.getpid(),
                                    "child_pid": child.pid,
                                    "restarts": restarts,

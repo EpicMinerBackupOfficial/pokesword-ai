@@ -72,8 +72,8 @@ Largest shapes among the unmatched, by `shape_of`:
 | shape | bodies |
 |---|---:|
 | `tailcall` | 3,298 |
-| `guarded` | 1,988 |
 | `compare` | 300 |
+| `guarded` | 292 |
 | `straight` | 281 |
 | `struct-copy` | 94 |
 | `setter-chain` | 65 |
