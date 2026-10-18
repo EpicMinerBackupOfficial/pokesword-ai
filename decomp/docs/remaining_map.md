@@ -1051,3 +1051,84 @@ plus its terminator, and reconcile any remainder against a second count.
 
 The first is a string comparison and a measured recipe. That is the cheapest thing
 on this list by an order of magnitude, and it is 58x the diamond population.
+
+
+## The indirect tail call: recipe measured, and ONE divergence found
+
+Last beat said the 1,745 were "a string comparison against a measured recipe".
+The string comparison is still undone, but the RECIPE is now measured, and it is
+one instruction class short rather than wrong.
+
+### Four spellings, one shape, and retail's exact size
+
+    work/ind_tail_recipe.py, against main 0x6080's 24 bytes
+
+    A: cast void* local        24 bytes  ldr ; ldr ; ldr ; orr ; orr ; br
+    B: pinned register         24 bytes  ldr ; ldr ; ldr ; orr ; orr ; br
+    C: direct cast call        24 bytes  ldr ; ldr ; ldr ; orr ; orr ; br
+    D: no local for t          24 bytes  ldr ; ldr ; ldr ; orr ; orr ; br
+    retail                                ldr ; ldr ; ldr ; MOV ; MOV ; br
+
+    ldr ; ldr ; ldr ; ... ; br  -- identical, including the load ORDER
+
+So the tail call IS expressible and Clang 5.0.1 emits it. The load order that was
+the thing to watch -- retail loads the function pointer BEFORE writing the argument
+registers -- is preserved by every spelling.
+
+### The divergence is `orr` where retail has `mov`, and it is not the type
+
+`orr x1, xzr, #1` is `0x32000001`; `mov w1, #1` is `0x52800020`. Same value,
+different encoding, 8 bytes of a 24-byte function.
+
+    work/movz_probe.py  six argument-type variants, ALL identical
+      uint32_t / uint64_t / int args      -> orr ; orr
+      constants 1 / 0x100 / 0x10000       -> orr ; orr
+
+    work/movz_locals.py  four more spellings, ALL identical
+      literals into the call / assigned to parameters / plain locals / casts
+
+    work/movz_direct.py  the direct-call control
+      direct tail call, constants           -> orr
+      so it is not specific to INDIRECT calls either
+
+    work/movz_plain.py  the widest control of all
+      store a constant, no call at all      -> orr
+
+So the recipe does not choose MOVZ, and neither does the type, nor the constant,
+nor the indirectness. **Something in the project's own generators is producing
+MOVZ and that something has not been identified yet.**
+
+### Reconciled against the matched corpus, which says it EXISTS
+
+    work/movz_corpus.py
+      MATCHED   bodies containing `mov wN, #imm`:  6,420
+      UNMATCHED bodies containing `mov wN, #imm`: 65,497
+
+6,420 verified byte-identical bodies contain MOVZ. Clang emits it. The 65,497
+unmatched bodies containing the same instruction are capped by something, and that
+something is worth naming on its own: **65,497 is 57% of the remaining population
+and every one of them carries an instruction whose spelling is not yet known.**
+
+### The next step is cheap and specific
+
+`work/read_movz2.py` pulled the C for main 0x4e0, a matched body with `mov w9, #1`
+-- and it turned out to be a HANDWRITTEN magic-static body from
+`tools/magic_static.py`, not a straight-line generator's output. So it does not
+answer the question.
+
+The answer is one file read away: find a matched body containing `mov wN, #imm`
+that came from the straight-line translator, and read its emitted C. The spelling
+is in the registry right now. Until that is done the 1,745 stay blocked, and the
+blocker is a spelling, not a capability.
+
+### Probe bugs in this beat, both of which would have been believed
+
+  * `work/ind_tail_recipe.py` filtered on a mangled symbol name it had spelled
+    wrong twice, and printed "f() NOT EMITTED" for all four cases. That reads as
+    "Clang will not emit an indirect tail call" and is actually "this probe
+    measured nothing". A diagnostic that reports ABSENCE when it measured nothing
+    is worse than a crash, because it is believed.
+  * `work/read_movz.py` compared addresses as TEXT against "4e0" while the CSV
+    stores zero-padded 16-digit hex, so it printed "no CSV row" for a body that is
+    in the matched set. Any probe that compares addresses as strings can silently
+    empty itself this way.
