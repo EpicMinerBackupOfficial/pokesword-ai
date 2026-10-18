@@ -715,3 +715,61 @@ have to be re-measured at this size:
   * 61 of 123 needed a frame INSIDE the branch, and Clang does not shrink-wrap
     for aarch64 at -O3 with these flags
   * 35 needed a genuine `sp` local, an out-parameter whose address is taken
+
+
+## The diamond population: 958, found by fixing the probe three times
+
+`work/switch_kind.py` labelled 2,926 bodies "b FORWARD into the body (diamond)"
+using one test: a `b` whose target is forward of the branch. That is a LABEL, not
+a shape -- the same instruction appears in code that is not an if/else at all. It
+is the identical mistake to the one that made `guarded` claim 1,606 bodies when
+there were 292.
+
+So the structural test. A real diamond:
+
+    <pre>
+    <test>                 cmp / cbz / tbz
+    b.cond  <ARM_B>        skip over ARM_A
+    <ARM_A>
+    b       <JOIN>         skip over ARM_B
+    <ARM_B>
+    <JOIN>                 often just the ret
+
+and `work/diamond_shape.py` checks each requirement separately.
+
+### Three probe bugs, and 41 -> 97 -> 958
+
+**1. `tbz w2, #0, #0x16` has THREE operands.** `ins[k].op_str.strip()` is
+`w2, #0, #0x16`, and parsing that as one `#hex` raised on every bit-test.
+**2,151 bodies vanished into "branch target unparsed"** -- which reads as "these
+are not diamonds" and is actually "this probe cannot read a three-operand branch".
+41 diamonds.
+
+**2. The structural test ran on the FRAME-STRIPPED body.** A branch target is an
+address, turned into an index by `(target - addr) // 4` -- which is only the right
+index if the list still starts at `addr`. Stripping the frame shifts every index
+after the first, so every target resolved to the wrong instruction. 97 diamonds.
+Stripping belongs to the translate step, not to the shape test.
+
+**3.** (Fixed before the third run; recorded because the first two were not
+caught by the number being implausible -- they were caught by reading the code.)
+
+**958**, and that is a real population:
+
+        main 563    sdk 132    subsdk0 121    subsdk1 142
+
+The remaining 2,741 candidates fail for real reasons: 1,031 "the join is not the
+end" (a forward `b` that skips to a block which is not the join), 732 "the `b` is
+not forward" once the address basis is right, 14 that the conditional does not
+target the instruction after the `b`.
+
+Three successive confident small numbers, none of them about diamonds. The one
+thing all three share is that they were small enough not to look wrong.
+
+### What the generator has to do
+
+The layout rule is known (see control_flow.md): Clang will not invert a
+conditional branch to make a block fall through, so the polarity is fixed by which
+arm is the layout successor, and the C gets the arm order the original has. The
+translator already emits one arm plus a fallthrough; a diamond needs a second arm
+and an `else`.
