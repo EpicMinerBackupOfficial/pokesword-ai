@@ -1132,3 +1132,93 @@ blocker is a spelling, not a capability.
     stores zero-padded 16-digit hex, so it printed "no CSV row" for a body that is
     in the matched set. Any probe that compares addresses as strings can silently
     empty itself this way.
+
+
+## The MOVZ spelling, read out of the registry: an empty `asm volatile` barrier
+
+Last beat's next step was "read the MOVZ spelling out of the registry". Done.
+
+    work/movz_truth.py, main 0x4c5b30, shape=call, VERIFIED
+
+    retail: stp ; mov x29, sp ; bl ; mov w0, #1 ; ldp ; ret
+
+    sub_4c4700();
+    uint32_t r0 = 1;
+    asm volatile("");
+    return r0;
+
+The empty `asm volatile` is load-bearing and not incidental: it is a BARRIER.
+Without it Clang constant-folds `1` straight into the return and the instruction
+disappears. With it the value must exist in a real register at that point, and the
+backend materialises it as MOVZ.
+
+**So the rule is not "use the right type". It is "put a barrier between the
+assignment and the use".** Every spelling in `work/movz_plain.py` was
+semantically equivalent to folding the constant into its use, and folding is
+exactly what Clang prefers -- which is why all ten produced `orr`.
+
+### But it does NOT rescue a call ARGUMENT
+
+    work/movz_barrier.py, against retail's ldr;ldr;ldr;mov;mov;br
+
+    A: no barrier                                  ldr;ldr;ldr;orr;orr;br
+    B: asm barrier on the arguments                ldr;ldr;orr;orr;ldr;br
+    C: barrier as a statement, then assign         ldr;ldr;ldr;orr;orr;br
+    D: pointer loaded before the arguments         ldr;ldr;ldr;orr;orr;br
+
+Clang 5.0.1 will not emit MOVZ for a constant CALL ARGUMENT. It will for a constant
+RETURN -- which is exactly why the registry's 2,544 `call`-shaped bodies match:
+their `mov w0, #1` is a return AFTER the call, not an argument to it. The two
+populations look identical in the instruction stream and are not the same problem.
+
+That is a compiler property, not a spelling. This is the first hard block in a
+while, and it is worth naming as one: **there is no C that makes Clang 5.0.1 emit
+MOVZ into an argument register of an opaque callee.**
+
+### Which splits the 1,909 into 1,762 reachable and 147 dead
+
+    work/tail_forward.py
+      1,909  simple indirect tail calls (br terminator, no call, no cond branch)
+      1,762  ...FORWARD their arguments: no constant to fold
+        147  ...SET a constant argument: blocked by the MOVZ/ORR gap
+              101  ...and that constant IS an argument register
+
+    main 1475, sdk 223, subsdk0 69, subsdk1 142
+
+The 1,762 look like this and need no MOVZ at all:
+
+    main 0x2a890   ldr x8, [x0] ; ldr x2, [x8, #0x100] ; br x2
+    main 0x33ad0   ldr x0, [x0, #0x118] ; ldr x8, [x0] ; ldr x1, [x8, #0x88] ; br x1
+
+So the 1,745 from last beat were slightly over-counted AND mostly unblocked: the
+real number is 1,762, and the 147 that are genuinely dead are dead for a compiler
+reason that no amount of spelling will move.
+
+## Three probes reported ZERO for this in a row, all for the same reason
+
+`work/movz_source.py`, `work/movz_truth.py` and an earlier variant each reported
+0 bodies with `mov wN, #imm` -- one of them across 151,132 disassembled bodies.
+
+**Capstone's `op_str` does not contain the mnemonic.** It is the operands only,
+"w1, #1". A regex anchored at `^mov\s+` can never match it, so the test was
+unsatisfiable and the answer was zero by construction.
+
+Zero out of 151,132 is not a finding, it is a regex that cannot match anything, and
+it is indistinguishable from a result unless you look at the denominators. The one
+probe that survived (`movz_corpus.py`, 6,420 / 65,497) did so only because it
+tested `i.mnemonic == "mov"` FIRST and then fell back to a `#` substring test --
+so the number that looked wrong last beat was the correct one, and the three that
+disagreed with it were all broken.
+
+**Count both the numerator and the denominator, and believe neither without them.**
+A rate of 0.0% over 151,132 samples is a bug report, not a measurement.
+
+The 6,420 / 65,497 split is confirmed and is real:
+
+    REGISTERED   6,420 /  38,129   16.8%   carry `mov wN, #imm`
+    NOT REG.    65,497 / 113,003   58.0%   carry `mov wN, #imm`
+
+58% of the remaining population carries this instruction. That is NOT one blocker:
+6,420 of those bodies already match. It is a mix, and the barrier rule above is
+what separates them -- a constant that reaches a RETURN is fine, one that reaches a
+call ARGUMENT is not.
