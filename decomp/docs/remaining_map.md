@@ -773,3 +773,56 @@ conditional branch to make a block fall through, so the polarity is fixed by whi
 arm is the layout successor, and the C gets the arm order the original has. The
 translator already emits one arm plus a fallthrough; a diamond needs a second arm
 and an `else`.
+
+
+## The diamonds are NOT a splice -- they are a project, and they say what to build next
+
+`work/diamond_arms.py` tests each diamond's regions against the translator's OWN
+accepted vocabulary (LOADS, STORES, PAIR_LOADS, PAIR_STORES, add, mov, sub):
+
+    897 diamonds found
+      692  the prefix has an unsupported mnemonic      (77%)
+      672  ARM_A  has an unsupported mnemonic          (75%)
+      472  ARM_B  has an unsupported mnemonic          (53%)
+        0  BOTH ARMS CLEAN
+
+    the mnemonics that put a region outside it:
+
+       2854  bl        calls
+       1767  fmul      FP arithmetic
+       1037  adrp      page anchors
+        901  ret       (my ACCEPT set omits the terminator -- a probe bug, and
+                       it is why "join" reads 0; the arms below are unaffected)
+        625  fadd
+        500  blr       indirect calls
+        454  and
+        425  cmp       (the test itself -- expected)
+        394  orr
+        352  fsub
+        320  movk
+        249  ext
+        228  fmov
+
+**FP ARITHMETIC IS THE MISSING CAPABILITY, not `else`.**
+
+`fadd + fmul + fsub + faddp + fmov` account for roughly 3,200 mnemonics across
+these 897 bodies -- more than any other single cause -- and the translator has no
+handler for any of them. `bl` is the second cause, and it is not missing from the
+translator so much as unreachable here: a call inside an `else` needs the call
+path extended, which is the same shape of work.
+
+The same FP gap shows up in the GUARDED population, where `work/guard_kind.py`
+counted 114 bodies whose guard is an `fcmp` rather than a `cmp` or a test. Those
+need the same arithmetic the diamond arms need. Two populations, one missing
+capability.
+
+### So: do not build the diamond generator next
+
+The design from the last beat -- a second inner block spliced into the guarded
+emit -- is still correct, and it is still small. But it would convert 897
+candidates into 897 candidates the translator cannot translate. The `else` was
+never the expensive part. Building it now would produce a generator whose yield is
+0 for the same reason the previous one was: it would be claiming a population it
+cannot express.
+
+FP arithmetic first, then the `else`. That order is measured, not preferred.
