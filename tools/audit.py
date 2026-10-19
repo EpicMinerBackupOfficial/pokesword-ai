@@ -964,6 +964,54 @@ def main():
                              "tools/refresh_status_block.py"
                              % (len(diff) + abs(len(hl) - len(wl)),
                                 diff[0] if diff else "row count"))
+        # PROSE FIGURES ARE FIGURES TOO.
+        #
+        # The check above compares the GENERATED block only, and the README quotes
+        # the byte-weighted figure in prose beside it:
+        #
+        #     > **byte-weighted** (401476 / 38,172,368 bytes of code)
+        #
+        # That 401476 sat there stale through a beat that moved the figure to
+        # 412948, and `AUDIT PASSED` printed every time. This is precisely the
+        # failure the comment above this check warns about -- "when a check exists
+        # in two places, the local one must be the remote one or stricter; a weaker
+        # local approximation is worse than none, because it is believed" -- except
+        # the weaker local version was not an approximation of the same thing, it
+        # was a check of a DIFFERENT SUBSET: the block, and not the prose that
+        # states the same figure in a different format.
+        #
+        # So the two claims are matched as WHOLE PHRASES, by the shape that makes
+        # them unambiguous -- a numerator followed by the denominator it is a
+        # fraction of. A bare number scan would flag the 152,062 total, the
+        # 38,172,368 code size, and every historical number in the prose; matching
+        # the phrase is what distinguishes "a figure that is stale" from "a number
+        # that happens to be large".
+        _rd = io.open(os.path.join(ROOT, "README.md"), encoding="utf-8",
+                      errors="replace").read()
+        _rd_prose = re.sub(r"<!-- STATUS:START -->.*?<!-- STATUS:END -->", "",
+                           _rd, flags=re.S)
+        _nmatch = len([r for r in rows
+                       if r["decomp_name"] and not r["decomp_name"].endswith("!")])
+        _nbytes = sum(int(r["size"]) for r in rows
+                      if r["decomp_name"] and not r["decomp_name"].endswith("!"))
+        _nbytes = sum(int(r["size"]) for r in rows
+                      if r["decomp_name"] and not r["decomp_name"].endswith("!"))
+        # The byte-weighted claim: "<N> / <total> bytes of code".
+        for _m in re.finditer(r"([\d,]+)\s*/\s*([\d,]+)\s*bytes of code",
+                              _rd_prose):
+            _want, _got = int(_m.group(1).replace(",", "")), _nbytes
+            if _want != _got:
+                stale.append("README.md prose quotes %d matched bytes, CSV says %d "
+                             "-- the status block is generated but this sentence "
+                             "is hand-written and had drifted" % (_want, _got))
+        # The function-count claim: "<N> / 152,062" with a comma-grouped N.
+        for _m in re.finditer(r"\b([\d]{1,3}(?:,[\d]{3})+)\s*/\s*152,?062\b",
+                              _rd_prose):
+            _want = int(_m.group(1).replace(",", ""))
+            if _want != _nmatch:
+                stale.append("README.md prose quotes %d matched functions, CSV says "
+                             "%d" % (_want, _nmatch))
+
         check(not stale, "quoted figures agree with the CSV",
               "%d stale" % len(stale))
         for s in sorted(set(stale))[:6]:

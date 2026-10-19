@@ -15,7 +15,7 @@
 
 > **Two percentages, both correct.** This project's headline is **25.47% by
 > function count** (38,733 / 152,062). decomp.dev reports **0.67%**, which is
-> **byte-weighted** (401476 / 38,172,368 bytes of code). They diverge because
+> **byte-weighted** (412948 / 38,172,368 bytes of code). They diverge because
 > everything matched so far is a tiny accessor — the median matched function is
 > 8 bytes (`ldr ; ret`) while the median unmatched one is 132 bytes and the
 > largest is 239 KB. Byte-weighting is the harsher and more honest measure of how

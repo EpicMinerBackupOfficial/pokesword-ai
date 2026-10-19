@@ -1533,3 +1533,66 @@ Not settled: the handler needs a liveness pass, and that is a larger piece of wo
 than the emit. It is the largest reachable population in the project, so it is
 worth doing properly rather than shipping the emit alone and regressing 309 bodies
 to find out.
+
+
+## The README WAS stale, and the gate that missed it is now closed
+
+This has been asserted every beat for seven beats and has been false every beat
+until now. It was not false this time.
+
+    README.md, the byte-weighted claim, in prose beside the generated block
+
+        > **byte-weighted** (401476 / 38,172,368 bytes of code)
+
+`401476` was two beats out of date. The true figure is **412948**, and the generated
+status block above it said so correctly the whole time -- which is exactly why
+nobody saw it: the block and the sentence state the same number in two formats, and
+only one of them was generated.
+
+### WHY the audit passed, which is the part that mattered
+
+`audit.py`'s "quoted figures agree with the CSV" check compares the GENERATED block
+against `progress_json.py`. It never looked at prose. So the gate covered a strict
+subset of the thing it was named for, and printed
+
+    AUDIT PASSED: every check green
+
+while a figure in the document was wrong.
+
+This is the failure the check's own comment warns about, one level up:
+
+    when a check exists in two places, the local one must be the remote one or
+    stricter. A weaker local approximation is worse than none, because it is
+    believed.
+
+The earlier instance of that comment was a status TABLE hand-corrected while the
+rows above it were not. This one is worse: the weaker check was not an
+approximation of the same thing, it was a check of a DIFFERENT SUBSET -- the block,
+and not the prose stating the same figure in a different format. A subset that
+looks like the whole thing is the most dangerous kind.
+
+### The fix, and the part that makes it a fix
+
+    README.md      401476 -> 412948
+    audit.py       prose figures now gated on the SAME check as the block
+
+The claims are matched as WHOLE PHRASES -- a numerator followed by the denominator
+it is a fraction of:
+
+    "<N> / 38,172,368 bytes of code"   ->  N must be the CSV's matched bytes
+    "38,733 / 152,062"                 ->  N must be the CSV's matched functions
+
+A bare number scan would flag the 152,062 total, the 38,172,368 code size, and
+every historical number in the prose; matching the phrase is what separates "a
+figure that is stale" from "a number that happens to be large".
+
+**AND THE GATE WAS FALSIFIED, because a gate that only passes proves nothing.**
+Putting the old figure back and running the audit:
+
+    [FAIL] quoted figures agree with the CSV     1 stale
+    README.md prose quotes 401476 matched bytes, CSV says 412948
+    AUDIT FAILED: 1 check(s)
+
+Restored, and green again. A check that has never been seen to fail has not been
+tested; that is the same rule as "never register a body that does not verify",
+applied to the audit instead of the registry.
