@@ -158,8 +158,7 @@ def ensure_ping_chain(interval=PING_DEFAULT_INTERVAL):
     # reaching the child (0xC000013A, STATUS_CONTROL_C_EXIT). MSDN:
     # "If this flag is specified, CTRL+C signals will be disabled for all processes
     # within the new process group." It is ignored only with CREATE_NEW_CONSOLE.
-        kw["creationflags"] = (subprocess.DETACHED_PROCESS
-                               | subprocess.CREATE_NEW_PROCESS_GROUP)
+        kw["creationflags"] = subprocess.CREATE_NEW_CONSOLE
     else:
         kw["start_new_session"] = True
     argv = [sys.executable, os.path.join(HERE, "heartbeat.py"),
@@ -248,8 +247,28 @@ if os.name == "nt":
     _si.wShowWindow = 0            # SW_HIDE
     _HIDE = {"startupinfo": _si}
 
-DETACHED = ({"creationflags": (subprocess.DETACHED_PROCESS
-                               | subprocess.CREATE_NEW_PROCESS_GROUP), **_HIDE}
+# THE CHAIN ROOT GETS A HIDDEN CONSOLE, NOT NO CONSOLE.
+#
+# DETACHED_PROCESS hands the process nothing, and everything beneath it inherits
+# nothing. clang++ then spawns `clang++ -cc1`, which has no console to inherit, so
+# Windows gives it one -- and that new console is the window the user saw, several
+# times a minute, once per compile.
+#
+# Measured (work/hidden_console.py), a parent compiling one C file:
+#
+#     A  DETACHED (console-less)         new consoles=2   WINDOW
+#     B  CREATE_NEW_CONSOLE + SW_HIDE    new consoles=0   NO WINDOW
+#     C  CREATE_NO_WINDOW (console-less) new consoles=1   WINDOW
+#
+# B gives the process a console that EXISTS and is HIDDEN, so clang++ inherits a
+# real one, -cc1 inherits that, and nothing anywhere allocates. CREATE_NEW_CONSOLE
+# and DETACHED_PROCESS cannot be combined (MSDN), and they do not need to be: a
+# new console is independent of the parent, so the chain still survives this shell
+# closing, and the user's Ctrl+C does not reach it.
+#
+# EVERY OTHER SPAWN IN THE CHAIN MUST NOT DETACH. A child spawned DETACHED breaks
+# the chain for everything under it. See tools/nocon.py.
+DETACHED = ({"creationflags": subprocess.CREATE_NEW_CONSOLE, **_HIDE}
             if os.name == "nt" else {"start_new_session": True})
 # Windowless but still grouped: only for short-lived probes (tasklist, git), where
 # the pipe lifetime has to survive the spawn.
@@ -262,9 +281,14 @@ DETACHED = ({"creationflags": (subprocess.DETACHED_PROCESS
 #     DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP   no window  3/3
 #
 # CREATE_NO_WINDOW is the flag whose NAME says "no window" and which produces one.
-NOWINDOW = ({"creationflags": (subprocess.DETACHED_PROCESS
-                               | subprocess.CREATE_NEW_PROCESS_GROUP)}
-            if os.name == "nt" else {})
+# INHERIT THE HIDDEN CONSOLE -- pass no flags at all.
+#
+# An unflagged child inherits the parent's console, which is the hidden one created
+# by --arm, and so do its children, and so does clang's -cc1. Adding any flag here
+# detaches the subtree and reintroduces the window for everything below it.
+# measured: DETACHED_PROCESS here -> a window per compile (work/hidden_console.py).
+NOWINDOW = ({},)
+
 
 
 def ignore_ctrl_events():
