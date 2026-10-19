@@ -41,6 +41,31 @@ import re
 U = {1: "uint8_t", 2: "uint16_t", 4: "uint32_t", 8: "uint64_t"}
 S = {1: "int8_t", 2: "int16_t", 4: "int32_t", 8: "int64_t"}
 
+# A load whose ADDRESSING MODE also UPDATES the base register. This is not a
+# detail of the encoding -- it is a SECOND VALUE out of one instruction, and the
+# value map is one register to one value:
+#
+#     ldr xD, [xN, #off]!      xD = *(T*)((char*)xN + off)   and   xN = xN + off
+#     ldr xD, [xN], #off       xD = *(T*)xN                  and   xN = xN + off
+#
+# Without the update the body is a DIFFERENT PROGRAM, not a differently-encoded
+# one. main 0x308690 is four instructions either way:
+#
+#     retail  ldr x8, [x0, #-0x30]!     <- writes x0 back
+#             ldr x3, [x8, #0x188] ; and w1, w1, #1 ; br x3
+#     before  ldur x8, [x0, #-48]      <- no writeback
+#             ldr x2, [x8, #392] ; and w1, w1, #0x1 ; br x2
+#
+# 29,556 unmatched bodies -- 26% of what remains -- contain one of these two
+# forms. The recipe is measured (work/wb_recipe.py, clang 5.0.1 -O3):
+#
+#     *out = *(uint64_t*)(p - 48);  p = p - 48;      ->  ldr x8, [x0, #-48]!
+#     *out = *(uint64_t*)p;         p = p + 8;       ->  ldr x8, [x0], #8
+#
+# So both forms are reachable, and the handler is two lines, not a new kind.
+WRITEBACK_PRE = re.compile(r"^(.*\])\s*!\s*$")
+WRITEBACK_POST = re.compile(r"^(.*\])\s*,\s*#(-?\d+|0x[0-9a-fA-F]+)\s*$")
+
 LOADS = ("ldr", "ldrb", "ldrh", "ldrsw", "ldurb", "ldursw", "ldur",
          "ldrsh", "ldursh")
 STORES = ("str", "strb", "strh", "sturb", "sturh", "stur")
@@ -1421,13 +1446,32 @@ class StraightLine:
             # Liveness is not knowable mid-walk, so this records candidates only.
             if mn in LOADS and len(ops) == 2:
                 dst = ops[0]
-                base, index, ext, scale, off = parse_mem_idx(ops[1])
+                _memtxt = ops[1]
+                # STRIP A WRITEBACK before parsing, and remember what it was.
+                #
+                # `parse_mem_idx` and `mem_reg_offset` both want a plain `[base, #off]`.
+                # Given `[x0, #-0x30]!` the trailing `!` is not an offset and given
+                # `[x0], #8` the offset is outside the brackets entirely -- so the
+                # forms have to be recognised and peeled before anything tries to
+                # parse them, not detected afterwards.
+                _wb = None          # None | "pre" | "post"
+                _wb_off = 0
+                _m2 = WRITEBACK_POST.match(_memtxt)
+                if _m2:
+                    _wb, _wb_off = "post", int(_m2.group(2), 0)
+                    _memtxt = _m2.group(1)
+                else:
+                    _m2 = WRITEBACK_PRE.match(_memtxt)
+                    if _m2:
+                        _wb = "pre"
+                        _memtxt = _m2.group(1)
+                base, index, ext, scale, off = parse_mem_idx(_memtxt)
                 if base is None:
-                    base, off = mem_reg_offset(ops[1], state)
+                    base, off = mem_reg_offset(_memtxt, state)
                     index = ext = scale = None
                 if base is None:
                     raise Bail("load operand %r is not a [base] or [base, index, ext] form"
-                               % (ops[1],))
+                               % (_memtxt,))
                 n, real = resolve_base(base)
                 if real:
                     used_args.add(n)
@@ -1466,7 +1510,37 @@ class StraightLine:
                 # model `ldrsh` as `ldrh`, which drops the sign extension and
                 # matches nothing.
                 signed = mn in ("ldrsw", "ldursw", "ldrsh", "ldursh")
-                state[wreg(dst)] = ("load", n, off, w, signed)
+                if _wb == "post":
+                    state[wreg(dst)] = ("load", n, 0, w, signed)
+                else:
+                    state[wreg(dst)] = ("load", n, off, w, signed)
+                if _wb is not None:
+                    # THE WRITEBACK, as a second value, on the base register.
+                    #
+                    # The recipe "assign then update" gave the writeback encoding,
+                    # and the barrier is what forces it. Without the barrier Clang
+                    # folds the update and emits `ldur` with no `!`.
+                    _inc = off if _wb == "pre" else _wb_off
+                    _bk = wreg(base)
+                    _bv = state.get(_bk)
+                    if _bv is None:
+                        raise Bail("writeback base %r is not a value" % base)
+                    if _bv[0] not in ("load", "expr", "arg", "argval", "imm",
+                                      "addr_i", "local"):
+                        raise Bail("writeback on a %r value is not addressable"
+                                   % _bv[0])
+                    # DO NOT update the value map. Downstream uses of the base still name the same
+                    # register, which now HOLDS the updated value because of the asm
+                    # pin below. Updating the map to an `expr` made downstream uses
+                    # render `base + off`, which is recomputation rather than use of
+                    # the pinned register, and that was the regression in the first
+                    # version of this handler (-309 bodies).
+                    #
+                    # The load's *encoding* still carries the `!`, because the
+                    # barrier below forces the update to be materialised as a side
+                    # effect, and Clang folds it into the addressing mode
+                    # (work/wb_recipe.py: "assign then update" -> ldr ... !).
+                    stmts.append(("wbup", base, _inc))
                 continue
 
             if mn in PAIR_STORES and len(ops) in (2, 3):
@@ -3367,6 +3441,25 @@ class StraightLine:
             if (block and len(block) > 5 and block[5] is not None
                     and _si == block[5] and _dcut is None):
                 _dcut = (len(pre), len(body_txt))
+            if stmt[0] == "wbup":
+                # The update and its barrier. The barrier is the load-bearing
+                # half: without it Clang folds the update and emits `ldur`,
+                # which is the exact regression that cost 309 bodies last time.
+                _, _b, _inc = stmt
+                _bn = names.get(wreg(_b))
+                if _bn is None:
+                    # The base is an argument register that never got a
+                    # synthetic local. It still has a name in the parameter
+                    # list -- `a0`, `a1` -- and the writeback has to be emitted
+                    # against THAT name, or the body references an undeclared
+                    # identifier and the whole batch dies.
+                    if wreg(_b).startswith(("x", "w")) and wreg(_b)[1:].isdigit():
+                        _bn = "a%s" % wreg(_b)[1:]
+                    else:
+                        raise Bail("writeback base %r has no name" % _b)
+                body_txt.append("%s = %s + %d;" % (_bn, _bn, _inc))
+                body_txt.append('asm volatile("" : "+r"(%s));' % _bn)
+                continue
             if stmt[0] == "qstore":
                 # See the q-pair store below for the measurement. One field.
                 _, n, off, v, _early = stmt
