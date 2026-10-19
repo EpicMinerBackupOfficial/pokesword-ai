@@ -25,6 +25,36 @@ C_KEYWORDS = frozenset((
     "alignof", "decltype", "throw", "case", "do", "else", "goto",
 ))
 import subprocess
+
+# THE AUDIT COMPILES EVERY prog/ UNIT TO CHECK IT STILL BUILDS.
+#
+# That check is `clang --target=aarch64-none-elf -fsyntax-only` once per unit --
+# 104 units in main alone -- and each one was opening a console window, because a
+# console application started from a process with no console is GIVEN a new one by
+# Windows. That is the flashing terminal, once per unit per audit.
+#
+# CREATE_NEW_CONSOLE + STARTF_USESHOWWINDOW/SW_HIDE is the measured fix
+# (work/hidden_console.py):
+#
+#     parent DETACHED (console-less)          new consoles=2   WINDOW
+#     parent CREATE_NEW_CONSOLE + SW_HIDE     new consoles=0   NO WINDOW
+#     parent CREATE_NO_WINDOW (console-less)  new consoles=1   WINDOW
+#
+# The console must EXIST and be HIDDEN. CREATE_NO_WINDOW hands the process nothing,
+# which is the opposite of what its name says, and every clang beneath it then
+# allocates its own -- and clang++ spawns `clang++ -cc1` itself, which no Python
+# creation flag can reach.
+_AUDIT_SI = None
+_AUDIT_FLAGS = {}
+if os.name == "nt":
+    _AUDIT_SI = subprocess.STARTUPINFO()
+    _AUDIT_SI.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _AUDIT_SI.wShowWindow = 0            # SW_HIDE
+    _AUDIT_FLAGS = {"creationflags": subprocess.CREATE_NEW_CONSOLE,
+                    "startupinfo": _AUDIT_SI}
+else:
+    _AUDIT_FLAGS = {}
+
 import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import time
 import sys
@@ -427,7 +457,7 @@ def main():
                 r = subprocess.run([clang, "--target=aarch64-none-elf",
                                     "-std=c++17", "-fsyntax-only", "-nostdinc++",
                                     "-Wall", "-I", inc, f],
-                                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+                                   capture_output=True, text=True, encoding="utf-8", errors="replace", **_AUDIT_FLAGS)
                 if r.returncode != 0:
                     bad.append((f, r.stderr[:200]))
             check(not bad, "all prog/ units compile for NX64",
@@ -574,7 +604,7 @@ def main():
     else:
         try:
             _r = subprocess.run([sys.executable, _sem], cwd=ROOT,
-                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800, **_AUDIT_FLAGS)
         except Exception as _e:                # noqa: BLE001
             _r = None
             skip("semantic matcher selftest",
