@@ -24,6 +24,7 @@ import io
 import os
 import re
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

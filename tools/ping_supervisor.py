@@ -37,6 +37,7 @@ import signal
 import subprocess
 
 
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 # Console windows on Windows.
 #
 # Both of these tools run detached -- `ping_supervisor --detach` hands its child

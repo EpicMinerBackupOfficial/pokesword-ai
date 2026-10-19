@@ -25,6 +25,7 @@ C_KEYWORDS = frozenset((
     "alignof", "decltype", "throw", "case", "do", "else", "goto",
 ))
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import time
 import sys
 

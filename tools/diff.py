@@ -4,6 +4,7 @@ from colorama import Fore, Style
 import cxxfilt
 import os
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

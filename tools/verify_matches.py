@@ -20,6 +20,7 @@ import argparse
 import collections
 import csv
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import collections
 import os
 import re

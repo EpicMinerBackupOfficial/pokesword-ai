@@ -54,6 +54,7 @@ import argparse
 import os
 import re
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import tempfile
 

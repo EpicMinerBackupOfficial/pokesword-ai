@@ -16,6 +16,7 @@ the emitted bytes, so the test exercises the real path rather than a mock.
 
 import os
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import tempfile
 
