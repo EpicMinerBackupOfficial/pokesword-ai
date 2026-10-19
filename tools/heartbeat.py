@@ -160,7 +160,22 @@ def spawn_successor(interval):
         return None
     kw = {}
     if os.name == "nt":
-        kw["creationflags"] = subprocess.CREATE_NO_WINDOW
+    # DETACHED_PROCESS, NOT CREATE_NO_WINDOW.
+    #
+    # CREATE_NO_WINDOW is the flag whose NAME says "no console window", and on this
+    # machine it PRODUCES one. Measured, three runs per case, a window counted as a
+    # conhost.exe that outliving the settle time (work/console_flags.py):
+    #
+    #     DETACHED_PROCESS                            no window  3/3
+    #     CREATE_NO_WINDOW                            WINDOW     3/3
+    #     DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP   no window  3/3
+    #
+    # CREATE_NEW_PROCESS_GROUP is included because it is the flag that stops CTRL+C
+    # reaching the child (0xC000013A, STATUS_CONTROL_C_EXIT). MSDN:
+    # "If this flag is specified, CTRL+C signals will be disabled for all processes
+    # within the new process group." It is ignored only with CREATE_NEW_CONSOLE.
+        kw["creationflags"] = (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP)
     else:
         kw["start_new_session"] = True
     argv = [sys.executable, os.path.abspath(__file__),

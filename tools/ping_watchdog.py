@@ -143,7 +143,22 @@ def ensure_ping_chain(interval=PING_DEFAULT_INTERVAL):
         return "ping chain: cannot open ping.log: %s" % e
     kw = {}
     if os.name == "nt":
-        kw["creationflags"] = subprocess.CREATE_NO_WINDOW
+    # DETACHED_PROCESS, NOT CREATE_NO_WINDOW.
+    #
+    # CREATE_NO_WINDOW is the flag whose NAME says "no console window", and on this
+    # machine it PRODUCES one. Measured, three runs per case, a window counted as a
+    # conhost.exe that outliving the settle time (work/console_flags.py):
+    #
+    #     DETACHED_PROCESS                            no window  3/3
+    #     CREATE_NO_WINDOW                            WINDOW     3/3
+    #     DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP   no window  3/3
+    #
+    # CREATE_NEW_PROCESS_GROUP is included because it is the flag that stops CTRL+C
+    # reaching the child (0xC000013A, STATUS_CONTROL_C_EXIT). MSDN:
+    # "If this flag is specified, CTRL+C signals will be disabled for all processes
+    # within the new process group." It is ignored only with CREATE_NEW_CONSOLE.
+        kw["creationflags"] = (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP)
     else:
         kw["start_new_session"] = True
     argv = [sys.executable, os.path.join(HERE, "heartbeat.py"),
@@ -187,14 +202,67 @@ def ensure_ping_chain(interval=PING_DEFAULT_INTERVAL):
 LOGFILE = os.path.join(WORK, "ping.log")
 
 # Detached children: no console, not in our process group.
+# THE CONSOLE FLAGS. This comment previously said:
 #
-# Not combined with CREATE_NO_WINDOW -- the two are mutually exclusive, and
-# CREATE_NO_WINDOW is the flag that left the 0xC000013A deaths in place.
-DETACHED = ({"creationflags": subprocess.DETACHED_PROCESS}
+#   "Not combined with CREATE_NO_WINDOW -- the two are mutually exclusive, and
+#    CREATE_NO_WINDOW is the flag that left the 0xC000013A deaths in place."
+#
+# BOTH CLAIMS ARE FALSE, and the false comment is why a terminal window has been
+# flashing up and vanishing several times a minute for the user.
+#
+# Per MSDN (Process Creation Flags, Process Creation and Initialization):
+#
+#   CREATE_NO_WINDOW (0x08000000)
+#       "The process is a console application that is being run without a console
+#        window.  This flag is IGNORED if the application is not a console
+#        application, or if it is used with either CREATE_NEW_CONSOLE or
+#        DETACHED_PROCESS."
+#
+#   CREATE_NEW_PROCESS_GROUP (0x00000200)
+#       "The new process is the root process of a new process group.  If this flag
+#        is specified, CTRL+C SIGNALS WILL BE DISABLED for all processes within the
+#        new process group."
+#
+# So:
+#
+#   * DETACHED_PROCESS and CREATE_NO_WINDOW are not "mutually exclusive" in the
+#     sense that mattered -- CREATE_NO_WINDOW is IGNORED alongside it. Passing both
+#     would have been silently a no-op.
+#   * DETACHED_PROCESS says the child "can call AllocConsole at a later time",
+#     which is how a console window appears on a console application started from
+#     a session with no console of its own. That is the flashing window.
+#   * The 0xC000013A deaths (STATUS_CONTROL_C_EXIT) were CTRL+C reaching children
+#     in the parent's process group. The flag that stops that is
+#     CREATE_NEW_PROCESS_GROUP -- not CREATE_NO_WINDOW, which never had anything
+#     to do with it. It is only ignored alongside CREATE_NEW_CONSOLE, so it
+#     combines with CREATE_NO_WINDOW cleanly.
+#
+# Hence: CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP. No window, and CTRL+C cannot
+# propagate into the chain. STARTF_USESHOWWINDOW|SW_HIDE is belt and braces for the
+# case where something downstream re-creates a console.
+_HIDE = None
+if os.name == "nt":
+    _si = subprocess.STARTUPINFO()
+    _si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _si.wShowWindow = 0            # SW_HIDE
+    _HIDE = {"startupinfo": _si}
+
+DETACHED = ({"creationflags": (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP), **_HIDE}
             if os.name == "nt" else {"start_new_session": True})
 # Windowless but still grouped: only for short-lived probes (tasklist, git), where
-# detaching would strand their pipes.
-NOWINDOW = ({"creationflags": subprocess.CREATE_NO_WINDOW}
+# the pipe lifetime has to survive the spawn.
+#
+# MEASURED, not assumed, and the measurement inverted the obvious answer -- see the
+# table in tools/keepalive.py next to NOWINDOW. On this machine:
+#
+#     DETACHED_PROCESS                            no window  3/3
+#     CREATE_NO_WINDOW                            WINDOW     3/3
+#     DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP   no window  3/3
+#
+# CREATE_NO_WINDOW is the flag whose NAME says "no window" and which produces one.
+NOWINDOW = ({"creationflags": (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP)}
             if os.name == "nt" else {})
 
 

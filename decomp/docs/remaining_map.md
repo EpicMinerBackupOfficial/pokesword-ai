@@ -1596,3 +1596,70 @@ Putting the old figure back and running the audit:
 Restored, and green again. A check that has never been seen to fail has not been
 tested; that is the same rule as "never register a body that does not verify",
 applied to the audit instead of the registry.
+
+
+## The flashing terminal: a comment that was wrong in both directions
+
+The user reported a terminal window popping up and disappearing several times a
+minute. It is the keepalive chain's own subprocess flags, and the comment that
+"explained" them was wrong twice.
+
+    tools/ping_watchdog.py, DETACHED, before:
+
+        # Not combined with CREATE_NO_WINDOW -- the two are mutually exclusive, and
+        # CREATE_NO_WINDOW is the flag that left the 0xC000013A deaths in place.
+
+**Claim 1, "mutually exclusive":** MSDN says CREATE_NO_WINDOW "is ignored if the
+application is not a console application, or if it is used with either
+CREATE_NEW_CONSOLE or DETACHED_PROCESS." So passing both is not a conflict, it is a
+silent no-op.
+
+**Claim 2, "the flag that left the 0xC000013A deaths in place":** 0xC000013A is
+STATUS_CONTROL_C_EXIT -- CTRL+C reaching a child. The flag for that is
+CREATE_NEW_PROCESS_GROUP, whose documentation says "CTRL+C signals will be
+disabled for all processes within the new process group." It had never been tried.
+
+### And the conclusion was inverted in practice
+
+    work/console_flags.py, 3 runs per case, a window counted as a conhost.exe
+    that outlives the settle time
+
+    DETACHED_PROCESS                            no window  3/3
+    CREATE_NO_WINDOW                            WINDOW     3/3
+    CREATE_NO_WINDOW|CREATE_NEW_PROCESS_GROUP   WINDOW     3/3
+    DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP   no window  3/3
+
+`CREATE_NO_WINDOW` is the flag whose NAME says "no window" and which produces one.
+`DETACHED_PROCESS`, which the comment had rejected, suppresses it.
+
+The long-lived chain used DETACHED and was already fine. **Every short-lived probe
+in the tick used NOWINDOW -- which was CREATE_NO_WINDOW** -- and a tick runs
+tasklist, git, audit.py and a full clang run. That is the flash.
+
+### The fix
+
+    tools/keepalive.py       NOWINDOW  -> DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
+    tools/ping_watchdog.py   NOWINDOW  -> DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
+    tools/ping_watchdog.py   DETACHED  -> DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP
+                             plus STARTUPINFO STARTF_USESHOWWINDOW|SW_HIDE
+
+The old reason for splitting them apart -- "detaching would strand their pipes" --
+is wrong: DETACHED_PROCESS affects the CONSOLE, not inherited standard handles, so
+`stdout=PIPE` still works. That assumption is what let the window survive.
+
+### What nearly shipped
+
+The first attempt replaced DETACHED with CREATE_NO_WINDOW on the strength of MSDN's
+description of what CREATE_NO_WINDOW does, and the audit passed and the code was
+clean and it would have made the flash **more frequent**, not less -- it had removed
+the one flag that was working.
+
+It was caught by measuring rather than by reading, and by counting the right thing.
+`tasklist /V` reports "N/A" for every case and cannot tell a windowed process from
+a windowless one; `MainWindowHandle` is unreliable for console applications. Only
+a conhost.exe delta separates them. And a single run is worthless: the first
+measurement read a leftover conhost from its own previous kill as a window and
+would have "proved" that DETACHED_PROCESS causes one.
+
+**Three runs per case, and count the object that appears on screen.** A measurement
+that cannot come out the other way is not a measurement.

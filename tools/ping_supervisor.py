@@ -48,7 +48,12 @@ import subprocess
 # CREATE_NO_WINDOW is the fix for ordinary children. It is deliberately NOT
 # combined with DETACHED_PROCESS above: the two flags conflict, and the re-exec
 # genuinely wants to be detached rather than merely windowless.
-NOWINDOW = ({"creationflags": subprocess.CREATE_NO_WINDOW}
+# DETACHED_PROCESS, NOT CREATE_NO_WINDOW -- measured, see work/console_flags.py:
+# CREATE_NO_WINDOW produces a window 3 runs out of 3 on this machine and
+# DETACHED_PROCESS suppresses it 3 out of 3. This file's short-lived probes
+# were the ones the user kept seeing flash up and vanish.
+NOWINDOW = ({"creationflags": (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP)}
             if os.name == "nt" else {})
 
 # The supervised loop is a *different* case, and the earlier version got it
