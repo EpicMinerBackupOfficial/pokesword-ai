@@ -5,18 +5,6 @@
 #pragma once
 
 namespace subsdk1 {
-void sub_1bea50();  // 0x1bea50
-void sub_1bea80();  // 0x1bea80
-void sub_1bea90();  // 0x1bea90
-void sub_1beb40();  // 0x1beb40
-void sub_1bebc0();  // 0x1bebc0
-void sub_1becb0();  // 0x1becb0
-void sub_1becc0();  // 0x1becc0
-void sub_1befb0();  // 0x1befb0
-void sub_1bf2c0();  // 0x1bf2c0
-void sub_1bf5d0();  // 0x1bf5d0
-void sub_1bf8f0();  // 0x1bf8f0
-void sub_1bff30();  // 0x1bff30
 void sub_1c0310();  // 0x1c0310
 void sub_1c03a0();  // 0x1c03a0
 void sub_1c04c0();  // 0x1c04c0
@@ -1227,14 +1215,12 @@ void sub_226990();  // 0x226990
 void sub_2269e0();  // 0x2269e0
 void sub_226c60();  // 0x226c60
 void sub_226ce0_subsdk1_226ce0();  // 0x226ce0
-void sub_226d40_subsdk1_226d40();  // 0x226d40
 void sub_226d50();  // 0x226d50
 void sub_226da0_subsdk1_226da0();  // 0x226da0
 void sub_226f40();  // 0x226f40
 void sub_226fa0();  // 0x226fa0
 void sub_227350();  // 0x227350
 void sub_2274f0();  // 0x2274f0
-void sub_227710_subsdk1_227710();  // 0x227710
 void sub_227720();  // 0x227720
 void sub_227780();  // 0x227780
 void sub_227d00_subsdk1_227d00();  // 0x227d00
@@ -1286,7 +1272,6 @@ void sub_22e080();  // 0x22e080
 void sub_22e1d0();  // 0x22e1d0
 void sub_22e270();  // 0x22e270
 void sub_22e370();  // 0x22e370
-void sub_22e470();  // 0x22e470
 void sub_22e480();  // 0x22e480
 void sub_22e660();  // 0x22e660
 void sub_22e6c0();  // 0x22e6c0
@@ -1407,7 +1392,6 @@ void sub_23ecc0();  // 0x23ecc0
 void sub_23ee00();  // 0x23ee00
 void sub_23ef60();  // 0x23ef60
 void sub_23f0b0();  // 0x23f0b0
-void sub_23f1d0();  // 0x23f1d0
 void sub_23f2c0();  // 0x23f2c0
 void sub_23f3e0_subsdk1_23f3e0();  // 0x23f3e0
 void sub_23f570();  // 0x23f570
@@ -1425,7 +1409,6 @@ void sub_240800();  // 0x240800
 void sub_2409a0_subsdk1_2409a0();  // 0x2409a0
 void sub_240bc0();  // 0x240bc0
 void sub_240d90();  // 0x240d90
-void sub_240f90();  // 0x240f90
 void sub_241060();  // 0x241060
 void sub_241190();  // 0x241190
 void sub_241350();  // 0x241350
@@ -1643,7 +1626,6 @@ void sub_257410();  // 0x257410
 void sub_257560();  // 0x257560
 void sub_2576b0();  // 0x2576b0
 void sub_2577f0();  // 0x2577f0
-void sub_257930();  // 0x257930
 void sub_257a00();  // 0x257a00
 void sub_257b30();  // 0x257b30
 void sub_257c70();  // 0x257c70
@@ -2935,10 +2917,6 @@ void sub_2e7110_subsdk1_2e7110();  // 0x2e7110
 void uniform_storage_blocks_not_allowed();  // 0x2e7140
 void sub_2e7200();  // 0x2e7200
 void sub_2e7210_subsdk1_2e7210();  // 0x2e7210
-void sub_2e7230();  // 0x2e7230
-void sub_2e7240_subsdk1_2e7240();  // 0x2e7240
-void sub_2e7250();  // 0x2e7250
-void sub_2e7260_subsdk1_2e7260();  // 0x2e7260
 void sub_2e7270();  // 0x2e7270
 void sub_2e7280_subsdk1_2e7280();  // 0x2e7280
 void sub_2e7290();  // 0x2e7290
@@ -4005,5 +3983,27 @@ void sub_352140_subsdk1_352140();  // 0x352140
 void sub_352290();  // 0x352290
 void sub_3522d0();  // 0x3522d0
 void sub_3522e0_subsdk1_3522e0();  // 0x3522e0
+void EOL_inside_preprocessor_string();  // 0x352330
+void integer_constant_overflow();  // 0x353060
+void floating_point_constant_overflow();  // 0x3533a0
+void c_in_string_constant();  // 0x353aa0
+void sub_353c10();  // 0x353c10
+void sub_353ce0();  // 0x353ce0
+void sub_354190();  // 0x354190
+void sub_354290();  // 0x354290
+void line_d();  // 0x3542e0
+void sub_354480();  // 0x354480
+void sub_354520();  // 0x354520
+void sub_3545d0();  // 0x3545d0
+void NOPERSPECTIVE_3();  // 0x354630
+void sub_354e90_subsdk1_354e90();  // 0x354e90
+void sub_355090();  // 0x355090
+void unexpected_samplerkind_in_SamplerKind2SamplerTypes();  // 0x3550c0
+void s_s_s_s();  // 0x3550f0
+void s_d_s_2_subsdk1_3551f0();  // 0x3551f0
+void sub_355300_subsdk1_355300();  // 0x355300
+void sub_355470();  // 0x355470
+void BUFFER_1();  // 0x355490
+void yuv_img__d__d();  // 0x3555b0
 
 }  // namespace subsdk1

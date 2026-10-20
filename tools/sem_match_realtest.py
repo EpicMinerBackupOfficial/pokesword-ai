@@ -24,6 +24,7 @@ rejected. A verdict of "equivalent" with no matching control is worth nothing.
 
 import os
 import subprocess
+import nocon  # installs the no-console default for every subprocess below
 import sys
 import tempfile
 

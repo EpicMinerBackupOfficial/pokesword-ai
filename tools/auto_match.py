@@ -37,6 +37,7 @@ import json
 import os
 import re
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import tempfile
 
@@ -263,10 +264,45 @@ def gen_ret_only(ins, end, ident):
     return "void %s() {}\n" % ident, "v"
 
 
+def tail_arity(ins):
+    """How many argument registers does this prefix forward?
+
+    A tail call forwards x0..xN, so the arity is one past the highest argument
+    register the body MENTIONS -- written (computed) or merely read (inherited
+    from our own caller and passed straight through). Mentions both count:
+
+        add x2, x0, #0xec ; add x3, x0, #0xe8 ; mov w4, #1 ; b target
+
+    writes x2, x3, x4 and reads x0, so the highest argument register is x4 and
+    the call takes five. Reading only the WRITTEN registers would give three and
+    the incoming arguments would have nowhere to go.
+
+    Zero means the prefix mentions no argument register at all, so the call
+    takes none and the body is a thunk with a no-op prefix.
+    """
+    hi = -1
+    for i in ins:
+        for m in re.finditer(r"\b[wx]([0-9]|1[0-7])\b", i.op_str):
+            n = int(m.group(1))
+            if n <= 7:
+                hi = max(hi, n)
+    return hi + 1
+
+
 def branch_target(ins):
-    """Absolute target of a single unconditional `b`, or None."""
-    i = ins[0]
-    if i.mnemonic != "b":
+    """Absolute target of the body's unconditional `b`, or None.
+
+    The branch is the body's TERMINATOR: it is `ins[0]` for a pure thunk and
+    `ins[-1]` for a tail call with an argument-setup prefix. It is the same
+    instruction semantically in both -- the return -- so both are found here.
+    """
+    i = None
+    if ins:
+        if ins[0].mnemonic == "b":
+            i = ins[0]
+        elif len(ins) > 1 and ins[-1].mnemonic == "b":
+            i = ins[-1]
+    if i is None:
         return None
     t = i.op_str.strip()
     if not t.startswith("#"):
@@ -294,6 +330,32 @@ def gen_tailcall(ins, end, ident, ctx):
     # takes none. The prototype emitted by the caller must match, or the batch
     # fails to compile.
     n = ctx.get("nargs", 0)
+    # A PREFIX means the body COMPUTES its arguments, so `a0..an` cannot be
+    # forwarded unchanged -- the translator has to render the prefix, and the
+    # expressions it computes are what gets passed.
+    prefix = ctx.get("tail_prefix")
+    if prefix:
+        import straight_line
+        try:
+            # The whole body, branch included. `tail=` treats the trailing `b` as
+            # the body's TERMINATOR -- it is the return, and it is excluded from
+            # the walk. Handing the translator the prefix alone (which is what
+            # `ctx["tail_prefix"]` holds, because the arity is computed from the
+            # prefix's argument registers) makes it look for a terminator that is
+            # not there, and every one of the 6,487 bodies in main declined with
+            # `tail body does not end in b`.
+            out = straight_line.StraightLine(list(ins[:end])).translate(
+                ident, tail=(tname, n))
+        except straight_line.Bail:
+            return None
+        except Exception:
+            # A generator bug must never invent a body.
+            return None
+        src_txt = out[0] if isinstance(out, tuple) else out
+        sig = out[1] if isinstance(out, tuple) and len(out) > 1 else "v"
+        # A prefix tail call returns whatever the target returns -- uint64_t --
+        # never void, whatever the pure thunk's signature is.
+        return src_txt, (sig if isinstance(sig, str) and sig else "m" * n)
     if n == 0:
         return ("uint64_t %s() { return %s(); }\n" % (ident, tname), "v")
     params = ", ".join("uint64_t a%d" % k for k in range(n))
@@ -2060,11 +2122,327 @@ def gen_straight(ins, end, ident):
         return None
 
 
+COND_BRANCH = ("b.eq", "b.ne", "b.lt", "b.le", "b.gt", "b.ge", "b.hi", "b.hs",
+               "b.lo", "b.ls", "b.cc", "b.cs", "b.mi", "b.pl", "b.vs", "b.vc",
+               "cbz", "cbnz", "tbz", "tbnz")
+
+
+def gen_guarded(ins, end, ident):
+    """A guarded straight line: one conditional branch that skips a block.
+
+    `guard=` is the INDEX OF THE CONDITIONAL BRANCH within the walked body, which
+    `translate` derives by slicing the trailing `ret` off -- so it is the index
+    within `ins[:end-1]`, not within `ins[:end]`. Passing `end` instead puts the
+    index one past the branch and the guard test reads the wrong instruction.
+    """
+    import straight_line
+    # STRIP THE FRAME before translating.
+    #
+    # The pair handler reads `sp` as a memory base and declines with "memory base
+    # is sp: a stack slot is not modelled" -- a correct refusal of the WRONG INPUT.
+    # The frame is exactly that wrong input, and `call_register.candidates_guarded`
+    # has stripped it for its call bodies since the guarded path was built.
+    #
+    # Stripping changes the indices, so the guard index has to be recomputed AFTER
+    # the strip, not carried over. Carrying it over would point the guard at
+    # whichever instruction shifted into the old slot -- a plausible source with the
+    # wrong condition, which is worse than declining.
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
+    brs = [k for k, x in enumerate(body[:-1]) if x.mnemonic in COND_BRANCH]
+    if len(brs) != 1:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(ident, guard=brs[0])
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    # ASSERT THE ARTIFACT'S SHAPE AT PRODUCTION.
+    #
+    # With `guard=` set, `translate` can return a body in which the guarded block
+    # is emitted UNCONDITIONALLY -- the conditional branch is deleted rather than
+    # expressed:
+    #
+    #     add  x8, x0, w1, uxtw #3
+    #     ldr  x8, [x8, #0x350]
+    #     cbz  x8, ret          <- the guard
+    #     strh w2, [x8, #0x8a]
+    #     ret
+    #
+    # became
+    #
+    #     void f_x(void* a0, uint32_t a1, uint64_t a2) {
+    #         void* p0 = ...; void* p1 = ...;
+    #         *(uint16_t *)((char *)p0 + 138) = (uint16_t)a2;   <- no `if`
+    #     }
+    #
+    # which is a DIFFERENT FUNCTION: the test and both of its outcomes are gone.
+    # The comparison would reject it -- retail has the branch and this does not --
+    # so it cannot corrupt the figure, but it does put wrong C into prog/ for
+    # every body that goes this way, and it does so WITHOUT AN ERROR.
+    #
+    # A producer should assert its artifact's shape at the moment of production,
+    # not leave a later stage to discover it. Declined here, so the population
+    # stays mapped and the bodies stay out of the tree until the guarded emitter
+    # actually emits the guard.
+    src = out[0] if isinstance(out, tuple) else out
+    if "if (" not in src:
+        return None
+    if _has_undeclared(src):
+        return None
+    # The SECOND shape rule: a `void` function must not return a value. `return 0;`
+    # in a `void` function is a hard C++ error, not a warning, and one of these in
+    # a 60-candidate translation unit removes all 60.
+    #
+    # Asserting it here as well as fixing the emitter is deliberate: the registry
+    # is a CACHE of verified sources, and ten of its `guarded` entries carried a
+    # body the emitter can no longer produce -- generated before the fix and still
+    # being emitted into prog/ months later, because nothing invalidated them.
+    # A cache whose entries are never re-derived against the generator is a second
+    # copy of the contract.
+    _head = src.split("{", 1)[0]
+    if _head.strip().startswith("void ") and \
+            "return " in src.replace("return;", ""):
+        return None
+    return out
+
+
+def _branch_target(ins, k):
+    """A branch target ADDRESS converted to an index into `ins`.
+
+    THE BASE IS THE LIST'S, NOT THE INSTRUCTION'S.
+
+    `work/diamond_bail.py` shipped a version using `(target - ins[k].address) // 4`
+    and reported 2 diamonds where the same conditions give 958, because subtracting
+    the instruction's own address yields the index MINUS k. Every count moved by
+    exactly k, which is what a stage counter is for.
+
+    The LAST comma-separated operand is the target: `tbz w2, #0, #0x16` has three
+    operands and the first version of `diamond_shape.py` parsed all of them as
+    one hex literal, which made 2,151 bodies vanish into "unparsed" and read as
+    "these are not diamonds".
+    """
+    if k >= len(ins):
+        return None
+    o = ins[k].op_str.strip().split(",")[-1].strip()
+    if not o.startswith("#"):
+        return None
+    try:
+        return (int(o[1:], 16) - ins[0].address) // 4
+    except ValueError:
+        return None
+
+
+def _has_undeclared(src):
+    """True if `src` names a page symbol nothing declares.
+
+    `adrp` renders as `&adrp_<page>`, and the page table is never declared in the
+    candidate's preamble. Clang then fails with
+
+        error: use of undeclared identifier 'adrp_a74000'
+
+    and because the harness compiles candidates in BATCHES, one of these removes
+    every candidate sharing the translation unit -- 4 sdk candidates here, and
+    the loss scales with the batch. A green "no error" line elsewhere in the
+    same run does not mean the batch survived.
+
+    Declined at production rather than fixed downstream, for the same reason the
+    `if (` assertion is: the registry is a cache nobody invalidates, so a source
+    that does not compile must never reach it.
+
+    The check is a scan for the identifier family rather than a full compile,
+    because a compile per candidate is the cost this generator exists to avoid,
+    and the family is closed: only `adrp` introduces a page symbol.
+    """
+    return "adrp_" in src
+
+
+def gen_diamond(ins, end, ident):
+    """A diamond: one conditional branch, two arms, one join.
+
+        <prefix>
+        b.cond  ARM_B
+        ARM_A
+        b       JOIN
+        ARM_B
+        <join>            <- may be the `ret`, or more straight-line code
+
+    `guard=` is the index of the conditional branch and `dcut=` the index of the
+    unconditional `b`, both WITHIN THE STRIPPED BODY, which is what `translate`
+    walks. Carrying the unstripped index over would point the guard at whichever
+    instruction shifted into the old slot -- a plausible source with the wrong
+    condition, which is worse than declining.
+
+    The arm order is the ORIGINAL's, not a choice. Clang will not invert a
+    conditional branch to make a block fall through
+    (MachineBasicBlock::updateTerminator returns rather than reversing), and with
+    no profile data MachineBlockPlacement keeps the topological order, which is
+    source order. So there is exactly one spelling to try.
+    """
+    import straight_line
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
+    mn = [x.mnemonic for x in body]
+    if mn.count("b") != 1:
+        return None
+    bi = mn.index("b")
+    if bi == 0 or bi >= len(body) - 1:
+        return None
+    conds = [k for k, x in enumerate(mn) if x in COND_BRANCH]
+    if len(conds) != 1:
+        return None
+    ci = conds[0]
+    if ci >= bi:
+        return None
+    # The conditional must SKIP to ARM_B, i.e. target the instruction after the
+    # `b`. If it falls THROUGH into ARM_A instead, the block is the `ret` and the
+    # guarded shape already owns it -- claiming it here would be claiming a
+    # population the guarded path reaches on its own.
+    if _branch_target(body, ci) != bi + 1:
+        return None
+    tb = _branch_target(body, bi)
+    if tb is None or tb <= bi or tb >= len(body):
+        return None
+    if tb != len(body) - 1 and not tb <= len(body) - 1:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(
+            ident, guard=ci, dcut=bi)
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    s = out[0] if isinstance(out, tuple) else out
+    # ASSERT THE ARTIFACT'S SHAPE AT PRODUCTION. A diamond that came out with no
+    # `else` is not a diamond: it is a guarded body, or -- worse -- the guarded
+    # block emitted unconditionally, which is a DIFFERENT FUNCTION. The registry
+    # is a cache nobody invalidates, so a bad artifact written here is emitted
+    # into prog/ long after this generator stopped producing it.
+    if "if (" not in s or "} else {" not in s:
+        return None
+    if _has_undeclared(s):
+        return None
+    _head = s.split("{", 1)[0]
+    if _head.strip().startswith("void ") and "return " in s.replace("return;", ""):
+        return None
+    return out
+
+
+
+def gen_indirect_tailcall(ins, end, ident):
+    """A tail call through a POINTER: `ldr xN, [xM] ; ... ; br xN`.
+
+    The direct path has been here since the tail-call prefix landed 5,322 bodies.
+    It renders `return callee(a0, ...)`, which needs a callee NAME -- and a
+    pointer loaded from memory has none. So every one of these declined with
+
+        Bail("tail body does not end in b")
+
+    which reads as "the translator cannot express this body" and is actually "the
+    translator's one spelling of a tail call assumes a name".
+
+    `br` is also structurally EASIER than `b` for byte identity, which is why this
+    population is worth the work: `b` carries a byte-offset immediate, so two
+    differently-laid-out images can never agree on it, and the 30 diamonds that
+    translate today are blocked on exactly that. `br` is a fixed 4-byte
+    instruction with no immediate at all. Nothing to disagree about.
+
+    Restricted to bodies that FORWARD their arguments. A body that materialises a
+    constant argument is declined, and not because of the translation: Clang
+    5.0.1 emits `orr xN, xzr, #imm` for a constant call ARGUMENT and never the
+    `mov` retail uses -- measured across four barrier placements and six argument
+    types (work/movz_barrier.py, work/movz_probe.py). There is no C that makes it
+    emit MOVZ into an opaque callee's argument register. 1,762 bodies forward and
+    are live; 147 set a constant and are dead until the compiler moves.
+    """
+    import straight_line
+    import call_register as _cr
+    body = [x for x in ins[:end] if not _cr.is_frame_insn(x)]
+    mn = [x.mnemonic for x in body]
+    if mn.count("br") != 1 or "b" in mn:
+        return None
+    bi = mn.index("br")
+    if bi == 0:
+        return None
+    # No call, no conditional branch, no table dispatch -- this is a plain
+    # forward-and-branch. Anything else is a different shape and claiming it here
+    # would put wrong C in the registry.
+    if "bl" in mn or "blr" in mn or any(x.startswith("b.") for x in mn):
+        return None
+    if "adrp" in mn[max(0, bi - 4):bi]:
+        return None
+    # THE CONSTANT-ARGUMENT DECLINE, measured rather than assumed.
+    for x in body:
+        if x.mnemonic != "mov":
+            continue
+        p = x.op_str.split(",")
+        if len(p) == 2 and "#" in p[1]:
+            return None
+    src_reg = body[bi].op_str.strip()
+    # THE ARITY, AND THE BRANCH REGISTER IS NOT AN ARGUMENT.
+    #
+    # The first version counted every argument register the body touched and took
+    # the highest, so main 0x114360
+    #
+    #     ldr x8, [x0] ; ldr x2, [x8, #0x40] ; br x2
+    #
+    # came out with arity 3 -- because x2 holds the CALLEE. The emitted call was
+    #
+    #     return ((void (*)(uintptr_t, uintptr_t, uintptr_t))...)(a0, a1, <callee>);
+    #
+    # passing the function pointer to itself as the third argument. It is
+    # wrong, it is plausible, and it is not caught by any shape assertion.
+    #
+    # The arity is the number of CONSECUTIVE argument registers below the branch
+    # register: 0, then 1, then 2. A body that only forwards a0 has arity 1.
+    n = 0
+    for x in body:
+        for part in x.op_str.replace("[", ",").replace("]", ",").split(","):
+            t = part.strip()
+            if not (len(t) > 1 and t[0] in "xw" and t[1:].isdigit()):
+                continue
+            reg = "x" + t[1:]
+            if reg == src_reg:
+                continue          # the callee, not an argument
+            k = int(t[1:])
+            if k < 8 and k + 1 > n:
+                n = k + 1
+    if n == 0:
+        return None
+    try:
+        out = straight_line.StraightLine(body).translate(
+            ident, tail=(None, n, src_reg))
+    except straight_line.Bail:
+        return None
+    except Exception:
+        # A generator bug must never invent a body.
+        return None
+    s = out[0] if isinstance(out, tuple) else out
+    # ASSERT THE ARTIFACT. An indirect tail call that came out with no call
+    # expression is not one, and the registry is a cache nobody invalidates.
+    if "return ((void (*)" not in s:
+        return None
+    if "return " in s.replace("return;", "").replace("return ((void (*)", ""):
+        # exactly one return, the tail call
+        if s.count("return") != 1:
+            return None
+    if _has_undeclared(s):
+        return None
+    return out
+
+
+
 # Shape -> generator. Every shape `shape_of` can return must appear here, or
 # --all-shapes silently skips it.
 SHAPE_GENERATORS = dict(GENERATORS)
 SHAPE_GENERATORS["straight"] = gen_straight
+SHAPE_GENERATORS["guarded"] = gen_guarded
+SHAPE_GENERATORS["diamond"] = gen_diamond
 SHAPE_GENERATORS["tailcall"] = gen_tailcall
+SHAPE_GENERATORS["indirect-tailcall"] = gen_indirect_tailcall
 SHAPE_GENERATORS["pair-ret"] = gen_pair_ret
 SHAPE_GENERATORS["fp-conv-store"] = gen_fp_conv_store
 SHAPE_GENERATORS["fp-compare"] = gen_fp_compare
@@ -2536,6 +2914,33 @@ def shape_of(ins, end):
     if n == 3 and mn[0] == "add" and mn[1] in LOADS and mn[2] == "ret":
         return "indexed-getter"
 
+    # A tail call through a POINTER: a single `br` as the last real instruction,
+    # no direct `b`, no call, no conditional branch. 1,909 bodies by
+    # work/tail_forward.py, of which 1,762 forward their arguments and are live.
+    if n >= 2 and mn.count("br") == 1 and "b" not in mn:
+        _bi = mn.index("br")
+        if _bi >= 1 and all(x == "nop" for x in mn[_bi + 1:]):
+            if not ("bl" in mn or "blr" in mn) and \
+                    not any(x.startswith("b.") for x in mn) and \
+                    "adrp" not in mn[max(0, _bi - 4):_bi]:
+                return "indirect-tailcall"
+
+    # A DIAMOND: one unconditional `b`, one conditional branch before it, and the
+    # conditional skipping to the instruction AFTER the `b`. That last condition is
+    # what makes it a diamond rather than a guarded block, and it is the only
+    # difference -- so the test has to be exactly this or the shape name is a
+    # claim the body does not support.
+    #
+    # 958 bodies, measured by work/diamond_shape.py and re-measured independently
+    # by work/diamond_bail.py. 30 of them translate; the rest decline on `sp`
+    # memory (202), `blr` (168), length (163), and not-ending-in-`ret` (61).
+    if n >= 4 and mn.count("b") == 1:
+        _bi = mn.index("b")
+        _cs = [k for k, x in enumerate(mn) if x in COND_BRANCH]
+        if 0 < _bi < n - 1 and len(_cs) == 1 and _cs[0] < _bi and \
+                _branch_target(ins[:end], _cs[0]) == _bi + 1:
+            return "diamond"
+
     # `ldr xN, [x0] ; mov wM, #imm ; str wM, [xN, #o] ; ret` -- constant write
     # through a double pointer. 186 unmatched bodies, almost all flag fields.
     if n == 4 and mn[0] in LOADS and mn[1] in ("mov", "movz") and \
@@ -2621,8 +3026,80 @@ def shape_of(ins, end):
     # so cset and cmp sit at -2 and -3.
     if n >= 3 and mn[-1] == "ret" and mn[-2] == "cset" and mn[-3] == "cmp":
         return "compare"
+    # GUARDED STRAIGHT LINE: a straight line, one conditional branch, and the
+    # branch targets the trailing `ret`.
+    #
+    #     ldr  w8, [x0, #0x50]
+    #     cbz  w8, ret          <- skips the block
+    #     ...                  <- the guarded block
+    #     ret
+    #
+    # which is
+    #
+    #     if (*(uint32_t *)((char *)a0 + 0x50)) { ... }
+    #
+    # This had WORKING MACHINERY AND NO ROUTE. `straight_line.translate` has taken
+    # a `guard=` argument since the guarded path was built and is proven on five
+    # banked bodies -- but the only caller that passes it is
+    # `call_register.candidates_guarded`, which requires EXACTLY ONE `bl`. That
+    # is a call-body enumerator, so a guarded body with no call in it never
+    # arrives. And nothing else could produce one: `shape_of` returns `branchy`
+    # for any body with a branch, and `gen_straight` calls `translate(ident)` with
+    # no guard.
+    #
+    # Measured: 6,418 unmatched bodies test a loaded field for zero or nonzero and
+    # terminate in `ret` -- this exact shape, `work/guard_kind.py`. The conditional
+    # population as a whole is 85,758, not the 10,396 the map quoted for main.
+    # NO unconditional branch. A body with a `b` or `br` in it is a SWITCH --
+    # a jump table, or a computed goto -- and the pre-filter declines it with
+    # "unsupported mnemonic 'br'" or "'b'". That was 1,379 of main's 1,606
+    # "guarded" bodies, so the shape was claiming 1,606 when the real one-armed-if
+    # population is about 227. `work/guard_kind.py` and the Bail census both.
+    #
+    # Excluding them here does not lose them: they are a DIFFERENT population with
+    # a different generator, and a shape that claims bodies it cannot express is a
+    # shape whose yield is a lie.
+    if n >= 3 and mn[-1] == "ret" and "adrp" not in mn and "adr" not in mn \
+            and "blr" not in mn and "bl" not in mn \
+            and "b" not in mn and "br" not in mn:
+        brs = [k for k, x in enumerate(mn[:-1]) if x in COND_BRANCH]
+        if len(brs) == 1:
+            k = brs[0]
+            ops = [x.strip() for x in ins[k].op_str.split(",")]
+            try:
+                tgt = int(ops[-1].lstrip("#"), 16)
+            except ValueError:
+                tgt = None
+            # The branch must skip the block and land on the `ret` -- the shape
+            # `translate(guard=)` is written for. A branch into the middle, or a
+            # backward one, is a different body and is declined here rather than
+            # handed a guard index it does not mean.
+            if tgt is not None and (tgt - ins[0].address) // 4 == n - 1:
+                return "guarded"
     # Pure tail-call thunk: the whole body is one `b <other function>`.
     if n == 1 and mn[0] == "b":
+        return "tailcall"
+    # TAIL CALL WITH A PREFIX: a straight line that sets up argument registers
+    # and ends in `b <target>`.
+    #
+    #     add  x2, x0, #0xec
+    #     add  x3, x0, #0xe8
+    #     mov  w4, #1
+    #     b    target
+    #
+    # This was UNREACHABLE. `body` below is `mn[:-1]` only when the body ends in
+    # `ret`, so here it was the WHOLE list including the `b`, and `b` is not a
+    # straight-line mnemonic -- so the test failed and the body fell through to
+    # `branchy`. `branchy` has no generator that can express a prefix, so all
+    # 8,193 of these were silently declined. There are 61,774 bodies in
+    # `branchy` in main alone; this is the largest untouched class.
+    #
+    # The branch is the RETURN, not an instruction: the target does the
+    # returning, and Clang's tail-call optimisation reproduces the `b` from a
+    # plain `return target(...)`. Measured byte-identical.
+    if len(mn) >= 2 and mn[-1] == "b" and \
+            all(m in LOADS or m in STORES or m in ("add", "mov", "sub")
+                for m in mn[:-1]):
         return "tailcall"
     # Anything else that is a straight line of loads/stores/adds/moves is
     # handled by the general translator. `ret` is the terminator and has to be
@@ -2701,8 +3178,23 @@ def collect(module, shapes, limit):
                 skipped[sh] += 1
                 continue
             taddr = starts[idx]
-            tname = "t_%s_%x" % (module, taddr)
-            ctx = {"tail_target": (tname, None), "nargs": 0,
+            # The prefix, if any -- the body minus the branch that terminates it.
+            pfx = list(ins[:end])
+            if pfx and pfx[-1].mnemonic == "b":
+                pfx = pfx[:-1]
+            nargs = tail_arity(pfx)
+            # PER-ARITY TARGET NAME. The target is declared in the batch head as
+            # `uint64_t t_x();`, and in C++ `()` means ZERO parameters -- so a
+            # five-argument call is ill-formed. Naming the arity into the symbol
+            # fixes that, and it also fixes the other half: two bodies tail-calling
+            # ONE destination with different arities would otherwise be two
+            # disagreeing declarations of the same name, which is a redefinition
+            # and kills the whole translation unit. One name per (target, arity).
+            tname = ("t_%s_%x" % (module, taddr) if nargs == 0
+                     else "t_%s_%x_%d" % (module, taddr, nargs))
+            ctx = {"tail_target": (tname, None), "nargs": nargs,
+                   "tail_prefix": pfx,
+                   "tail_ret": "m" if pfx else "v",
                    "tail_orig_name": names.get(taddr, "")}
             made = gen(ins, end, ident, ctx)
         else:
@@ -2741,6 +3233,12 @@ def collect(module, shapes, limit):
             rec["needs_proto"] = tname
             rec["tail_target_addr"] = taddr
             rec["tail_orig_name"] = names.get(taddr, "")
+            # Recorded so the build-time gate can tell a bare thunk from one with
+            # an argument-setup prefix, and so verification mangles the right
+            # return type: a prefixed tail call returns what its target returns,
+            # which is `uint64_t`, not `void`.
+            rec["tail_nargs"] = ctx.get("nargs", 0)
+            rec["tail_ret"] = ctx.get("tail_ret", "v")
         out.append(rec)
         if limit and len(out) >= limit:
             break
@@ -2759,7 +3257,23 @@ def verify(cands, batch, module):
             # then checked by name rather than ignored.
             protos = sorted({c["needs_proto"] for c in chunk
                              if c.get("needs_proto")})
-            head = "".join("uint64_t %s();\n" % p for p in protos)
+            # A prefixed tail call needs a prototype with the arity it forwards.
+            # The largest wins, so two bodies calling one destination with
+            # different arities still get ONE declaration per name.
+            pareto = {}
+            for c in chunk:
+                pn = c.get("needs_proto")
+                if pn:
+                    pareto[pn] = max(pareto.get(pn, 0), c.get("tail_nargs", 0))
+            decls = []
+            for p in protos:
+                na = pareto.get(p, 0)
+                if na:
+                    decls.append("uint64_t %s(%s);\n"
+                                 % (p, ", ".join(["uintptr_t"] * na)))
+                else:
+                    decls.append("uint64_t %s();\n" % p)
+            head = "".join(decls)
             # Isolate failures instead of abandoning the batch. One ill-formed candidate
             # was costing 2,884 sdk candidates in a single compile error, and
             # the visible symptom was `sdk` reporting no MATCH line at all --
@@ -2807,8 +3321,31 @@ def verify(cands, batch, module):
                     # function the original jumps to, read from the relocation
                     # rather than assumed. Relocations name mangled symbols, so
                     # the expected destination is mangled the same way.
-                    mine_t = [relocs.get(mangled, {}).get(0)]
-                    orig_t = [MH.mangle(want, "v")] if want else []
+                    # The branch is the body's TERMINATOR, so its relocation is at
+                    # the offset of the LAST instruction -- not at 0.
+                    #
+                    # `obj_relocations` is keyed by offset within the function, and
+                    # offset 0 is right only for a bare thunk, whose whole body is
+                    # one `b`. For a tail call with an argument-setup prefix the `b`
+                    # is the last of several instructions, so `.get(0)` read nothing
+                    # and every prefixed candidate was reported as
+                    #
+                    #     branch 0 goes to None, expected _Z15t_main_e7c4c0_1m
+                    #
+                    # The expected symbol was right all along; the lookup asked the
+                    # wrong offset. `4 * (end - 1)` is the byte offset of the final
+                    # instruction, and for a bare thunk `end == 1`, so this is
+                    # `.get(0)` again -- the old behaviour, unchanged, for the shape
+                    # that already worked.
+                    mine_t = [relocs.get(mangled, {}).get(4 * max(0, end - 1))]
+                    # A bare thunk returns void; a prefixed tail call returns
+                    # whatever its target returns, which is `uint64_t`. Mangling
+                    # it as void names a symbol the object does not define, the
+                    # relocation lookup misses, and the comparison silently
+                    # compares an empty branch list -- which matches nothing and
+                    # reads as "the generator is wrong".
+                    orig_t = ([MH.mangle(want, c.get("tail_ret") or "v")]
+                              if want else [])
                     v, why = MH.compare(orig, end, mine,
                                         orig_branches=orig_t,
                                         mine_branches=mine_t)
@@ -2872,7 +3409,7 @@ def main():
         keep = ("module", "addr", "size", "name", "shape", "ident", "sig",
                 "src", "orig_insns", "new_insns", "tail_target_addr",
                 "tail_orig_name", "needs_proto", "symbol", "handwritten",
-                "note")
+                "tail_nargs", "tail_ret", "note")
 
         # Merge, never replace.
         #

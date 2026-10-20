@@ -7,6 +7,9 @@ target_sources(pokesword PRIVATE
   main_11.cpp
   main_12.cpp
   main_13.cpp
+  main_14.cpp
+  main_15.cpp
+  main_16.cpp
   main_2.cpp
   main_3.cpp
   main_4.cpp

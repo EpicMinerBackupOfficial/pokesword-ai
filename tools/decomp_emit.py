@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Emit the structured decomp: one named C wrapper per recovered function.
 
-Each wrapper drives the module's original recomp block functions (compiled
+Each wrapper drives the module's original decomp block functions (compiled
 unmodified from exefs/<module>/src) through a PC-range loop, so semantics are
-identical to the working recomp by construction. The value added here is
+identical to the working decomp by construction. The value added here is
 structure: real names, prototypes, call-graph comments, string references,
 and files organized by function instead of 8 MB flat translation units.
 

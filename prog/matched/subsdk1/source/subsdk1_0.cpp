@@ -1,4 +1,4 @@
-/* subsdk1 -- 58 functions verified to match the original.
+/* subsdk1 -- 71 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -41,11 +41,18 @@ namespace subsdk1 { void sub_e100_subsdk1_e100(); }
 namespace subsdk1 { void sub_34d70(); }
 namespace subsdk1 { void sub_392c0(); }
 namespace subsdk1 { void sub_39400(); }
+namespace subsdk1 { uint64_t sub_13d970(uintptr_t); }
+namespace subsdk1 { uint64_t sub_11b4f0_subsdk1_11b4f0(uintptr_t); }
+namespace subsdk1 { uint64_t sub_187420(uintptr_t); }
+namespace subsdk1 { uint64_t sub_182160(uintptr_t); }
 namespace subsdk1 { void sub_1c80f0(); }
 namespace subsdk1 { void sub_1c61e0_subsdk1_1c61e0(); }
 namespace subsdk1 { void sub_1c6b90(); }
 namespace subsdk1 { void sub_1620d0(); }
 namespace subsdk1 { void sub_1bb950(); }
+namespace subsdk1 { uint64_t sub_23f1d0(uintptr_t); }
+namespace subsdk1 { uint64_t sub_240f90(uintptr_t); }
+namespace subsdk1 { uint64_t sub_257930(uintptr_t); }
 namespace subsdk1 { void sub_264720(); }
 namespace subsdk1 { void sub_29d280_subsdk1_29d280(); }
 namespace subsdk1 { void sub_df80_subsdk1_df80(); }
@@ -53,6 +60,10 @@ namespace subsdk1 { void sub_dfa0(); }
 namespace subsdk1 { void mem_Alloc(); }
 namespace subsdk1 { void unsupported_node_type_in_DupNode(); }
 namespace subsdk1 { void sub_3136f0(); }
+namespace subsdk1 { uint64_t sub_338c0(uintptr_t); }
+namespace subsdk1 { uint64_t sub_32f90(uintptr_t); }
+namespace subsdk1 { uint64_t sub_32fc0(uintptr_t); }
+namespace subsdk1 { uint64_t sub_32ff0(uintptr_t); }
 namespace subsdk1 { void layout_qualifier_s_incompatible_with_s(); }
 namespace subsdk1 { void component_4(); }
 namespace subsdk1 { void ARB_enhanced_layouts_2(); }
@@ -64,6 +75,7 @@ extern void subsdk1_f_4c0cf0();
 namespace subsdk1 { void sub_2b0_subsdk1_2b0(); }
 namespace subsdk1 { void sub_2d0_subsdk1_2d0(); }
 namespace subsdk1 { void sub_2c0_subsdk1_2c0(); }
+namespace subsdk1 { uint64_t sub_4c52a0(uintptr_t); }
 namespace subsdk1 { void sub_4c4ab0(); }
 
 // sub_1250  (orig 0x1250, tailcall)
@@ -90,6 +102,31 @@ void subsdk1_f_343d0() { subsdk1::sub_392c0(); }
 // sub_34520  (orig 0x34520, tailcall)
 void subsdk1_f_34520() { subsdk1::sub_39400(); }
 
+// sub_152120  (orig 0x152120, tailcall)
+uint64_t subsdk1_f_152120(void* a0) {
+    return subsdk1::sub_13d970(((uintptr_t)(*(uint64_t*)((char*)(a0) + 8))));
+}
+
+// sub_159be0  (orig 0x159be0, tailcall)
+uint64_t subsdk1_f_159be0(void* a0) {
+    return subsdk1::sub_11b4f0_subsdk1_11b4f0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 16))));
+}
+
+// sub_168080  (orig 0x168080, tailcall)
+uint64_t subsdk1_f_168080(void* a0) {
+    return subsdk1::sub_187420(((uintptr_t)(*(uint64_t*)((char*)(a0) + 8))));
+}
+
+// sub_1909a0  (orig 0x1909a0, tailcall)
+uint64_t subsdk1_f_1909a0(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 48));
+    uint32_t k1 = 1;
+    uint32_t k2 = 1;
+    *(uint8_t*)((char*)(p0) + 109) = (uint8_t)k1;
+    *(uint8_t*)((char*)(p0) + 2752) = (uint8_t)k2;
+    return subsdk1::sub_182160(((uintptr_t)(a0)));
+}
+
 // sub_1c85b0  (orig 0x1c85b0, tailcall)
 void subsdk1_f_1c85b0() { subsdk1::sub_1c80f0(); }
 
@@ -110,6 +147,21 @@ void subsdk1_f_21afe0() { subsdk1::sub_1620d0(); }
 
 // sub_223640  (orig 0x223640, tailcall)
 void subsdk1_f_223640() { subsdk1::sub_1bb950(); }
+
+// sub_226d40  (orig 0x226d40, tailcall)
+uint64_t subsdk1_f_226d40(void* a0) {
+    return subsdk1::sub_23f1d0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 192))));
+}
+
+// sub_227710  (orig 0x227710, tailcall)
+uint64_t subsdk1_f_227710(void* a0) {
+    return subsdk1::sub_240f90(((uintptr_t)(*(uint64_t*)((char*)(a0) + 192))));
+}
+
+// sub_22e470  (orig 0x22e470, tailcall)
+uint64_t subsdk1_f_22e470(void* a0) {
+    return subsdk1::sub_257930(((uintptr_t)(*(uint64_t*)((char*)(a0) + 192))));
+}
 
 // sub_29d210  (orig 0x29d210, tailcall)
 void subsdk1_f_29d210() { subsdk1::sub_264720(); }
@@ -134,6 +186,26 @@ void subsdk1_f_2ac7f0() { subsdk1::unsupported_node_type_in_DupNode(); }
 
 // sub_2e1c50  (orig 0x2e1c50, tailcall)
 void subsdk1_f_2e1c50() { subsdk1::sub_3136f0(); }
+
+// sub_2e7230  (orig 0x2e7230, tailcall)
+uint64_t subsdk1_f_2e7230(void* a0) {
+    return subsdk1::sub_338c0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 1216))));
+}
+
+// sub_2e7240  (orig 0x2e7240, tailcall)
+uint64_t subsdk1_f_2e7240(void* a0) {
+    return subsdk1::sub_32f90(((uintptr_t)(*(uint64_t*)((char*)(a0) + 1216))));
+}
+
+// sub_2e7250  (orig 0x2e7250, tailcall)
+uint64_t subsdk1_f_2e7250(void* a0) {
+    return subsdk1::sub_32fc0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 1216))));
+}
+
+// sub_2e7260  (orig 0x2e7260, tailcall)
+uint64_t subsdk1_f_2e7260(void* a0) {
+    return subsdk1::sub_32ff0(((uintptr_t)(*(uint64_t*)((char*)(a0) + 1216))));
+}
 
 // sub_32b070  (orig 0x32b070, tailcall)
 void subsdk1_f_32b070() { subsdk1::layout_qualifier_s_incompatible_with_s(); }
@@ -212,6 +284,19 @@ void subsdk1_f_4c0ce0() { subsdk1::sub_2b0_subsdk1_2b0(); }
 
 // sub_4c0cf0  (orig 0x4c0cf0, tailcall)
 void subsdk1_f_4c0cf0() { subsdk1::sub_2c0_subsdk1_2c0(); }
+
+// sub_4c53a0  (orig 0x4c53a0, tailcall)
+uint64_t subsdk1_f_4c53a0(void* a0) {
+    *(uint8_t*)((char*)(a0) + 12) = 0;
+    return subsdk1::sub_4c52a0(((uintptr_t)(a0)));
+}
+
+// sub_4c53b0  (orig 0x4c53b0, tailcall)
+uint64_t subsdk1_f_4c53b0(void* a0) {
+    uint32_t k0 = 1;
+    *(uint8_t*)((char*)(a0) + 12) = (uint8_t)k0;
+    return subsdk1::sub_4c52a0(((uintptr_t)(a0)));
+}
 
 // sub_4ccda0  (orig 0x4ccda0, tailcall)
 void subsdk1_f_4ccda0() { subsdk1::sub_4c4ab0(); }

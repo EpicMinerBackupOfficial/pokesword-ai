@@ -24,6 +24,7 @@ import io
 import os
 import re
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -62,6 +63,36 @@ def main():
     if have is None:
         print("README.md has no STATUS block")
         return 1
+    # The CLASS TABLE is checked here too, not in its own tool's CI.
+    #
+    # README's "What remains" table described ~125,500 remaining functions when
+    # the figure was 114,209, and counted `branchy` at 22,548 when the conditional
+    # population is 85,758 -- for as long as it was hand-written and nothing
+    # recomputed it. `tools/readme_classes.py` derives it, but a tool nobody
+    # RUNS is just a better-written number. Checking it from the one tool that
+    # already refreshes README is what makes it stay true.
+    #
+    # This has to run BEFORE the `have == want` early return below. It did not at
+    # first, and the check reported "README status block is current" on a README
+    # whose class table had been deliberately corrupted -- a check that cannot
+    # fail is not a check.
+    try:
+        import readme_classes as _rc
+        _cls, _shapes, _m, _u = _rc.census()
+        _body = _rc.table(_cls, _shapes, _u)
+        _i, _j = _rc.BEGIN, _rc.END
+        if _i in raw and _j in raw:
+            _live = raw[raw.index(_i):raw.index(_j) + len(_j)].strip()
+            if _live != _body.strip():
+                if a.check:
+                    print("README class table is STALE. Regenerate with:")
+                    print("  python tools/readme_classes.py --write")
+                    return 1
+                raw = raw[:raw.index(_i)] + _body + raw[raw.index(_j) + len(_j):]
+    except Exception as _e:
+        print("  class-table check skipped (%s: %s)"
+              % (type(_e).__name__, _e))
+
     if have == want:
         print("README status block is current.")
         return 0

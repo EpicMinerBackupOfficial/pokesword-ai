@@ -337,11 +337,22 @@ def decl_of(rec):
     """
     if not rec or not rec.get("src"):
         return None
-    head = rec["src"].strip().splitlines()[0]
-    m = DECL_RE.match(head)
-    if not m:
-        return None
-    return m.group("ret"), m.group("name"), m.group("params").strip()
+    # Scan for the DEFINITION head, rather than insisting on line 1.
+    #
+    # A guarded body's `src` opens with `extern void callee_2c5fb0();` -- the
+    # callee's declaration, which the call path also emits and which the prog
+    # build needs. Reading only line 1 did not match DECL_RE, `decl_of` returned
+    # None, and the row was then emitted a second time as a plain stub:
+    # 152,067 definitions against 152,062 rows, exactly one extra per guarded row.
+    #
+    # Both orderings were tried and both are wrong for a different reason --
+    # definition-first brings the compile failures back, because the generated
+    # stub for the callee then lands after its use. Scanning accepts either.
+    for head in rec["src"].strip().splitlines():
+        m = DECL_RE.match(head)
+        if m:
+            return m.group("ret"), m.group("name"), m.group("params").strip()
+    return None
 
 
 def tail_target_ok(rec, matched):
@@ -352,10 +363,51 @@ def tail_target_ok(rec, matched):
     have to receive and forward them, and its own recovered signature -- which is
     what was verified -- would no longer be the one compiled. Those are declined
     rather than emitted incorrectly, and stop being counted as matching.
+
+    A tail call WITH A PREFIX is a different thing, and it is NOT waved through:
+
+        add  x2, x0, #0xec
+        add  x3, x0, #0xe8
+        mov  w4, #1
+        b    target
+
+    It forwards arguments -- that is what the prefix FOR -- and the harness
+    verifies it byte-identically (5,460 of them in main). It is still not
+    emittable, and the reason is the same one this function exists to catch:
+
+        void main_f_13f40() { main::sub_16ff0(); }
+
+    is what the emitter writes, because `retype_thunk` SYNTHESISES a bare thunk
+    and ignores the verified source. And the destination is a namespaced stub
+    declared `void sub_16ff0()` -- no parameters, void return. So the thunk cannot
+    forward one argument to it, and `return <void expr>` is ill-formed besides.
+
+    Emitting these anyway is what put 5,345 rows in the CSV whose decomp_name does
+    not exist in the built ELF: the CSV recorded the verified signature
+    `_Z12main_f_13f40Pv` while the emitted body mangles to `_Z12main_f_13f40v`.
+
+    Unblocking them is a real piece of work and it is not this function: the
+    destination needs the same arity and return type the thunk forwards, which
+    means the namespaced stub has to be emitted with a per-arity signature and
+    the thunk's arguments spelled in those types. Until that exists, these stay
+    verified-but-unemittable, which is exactly what this gate is for.
     """
     t = rec.get("tail_target_addr")
     if t is None:
         return False
+    # A prefix forwards arguments, so its destination must accept them. That is now
+    # arranged rather than assumed: `build_prog` emits an OVERLOAD of the stub with
+    # the arity the tail calls forward, and `proto_for` declares it, so the call
+    # resolves and the canonical `void ns::f()` symbol is untouched.
+    #
+    # Only a STUB destination is allowed, and only at an arity the overload is
+    # emitted for. An emittable destination has a RECOVERED signature -- which is
+    # what was verified -- and re-declaring it with a different arity would make
+    # the CSV name a symbol the build does not produce. 5,322 of the 5,460 in main
+    # are stubs; the other 138 stay declined until their destinations are recovered.
+    n = int(rec.get("tail_nargs") or 0)
+    if n > 0:
+        return matched.get(t) is None
     dest = matched.get(t)
     if dest is None:
         return True  # a namespaced stub, declared as void()
@@ -432,7 +484,7 @@ def definition_names(mod, ident_of, scope_of, matched, emittable):
     return out
 
 
-def proto_for(addr, defname, matched, emittable):
+def proto_for(addr, defname, matched, emittable, nargs=0):
     """An `extern` declaration for a tail-call destination, or None.
 
     Must agree with the destination's emitted definition, including its return
@@ -445,9 +497,20 @@ def proto_for(addr, defname, matched, emittable):
         params = d[2] if d else ""
         return "extern %s %s(%s);" % (ret, defname, params)
     # A namespaced stub: forward declare it in its own namespace.
+    #
+    # `nargs` is the arity a prefixed tail call forwards, and it has to be declared
+    # here as well as defined there -- a call in another translation unit resolves
+    # against what this file says, not against the definition. Declaring only
+    # `void ns::f()` and then calling `ns::f(x)` is the overload-resolution failure
+    # above, one file further away.
     if "::" in defname:
         ns, _, base = defname.rpartition("::")
+        if nargs:
+            return "namespace %s { uint64_t %s(%s); }" % (
+                ns, base, ", ".join(["uintptr_t"] * nargs))
         return "namespace %s { void %s(); }" % (ns, base)
+    if nargs:
+        return "uint64_t %s(%s);" % (defname, ", ".join(["uintptr_t"] * nargs))
     return "void %s();" % defname
 
 
@@ -494,6 +557,25 @@ def build_prog(mod, names, addrs, used=None, matched=None):
     # destination is folded in the shipped build too.
     thunks = set()
     dests = set()
+    # Which stub destinations are tail-called WITH ARGUMENTS, and with how many.
+    #
+    # A prefixed tail call forwards its arguments, so its destination has to
+    # accept them. The canonical stub is `void ns::f()` -- zero parameters -- so it
+    # cannot, and `emit_matched` cannot call it:
+    #
+    #     return ns::f(((uintptr_t)(...)));      no matching overload
+    #     void ns::f() { }                       only candidate
+    #
+    # An OVERLOAD is the answer, and it is a cheap one. The canonical
+    # `void ns::f()` definition and its symbol stay exactly as they were, so the
+    # symbol table and asm-differ's comparison are untouched; the extra definition
+    # only exists so the thunk's call resolves. Two thunks to one destination with
+    # DIFFERENT arities are still fine -- that is what overloading is for.
+    #
+    # Measured in main: 5,322 of the 5,460 prefixed tail calls target a stub, every
+    # single one at arity 1, across 1,625 distinct destinations, with zero
+    # destinations called at two arities.
+    tail_ar = {}
     for a in addrs:
         r = matched.get(a)
         if r is None or r.get("shape") != "tailcall":
@@ -502,6 +584,9 @@ def build_prog(mod, names, addrs, used=None, matched=None):
         t = r.get("tail_target_addr")
         if t is not None:
             dests.add(t)
+            n = int(r.get("tail_nargs") or 0)
+            if n > 0 and matched.get(t) is None:
+                tail_ar.setdefault(t, set()).add(n)
 
     buckets = {}
     for a in addrs:
@@ -573,7 +658,8 @@ def build_prog(mod, names, addrs, used=None, matched=None):
             with open(cpath, "w", encoding="utf-8") as f:
                 f.write("/* %s.%s - %d recovered functions.\n"
                         " * Generated by tools/decomp_project.py -- do not hand-edit.\n"
-                        " */\n#include \"%s\"\n\n" % (mod, sub, len(chunk), hname))
+                        " */\n#include <stdint.h>\n#include \"%s\"\n\n"
+                        % (mod, sub, len(chunk), hname))
                 f.write(ns_open)
                 for a, ident in chunk:
                     rec = matched.get(a)
@@ -587,6 +673,15 @@ def build_prog(mod, names, addrs, used=None, matched=None):
                                 % (ident, mod))
                         continue
                     f.write("void %s() { /* %#x */ }\n" % (ident, a))
+                    # The overloads a prefixed tail call needs, if any. Written
+                    # after the canonical stub so the `void ns::f()` definition
+                    # and its symbol are byte-for-byte what they always were.
+                    for n in sorted(tail_ar.get(a, ())):
+                        f.write("uint64_t %s(%s) { /* %#x: %d-arg tail-call"
+                                " target */ return 0; }\n"
+                                % (ident,
+                                   ", ".join("uintptr_t a%d" % k for k in range(n)),
+                                   a, n))
                 f.write("\n" + ns_close)
 
             made.append((group, sub, os.path.join("source", cname)))
@@ -720,7 +815,8 @@ def emit_matched(mod, matched, defname=None, emittable=None):
                 dn = defname.get(t)
                 if dn is None:
                     continue
-                p = proto_for(t, dn, matched, emittable)
+                p = proto_for(t, dn, matched, emittable,
+                              int(rec.get("tail_nargs") or 0))
                 if p and p not in protos:
                     protos.append(p)
             for p in protos:
@@ -737,7 +833,26 @@ def emit_matched(mod, matched, defname=None, emittable=None):
                     t = rec.get("tail_target_addr")
                     dn = defname.get(t)
                     placeholder = rec.get("needs_proto") or ""
-                    if dn:
+                    if dn and int(rec.get("tail_nargs") or 0) > 0:
+                        # A PREFIXED tail call: keep the verified source and
+                        # substitute the placeholder for the real definition name.
+                        #
+                        # `retype_thunk` did not do this -- it ignores `src` and
+                        # SYNTHESISES a bare thunk, so the argument setup the
+                        # harness verified byte-for-byte was silently discarded:
+                        #
+                        #     verified   uint64_t f_13f40(void* a0)
+                        #                                  { return ns::sub_16ff0((char*)a0 + 784); }
+                        #     emitted    void      f_13f40()
+                        #                                  { ns::sub_16ff0(); }
+                        #
+                        # The two have different parameter lists, so they mangle
+                        # differently: the CSV recorded `_Z12main_f_13f40Pv` while
+                        # the built ELF had `_Z12main_f_13f40v`, and the audit
+                        # failed with 5,345 such rows. The branch bytes were right
+                        # in the verified source and wrong in the synthesised one.
+                        src = re.sub(r"\b%s\b" % re.escape(placeholder), dn, src)
+                    elif dn:
                         src = retype_thunk(
                             src, rec["ident"], dn,
                             final_ret(t, matched, emittable))

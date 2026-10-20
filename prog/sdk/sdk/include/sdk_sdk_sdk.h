@@ -282,8 +282,6 @@ void sub_5d90();  // 0x5d90
 void sub_5dc0();  // 0x5dc0
 void sub_5ee0();  // 0x5ee0
 void sub_5ef0();  // 0x5ef0
-void sub_5f00();  // 0x5f00
-void sub_5f10();  // 0x5f10
 void sub_6000();  // 0x6000
 void sub_6060();  // 0x6060
 void s_p_size_u();  // 0x6270
@@ -768,7 +766,6 @@ void sub_160d0();  // 0x160d0
 void sub_16120();  // 0x16120
 void sub_16170();  // 0x16170
 void sub_161c0();  // 0x161c0
-void sub_16240();  // 0x16240
 void sub_16250();  // 0x16250
 void sub_162b0();  // 0x162b0
 void sub_16420();  // 0x16420
@@ -783,7 +780,6 @@ void sub_16ed0();  // 0x16ed0
 void sub_16f00();  // 0x16f00
 void sub_16f40();  // 0x16f40
 void sub_16f80();  // 0x16f80
-void p_4ux_4u_4u_3X();  // 0x16fd0
 void sub_171d0();  // 0x171d0
 void sub_17210();  // 0x17210
 void sub_17250();  // 0x17250
@@ -837,7 +833,6 @@ void sub_1ab60();  // 0x1ab60
 void sub_1ab70();  // 0x1ab70
 void sub_1ab90();  // 0x1ab90
 void sub_1ac30();  // 0x1ac30
-void sub_1acd0();  // 0x1acd0
 void sub_1ace0();  // 0x1ace0
 void sub_1acf0();  // 0x1acf0
 void sub_1ad00();  // 0x1ad00
@@ -4005,5 +4000,10 @@ void sub_78030();  // 0x78030
 void sub_78040();  // 0x78040
 void sub_78050();  // 0x78050
 void sub_78060();  // 0x78060
+void sub_78070();  // 0x78070
+void sub_780d0();  // 0x780d0
+void sub_78160();  // 0x78160
+void sub_781c0();  // 0x781c0
+void sub_78200();  // 0x78200
 
 }  // namespace sdk

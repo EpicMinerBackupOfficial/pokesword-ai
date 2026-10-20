@@ -36,7 +36,7 @@ to `BLOCK_SRC_DIR` — it is CMake-internal, referenced 0 times by `exefs/`.
 ## Current number
 
 ```
-32,532 / 152,062  =  21.39%
+38,733 / 152,062  =  25.47%
 ## The byte-identical ceiling is a compiler limit -- ~21%
 
 Measured over all 123,191 unmatched bodies:
@@ -247,60 +247,96 @@ all (the tailcall round reported +9,083 and delivered zero).
 
 ## Next three steps, in order
 
-1. ~~`compare`, `struct-copy`, `setter-chain`.~~ **All three done** — three new
-   generators, **+478 bodies, 17.47% -> 17.78%**, in one session:
+Each is a POPULATION with a measured size, not a task. The sizes are body counts,
+not attempt counts -- the difference has bitten this project three times and the
+rule is in "The rule that keeps biting" below.
 
-   | generator | offered | matched | note |
-   |---|---:|---:|---|
-   | `tools/gen_struct_copy.py` | 311 | **278** | 16-byte struct to force `ldp`/`stp`, barrier between write groups |
-   | `tools/gen_compare_pred.py` | 79 | **71** | 89.9% yield; cset condition picks operator *and* signedness |
-   | `tools/gen_zero_fill.py` | 129 | **129** | 100% yield; register class picks the store width |
+1. ~~**The tail-call prefix.**~~ **DONE -- 5,322 bodies, 21.39% -> 25.47%.**
 
-   Each is report-only by default and needs `--apply`. **Always read the
-   offered/matched lines before believing a gain**, and re-run
-   `decomp_project --all` *then* `prog_cmake.py` *then* `build_nx64.py` — skipping
-   `prog_cmake` leaves 95 directories without a `CMakeLists.txt`.
+   The three things it needed, in the order they were found, and none of them was
+   codegen:
 
-2. **`copy-chain`: 199 unmatched bodies, dominated by `ldr str str ret` (115) and
-   `ldr ldr str ret` (52).** The obvious next target, and the machinery now exists:
-   `gen_struct_copy` handles copy shapes where the loads and writes are already
-   grouped, so the first thing to try is running its ideas over `copy-chain`'s
-   indexed store (`str x2, [x8, w1, uxtw #3]`, i.e. `(char*)p[idx] = v`).
-   `gen_zero_fill` declines all 196 of them, correctly — that is a copy, not a
-   clear.
+     * **one index.** `obj_relocations` is keyed by OFFSET WITHIN THE FUNCTION, and
+       the lookup asked for offset 0. Right for a bare thunk, whose whole body is
+       one `b`; wrong for a prefix, where the `b` is the last of several
+       instructions. `mine_t = [...get(4 * max(0, end - 1))]`. The expected symbol
+       had been right all along.
+     * **one keyword.** The registry report writes a KEY WHITELIST, so `tail_nargs`
+       was computed, stored, and then dropped on the way to disk. A field filtered
+       out on write is indistinguishable from a field that was never computed.
+     * **one overload.** `retype_thunk` does not rewrite the verified source, it
+       SYNTHESISES a bare thunk and throws the argument setup away. The fix is an
+       overload emitted beside the namespaced stub -- which leaves the canonical
+       `void ns::f()` definition and its symbol untouched:
 
-3. ~~**`getter-chain` (190) and `const-field-set` (187).**~~ **Both done: 216
-   bodies between them** — and the `const-field-set` entry that used to be here
-   was **wrong**.
+           void      sub_16ff0() { /* 0x16ff0 */ }
+           uint64_t  sub_16ff0(uintptr_t a0) { /* 1-arg tail-call target */ return 0; }
 
-   | generator | offered | matched | note |
-   |---|---:|---:|---|
-   | `tools/gen_getter_chain.py` | 167 | **130** | `s0`/`d0` returns carry 93 of the 139 `ldr ldr ret` bodies |
-   | `tools/gen_store_chain.py --shape const-field-set` | 181 | **180** | 99.4% yield |
+       `proto_for` must declare the same overload in the thunk's TU, because a call
+       in one file resolves against what THAT file says.
 
-   `const-field-set` had been recorded here as impossible: *"an `__asm__ memory`
-   barrier changed nothing (0/180, byte-identical)"*. That measurement was taken
-   with the harness missing eight of the build's flags. With the flags corrected,
-   the plain assignment matches and **no barrier is needed at all**. See
-   `decomp/docs/const_field_set.md`. Re-measure every other "dead end" below under
-   the corrected flags before believing it.
+   Measured before implementing, which is why it was cheap: 5,322 of the 5,460
+   target a stub, all at arity 1, across 1,625 destinations, zero called at two
+   arities. `tools/../work/stub_targets.py`. Had the arities been mixed, the
+   per-arity symbol naming would have been needed here too.
 
-4. **The 8 missing build flags were suppressing matches, not only mis-reporting
-   them.** Re-running the four registered chain generators with the corrected flag
-   set found one new body in each. Before calling any generator dead at 0% yield,
-   re-run it — the flags it was developed against were wrong. This has now cost
-   180 bodies once already (item 3).
+   **Still open from this population:** 138 prefixed tail calls whose destination
+   is emittable (that destination has a RECOVERED signature and must not be
+   re-declared), and 20 in main whose prefix the translator declines.
 
-5. **17 `ldr q0` bodies in `getter-chain`** — a 16-byte NEON load into `v0` — are
-   the largest untouched group left in that shape. They need `<arm_neon.h>` and a
-   16-byte vector return type. `gen_getter_chain` declines them rather than
-   guessing.
+   **CLOSED, do not re-derive: the 1,963 PLT tail calls.** They branch to a PLT
+   stub -- `adrp / ldr / add / br` through a GOT slot -- so they are tail calls to
+   an EXTERNAL symbol. The blocker was `dynsym.txt` being 0 bytes in all five
+   modules. That is now root-caused and closed:
 
-6. **The declined remainder: ~319 `compare`, 98 `setter-chain`, 29 `copy-chain`,
-   8 mismatched, 6 `const-field-set`, 23 `getter-chain`.** The `copy-chain` and
-   mismatched ones are the most tractable: they fail on operand *order*
-   (`cmp w8, w9` vs `cmp w9, w8`) and `ldur` width, both of which a two-way
-   search should take. The rest wait on the relocated memory image.
+     * `parse_header` extracts three segments; `flags = 0x3f` is boilerplate in a
+       file that stores only three, and the data segment runs to EOF, so there
+       are no `.dynstr`/`.dynsym` segments to open
+     * a strict scan for a self-consistent `Elf64_Dyn` array across rodata, data
+       AND the whole 25 MB of text finds ZERO -- retail Switch NSOs ship the GOT
+       and PLT but strip the dynamic symbol metadata
+     * so the names are not in the input, and the destination cannot be named on
+       either side. Verifying the prefix and branch opcode alone is weaker than
+       every other row in the figure, so these stay unmatched by choice.
+
+   `work/dyn_scan.py` and `work/dyn_scan_text.py` are the measurements.
+
+2. **The 35 guarded bodies that need a genuine stack local.** An out-parameter
+   whose address is taken:
+
+       uint64_t slot;  g(&slot);  use(slot);
+
+   Clang places it at a fixed `sp` offset by itself. The `sp` refusal in
+   `resolve_base` is a CORRECT refusal of an input the translator cannot yet
+   express, so this needs a new kind of synthetic local -- the one whose offset
+   the ORIGINAL fixes rather than the compiler choosing.
+2. **The 35 guarded bodies that need a genuine stack local.** An out-parameter
+   whose address is taken:
+
+       uint64_t slot;  g(&slot);  use(slot);
+
+   Clang places it at a fixed `sp` offset by itself. The `sp` refusal in
+   `resolve_base` is a CORRECT refusal of an input the translator cannot yet
+   express, so this needs a new kind of synthetic local -- the one whose offset
+   the ORIGINAL fixes rather than the compiler choosing.
+
+3. **The NEON register swap: 10 bodies, and it needs a return-convention change.**
+   `mov v2.16b, v0.16b ; mov v0.16b, v1.16b ; mov v1.16b, v2.16b` is a struct of
+   two vectors RETURNED BY VALUE, measured byte-identical. The missing half is a
+   callee that returns a STRUCT: `prototype_order` offers only scalar return
+   types, and a 32-byte struct comes back in v0 and v1 rather than x0.
+
+## Closed, and not worth revisiting
+
+  * **61 guarded bodies** need a frame INSIDE a branch. Clang does not
+    shrink-wrap for aarch64 at -O3 with these flags -- measured with a shape
+    designed to make it profitable, six calls and five register pairs of
+    prologue, and it still hoisted. See `decomp/docs/control_flow.md`.
+  * **The call-body generators** are exhausted: 21 bodies blocked, 530 that
+    translate, 0 that verify. The blocker counts are 10 (v0.16b), 4 (fcvt), 3
+    (smulh), and one each for four more.
+  * **The straight-line generator** is exhausted: 3,191 candidates, 0 verified,
+    measured repeatedly.
 
 ## What is not worth doing
 
@@ -317,6 +353,39 @@ all (the tailcall round reported +9,083 and delivered zero).
 - **`vector_size(16)` for anything.** It sends Clang to NEON (`ldr q0`, `ld1`,
   `stur q1`), which is further from `ldp`/`stp`, not closer. Only a plain struct
   pairs general-purpose registers.
+
+## Three rules this arc added
+
+**A count is not a population until you have looked at what the counted things
+have in common.** The reachability numbers are PROTOTYPE ATTEMPTS, and one body
+is tried against every arity `prototype_order` produces -- so a body with one
+signature that `Bail`s is counted six to sixteen times. Keyed on `(module, addr)`
+instead, the four "converged blockers" of 160/64/46/42 attempts are **10, 4, 3 and
+1 bodies**. The same error then appeared twice more: 821 quoted as a shape when
+only 123 of those branch to the ret, and 88 quoted as a template when 70 of them
+have a different frame form. `tools/blocker_bodies.py` is the measurement.
+
+**A measurement from a pipeline that can fail silently, or succeed wrongly, is
+not a measurement.** Five beats of "0 verified" on the guarded population were
+four defects in the HARNESS, not the translator: a translation unit that failed
+to compile and was reported as `[]`; a comparison handed `normalise()` tuples by
+a function expecting Capstone objects; one row per matching prototype rather
+than per body; a body marked `registered` before its comparison, so ten matches
+became zero; and finally the audit counting `if (...) {` as a function
+definition. Every one read as a property of the decomp. When a tool and a
+hand-written probe disagree, the tool is the suspect.
+
+**`ast.parse` is not a compile.** A repeated keyword argument is a COMPILE-time
+check -- the symbol-table phase -- so the parser accepts it and the compiler
+rejects it:
+
+    ast.parse(src)        ->  OK
+    python -m py_compile  ->  SyntaxError: keyword argument repeated: encoding
+
+That one broke `tools/wake.py` -- the tier that pings the session -- and the
+whole chain stayed down because the parser said the file was fine. Every edit in
+this project is guarded by `ast.parse`; that guard is strictly weaker than it
+looks, and `py_compile` costs the same and catches what `ast.parse` cannot.
 
 ## The rule that keeps biting
 

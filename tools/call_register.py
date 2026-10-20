@@ -134,6 +134,46 @@ def candidates(mod, reg, md, limit):
     return out
 
 
+def is_frame_insn(x):
+    """Is this instruction PURE frame bookkeeping, rather than a stack slot?
+
+    Module-level, and used by both the call-body guarded enumerator here and the
+    straight-line guarded generator in tools/auto_match.py. It was a closure inside
+    `candidates_guarded`, which meant the straight-line path could not strip a frame
+    at all -- so every guarded body with a prologue declined with "memory base is
+    sp: a stack slot is not modelled", which reads as a population limit and is
+    actually a missing call.
+
+    Two copies of a predicate like this is one copy too many: they diverge silently
+    and the divergence shows up as a yield difference nobody can explain.
+
+    ONLY frame bookkeeping is removed: the x29/x30 pair, a callee-saved push/pop,
+    and the `sub/add sp` that reserves the frame. An out-parameter
+    (`add x1, sp, #8 ; str xzr, [sp, #8]`) passes a stack slot to a callee, the C
+    genuinely needs it, and those bodies keep declining -- correctly.
+    """
+    _m, _o = x.mnemonic, x.op_str.strip()
+    if not (_o.startswith("[sp") or "[sp" in _o or _o.startswith("sp, ")
+            or "sp, #" in _o or _o.startswith("x29, sp")):
+        return False
+    if _m in ("stp", "ldp") and _o.startswith("x29, x30, [sp"):
+        return True
+    if _m in ("str", "ldr") and _o.startswith("x") and "[sp" in _o:
+        # A callee-saved push/pop. A spill of an ordinary value through sp is not
+        # frame bookkeeping, so the register must be callee saved: x19-x28, x29,
+        # x30, or the frame pointer itself.
+        _r = _o.split(",")[0].strip()
+        _n = _r[1:]
+        return _n.isdigit() and int(_n) >= 19
+    if _m in ("sub", "add") and _o.startswith("sp, sp"):
+        return True
+    if _m == "add" and _o.startswith("x29, sp, #"):
+        return True
+    if _m == "mov" and _o in ("x29, sp", "sp, x29"):
+        return True
+    return False
+
+
 def candidates_guarded(mod, reg, md, limit):
     """-> the GUARDED population: bodies declined for a conditional branch.
 
@@ -183,9 +223,47 @@ def candidates_guarded(mod, reg, md, limit):
             continue
         if (tgt - addr) // 4 != len(ins) - 1:
             continue
+        # Strip the frame from the BLOCK.
+        #
+        # The translator must not be handed it: the pair handler reads `sp` as a
+        # memory base and declines with "memory base is sp: a stack slot is not
+        # modelled", which is a correct refusal of the wrong input -- the same
+        # reason `frame_of` strips a whole body. Here the frame sits INSIDE the
+        # guarded block, so it has to be stripped from the block.
+        #
+        # Only PURE frame bookkeeping is removed: the x29/x30 pair, a
+        # callee-saved push/pop, and the `sub/add sp` that reserves the frame.
+        # Nothing that passes a stack slot to a callee is removed -- `add x1, sp,
+        # #8 ; str xzr, [sp, #8]` is an out-parameter and the C genuinely needs
+        # it, so those bodies keep bailing on `sp`, correctly.
+        #
+        # The first version of this matched only `stp x29, x30, [sp, #-N]!` and
+        # `add/sub sp, sp, #N` -- the UNGUARDED frame form. A guarded body carries
+        # the WIDER one, and every pattern here missed it:
+        #
+        #     stp  x29, x30, [sp, #0x10]      non-writeback, no `#-`
+        #     add  x29, sp, #0x10              not `sp, sp`
+        #     ldr  x19, [sp], #0x20            post-index, does not end in `]`
+        #
+        # So 66 of the 106 sp-using bodies were not stack slots at all -- they
+        # were the frame the translator must never be handed, and the whole
+        # "a stack slot is not modelled" story was measuring the stripper's
+        # incompleteness rather than the population's.
+        #
+        # The test is now the SHAPE rather than a spelling: an sp-relative
+        # access that is part of saving or restoring registers, or that moves sp
+        # or x29. A genuine local -- an out-parameter, a spill -- is neither, and
+        # still declines.
+        _is_frame = is_frame_insn
+
+        work = []
+        for x in ins[:-1]:
+            if _is_frame(x):
+                continue
+            work.append(x)
         out.append((addr, size, name, "f_%x" % addr,
                     int(ins[bls[0]].op_str.lstrip("#"), 16),
-                    list(ins[:-1]) + [_ret_insn(md)], len(ins),
+                    work + [_ret_insn(md)], len(ins),
                     b.mnemonic, brs[0]))
         if limit and limit > 0 and len(out) >= limit:
             break
@@ -297,7 +375,7 @@ def prototype_order(work, mod=None, target=None):
     return [(n, r) for n in range(0, MAXNARGS + 1) for r in RETS]
 
 
-def variant(work, ident, target, cname, nth, mod=None):
+def variant(work, ident, target, cname, nth, mod=None, guard=None):
     """The `nth` *translatable* prototype for one body, or None if there are fewer.
 
     "nth translatable", not "nth in the order". A prototype that `Bail`s is not a
@@ -315,7 +393,8 @@ def variant(work, ident, target, cname, nth, mod=None):
     for nargs, ret in prototype_order(work, mod, target):
         calls = {target: {"name": cname, "nargs": nargs, "ret": ret}}
         try:
-            src, sig = SL.StraightLine(work).translate(ident, calls=calls)
+            src, sig = SL.StraightLine(work).translate(ident, calls=calls,
+                                                       guard=guard)
         except SL.Bail:
             continue
         if seen == nth:
@@ -371,6 +450,9 @@ def main():
     ap.add_argument("--batch", type=int, default=BATCH)
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--register-guard", action="store_true",
+                    help="register the GUARDED population (conditional branch to "
+                         "the ret). Uses --write semantics via the same tail.")
     ap.add_argument("--guard", action="store_true",
                     help="enumerate the GUARDED population (bodies declined for "
                          "a conditional branch) and report it by mnemonic. The "
@@ -383,6 +465,32 @@ def main():
     md = MH._md()
     mods = a.module or list(MODULES)
     all_rows = []
+
+    if a.register_guard:
+        all_rows = register_guarded(mods, md, a.limit)
+        print("  guarded: %d verified" % len(all_rows))
+        if a.dry_run or not a.write:
+            print("  (dry run -- pass --write to register)")
+            return 0
+        _g = all_rows
+        for mod in mods:
+            rws = [r for r in _g if r["module"] == mod]
+            if not rws:
+                continue
+            path = os.path.join(ROOT, "data", "matched_%s.json" % mod)
+            data = json.load(io.open(path, encoding="utf-8"))
+            have = {(x["addr"], x["size"]) for x in data["matched"]}
+            added = 0
+            for r in rws:
+                key = (r["addr"], r["size"])
+                if key in have:
+                    continue
+                data["matched"].append(dict(r))
+                added += 1
+            io.open(path, "w", encoding="utf-8", newline="").write(
+                json.dumps(data, indent=1, sort_keys=True))
+            print("  %-9s registry +%d" % (mod, added))
+        return 0
 
     if a.guard:
         # A separate enumerator because `candidates()` rejects BRANCH bodies and
@@ -582,6 +690,132 @@ def main():
     elif all_rows and not a.write:
         print("  (dry run -- pass --write to register)")
     return 0
+
+
+def module_symbols(mod):
+    """-> {vaddr: name} for a module, from the data the harness already reads."""
+    out = {}
+    for _addr, _size, _name, decomp in MH.load_functions(mod):
+        if decomp and not decomp.endswith("!"):
+            out[_addr] = decomp
+    return out
+
+
+def register_guarded(mods, md, limit):
+    """Register the GUARDED population: bodies with a conditional branch whose
+    target is the trailing `ret`.
+
+    Separate from the main loop because `candidates()` declines these outright --
+    `BRANCH` includes every `cbz`/`tbz`/`b.eq`, and the whole-body pre-filter
+    used to reject the mnemonic before any handler could see it. `COND_MNEMONICS`
+    is the SELECT family (`csel`/`cset`), not the branch family.
+
+    The comparison is `MH.compare` on RAW disassembly, not on `MH.normalise`
+    output. `normalise` returns tuples, `compare` expects Capstone objects, and
+    passing one to the other returns False for every candidate -- which is what
+    made this population read as "0 verified" while it was in fact matching.
+    """
+    rows = []
+    for mod in mods:
+        reg = {(r["addr"], r["size"])
+               for r in json.load(io.open(
+                   os.path.join(ROOT, "data", "matched_%s.json" % mod),
+                   encoding="utf-8"))["matched"]}
+        blob = MH.text_blob(mod)
+        cands = []
+        meta = {}
+        for addr, size, name, ident, target, work, n_ins, bmn, gidx in \
+                candidates_guarded(mod, reg, md, limit):
+            alias = "g_%x_%x" % (target, addr)
+            nth = 0
+            seen = set()
+            while nth < 12:
+                v = variant(work, ident, target, alias, nth, mod=mod,
+                            guard=gidx)
+                if v is None:
+                    break
+                nargs, ret, src, sig = v
+                if sig in seen:
+                    nth += 1
+                    continue
+                seen.add(sig)
+                cands.append((ident, src, sig, addr, size, name, target, nargs,
+                              ret, n_ins))
+                meta[(ident, sig)] = (bmn,)
+                nth += 1
+        if not cands:
+            continue
+        head = "\n".join("extern void g_%x_%x();" % (c[6], c[3]) for c in cands)
+        got = compile_resilient(cands, head)
+        try:
+            syms = module_symbols(mod)
+        except Exception:                       # noqa: BLE001
+            syms = {}
+        # One row per BODY, not per matching prototype.
+        #
+        # `main+0x2c1470` matches at nargs=0, nargs=2 AND nargs=3 -- the call is
+        # fire-and-forget, so the extra arguments are dead and Clang drops them.
+        # Registering all three gave three rows for one body, which is 2 duplicate
+        # definitions in prog/, and THAT is what broke the build: 152,067
+        # definitions against 152,062 rows, and three units failing to compile.
+        # The duplicate check downstream compares (addr, size), so it cannot see
+        # this -- the rows are genuinely distinct records of the same body.
+        registered = set()
+        for cand, code in got:
+            c_ident, src, sig, addr, size, name, target, nargs, ret, n_ins = cand
+            if not code or (addr, size) in registered:
+                continue
+            want = blob[addr:addr + size]
+            w = list(md.disasm(want, addr))
+            end = MH.effective_end(w, size)
+            verdict, _ = MH.compare(w, end, list(md.disasm(code, 0)))
+            if verdict != "match":
+                continue
+            # Mark the body ONLY now. Doing it before the comparison suppressed
+            # the matching variant: one body has several variants in the batch,
+            # the first in compile order is not necessarily the one that matches,
+            # and once the body was marked, every later variant was skipped. That
+            # is how 10 verified matches became 0 in the tool while the same loop
+            # written out by hand found all 10.
+            registered.add((addr, size))
+            # The probe alias must not survive into prog/.
+            #
+            # The compiled source calls `g_<target>_<addr>`, which exists only in
+            # the probe TU's head. Storing `src` verbatim put
+            #
+            #     error: use of undeclared identifier 'g_2c5fb0_2c1470'
+            #
+            # into the generated source -- and the call path had already been
+            # bitten by exactly this, for the same reason: verification and
+            # building never used one name. So substitute the real callee and
+            # carry the declaration with it, as the call path does.
+            real = syms.get(target)
+            synth = real is None
+            real = real or ("callee_%x" % target)
+            alias = "g_%x_%x" % (target, addr)
+            rows.append({
+                "module": mod, "addr": addr, "size": size, "name": name,
+                "shape": "guarded", "ident": c_ident, "sig": sig,
+                "callee": real, "callee_synthetic": synth,
+                "call_args": nargs, "call_ret": ret,
+                "orig_insns": n_ins,
+                "new_insns": len(code) // 4,
+                # The declaration goes FIRST.
+                #
+                # Tried the other order -- definition first, `extern` after --
+                # because `decomp_project` reads the first line of `src` for the
+                # definition's return type and name (`DECL_RE`), and a leading
+                # `extern` does not match a definition. That is a real
+                # interaction, but the order that breaks it is the one that
+                # compiles: extern-first gives 2 audit failures, definition-first
+                # gives 3, with the compile failures back. Neither is correct and
+                # both are recorded here so the next attempt does not repeat the
+                # measurement.
+                "src": "extern void %s();\n%s" % (real, src.replace(alias, real)),
+            })
+        print("  %-9s %d guarded match(es)" % (mod, len(
+            [r for r in rows if r["module"] == mod])))
+    return rows
 
 
 if __name__ == "__main__":

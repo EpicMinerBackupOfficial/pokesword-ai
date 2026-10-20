@@ -23,6 +23,7 @@ plausible.
 
 import os
 import subprocess
+import nocon  # installs the no-console default for every subprocess below
 import sys
 import tempfile
 

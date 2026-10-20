@@ -80,14 +80,41 @@ def find_dynamic(rodata, ro_base, data, data_base):
 
 
 def read_dynamic(blob, off):
+    """Elf64_Dyn entries at `off`, as {d_tag: d_val}.
+
+    A Switch NSO's mod0 dynamic section is NOT a bare Elf64_Dyn array. It opens
+    with an `NsoDynamicHeader { u32 magic; }`, and the magic is ZERO for the
+    module object. Reading Elf64_Dyn from the section RVA therefore consumes the
+    magic as `d_tag = 0`, which is DT_NULL, and the walk stops after one entry:
+
+        main  mod0.dynamic = 0x24947f0
+        first 8 words: 00000000 00000000 00000001 00000000 ...
+
+    That is what `"dynamic": {"0x0": "0x1"}` in every manifest is -- one entry,
+    then stop. It is not a module with no dynamic metadata; it is a parse that
+    stopped on a header field.
+
+    The NsoDynamicModule layout after the magic is an NsoArray (count plus
+    per-module entries) followed by the Elf64_Dyn array, and the offsets have to
+    be read off the bytes rather than assumed. So this does NOT guess: it reports
+    the first tag it saw and how many entries it managed, and the caller writes
+    that into the manifest. A silent one-entry result is indistinguishable from a
+    module that genuinely has no dynamic section, and that indistinguishability is
+    what let this sit unnoticed with `dynsym_count: 0` in all five modules.
+    """
     ents = []
+    first_tag = None
     while True:
         t, v = struct.unpack_from("<2q", blob, off)
+        if first_tag is None:
+            first_tag = t
         ents.append((t, v if v >= 0 else v + (1 << 64)))
         off += 16
         if t == DT_NULL or len(ents) > 64:
             break
-    return dict(ents)
+    d = dict(ents)
+    d["__first_tag__"] = first_tag
+    return d
 
 
 def addr_to_blob(addr, rodata, ro_base, data, data_base):
@@ -100,7 +127,13 @@ def addr_to_blob(addr, rodata, ro_base, data, data_base):
 
 def parse_dynsym(dyn, rodata, ro_base, data, data_base):
     if DT_SYMTAB not in dyn or DT_STRTAB not in dyn:
-        return [], []
+        return [], ("no DT_SYMTAB/DT_STRTAB: the dynamic array yielded %d "
+                    "entries, first d_tag %s. mod0's dynamic section opens with a "
+                    "zero NsoDynamicHeader magic, which reads as DT_NULL and "
+                    "stops the walk; the NsoArray and Elf64_Dyn array after it "
+                    "have not been reached."
+                    % (len(dyn) - 1 if "__first_tag__" in dyn else len(dyn),
+                       dyn.get("__first_tag__")))
     symtab, strtab = dyn[DT_SYMTAB], dyn[DT_STRTAB]
     strsz = dyn.get(DT_STRSZ, 0x10000)
     syment = dyn.get(DT_SYMENT, 24)
@@ -258,11 +291,24 @@ def process(nso_path, outdir):
                             data, hdr["segments"]["data"]["memoff"])
         if dblob is not None:
             dyn = read_dynamic(dblob, 0)
-            manifest["dynamic"] = {hex(k): hex(v) for k, v in dyn.items()}
-            syms, _ = parse_dynsym(dyn, rodata,
-                                   hdr["segments"]["rodata"]["memoff"],
-                                   data, hdr["segments"]["data"]["memoff"])
+            # read_dynamic tags its result with the string sentinel
+            # "__first_tag__"; hex() only applies to the integer d_tag keys.
+            manifest["dynamic"] = {hex(k): hex(v) for k, v in dyn.items()
+                                   if isinstance(k, int)}
+            syms, why = parse_dynsym(dyn, rodata,
+                                     hdr["segments"]["rodata"]["memoff"],
+                                     data, hdr["segments"]["data"]["memoff"])
+            if why:
+                manifest["dynsym_error"] = why
+    # A ZERO-BYTE dynsym.txt is the most dangerous output this tool can write: it
+    # is indistinguishable from a module that exports no symbols, it satisfies
+    # every existence check, and it has been produced for all five modules and
+    # believed. The reason goes into the manifest AND the file, so the artifact
+    # explains itself rather than being re-derived by whoever finds it next.
     with open(os.path.join(outdir, "dynsym.txt"), "w", encoding="utf-8") as f:
+        if not syms and manifest.get("dynsym_error"):
+            f.write("# NO SYMBOLS RECOVERED\n")
+            f.write("# %s\n" % manifest["dynsym_error"])
         for val, size, typ, bind, nm in syms:
             f.write("%x %x %s %s %s\n" % (val, size, typ, bind, nm))
     manifest["dynsym_count"] = len(syms)
@@ -273,6 +319,9 @@ def process(nso_path, outdir):
         manifest["module"], modname,
         hdr["segments"]["text"]["memsz"], hdr["segments"]["rodata"]["memsz"],
         hdr["segments"]["data"]["memsz"], hdr["bss"], len(syms), funcs, objs))
+    if manifest.get("dynsym_error"):
+        print("%-8s DYNSYM EMPTY -- %s" % (manifest["module"],
+                                           manifest["dynsym_error"]))
     return manifest
 
 

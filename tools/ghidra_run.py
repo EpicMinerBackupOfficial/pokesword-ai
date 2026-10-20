@@ -33,11 +33,12 @@ import argparse
 import csv
 import os
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "work", "ghidra_out")
-PROJ = r"/home/terraelysio/ghidra_proj"
+PROJ = os.path.join(ROOT, "work", "ghidra_proj")
 SCRIPTS = os.path.join(ROOT, "tools", "ghidra", "scripts")
 
 # Instance 12.1.4 with bundled JDK 21 on this machine. Linux ships the

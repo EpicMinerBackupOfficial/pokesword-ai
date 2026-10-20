@@ -5,6 +5,7 @@ import diff_settings
 import os
 import shutil
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import utils
 

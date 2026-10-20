@@ -3,6 +3,7 @@
 target_sources(pokesword PRIVATE
   tailthunk_main_main.h
   tailthunk_main_main_1.h
+  tailthunk_main_main_2.h
   tailthunk_sdk_sdk.h
   tailthunk_subsdk0_subsdk0.h
   tailthunk_subsdk1_subsdk1.h

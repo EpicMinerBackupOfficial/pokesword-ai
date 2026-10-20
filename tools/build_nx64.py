@@ -40,6 +40,39 @@ import os
 import re
 import shutil
 import subprocess
+
+# THE BUILD SPAWNS ~262 CLANG PROCESSES, AND EACH ONE OPENED A WINDOW.
+#
+# build_nx64.py is the single largest source of the flashing terminals the user
+# reported: it compiles every unit in prog/, so one tick is ~262 clang
+# invocations, and a console application started from a process with no console is
+# GIVEN a new one by Windows. That is the flash, once per file.
+#
+# CREATE_NEW_CONSOLE plus STARTF_USESHOWWINDOW/SW_HIDE is the measured fix
+# (work/hidden_console.py):
+#
+#     parent DETACHED (console-less)          new consoles=2   WINDOW
+#     parent CREATE_NEW_CONSOLE + SW_HIDE     new consoles=0   NO WINDOW
+#     parent CREATE_NO_WINDOW (console-less)  new consoles=1   WINDOW
+#
+# The key is that the console EXISTS and is HIDDEN, so make/ninja and every clang
+# beneath it inherit something real instead of each allocating its own.
+# CREATE_NO_WINDOW does the opposite of its name here: it hands the process nothing.
+#
+# Applied to the make/ninja invocation only -- the build must not be given a
+# visible console, and it must not be given none either.
+_BUILD_SI = None
+_BUILD_FLAGS = {}
+if os.name == "nt":
+    _BUILD_SI = subprocess.STARTUPINFO()
+    _BUILD_SI.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _BUILD_SI.wShowWindow = 0            # SW_HIDE
+    _BUILD_FLAGS = {"creationflags": subprocess.CREATE_NEW_CONSOLE,
+                    "startupinfo": _BUILD_SI}
+else:
+    _BUILD_FLAGS = {}
+
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import time
 
@@ -217,7 +250,8 @@ def compile_one(src, verbose=False):
     t0 = time.time()
     cmd = [os.path.join(CLANG, "clang++")] + CXXFLAGS + include_flags() + \
           [src, "-c", "-o", obj]
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                   errors="replace", **_BUILD_FLAGS)
     if r.returncode != 0:
         return (src, obj, False, r.stderr[:4000], time.time() - t0)
     if verbose:
@@ -231,7 +265,8 @@ def link(objs, elf, strip):
     cmd = [lld()] + LDFLAGS + objs + ["-o", elf]
     if strip:
         cmd += ["--strip-debug"]
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                   errors="replace", **_BUILD_FLAGS)
     return r
 
 
@@ -315,7 +350,8 @@ def main():
         # keep it.
         cmd += ["--strip-debug"]
     print("\nlinking %d objects -> build/prog.elf" % len(objs))
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                   errors="replace", **_BUILD_FLAGS)
     if r.returncode != 0:
         print("LINK FAILED:\n%s" % (r.stderr or r.stdout)[:4000])
         return 1
@@ -352,7 +388,8 @@ def main():
     nm = os.path.join(CLANG, "llvm-nm.exe")
     if not os.path.isfile(nm):
         nm = shutil.which("llvm-nm") or "llvm-nm"
-    n = subprocess.run([nm, elf], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    n = subprocess.run([nm, elf], capture_output=True, text=True, encoding="utf-8",
+                   errors="replace", **_BUILD_FLAGS)
     syms = len([l for l in n.stdout.splitlines() if l.strip()])
 
     print("build/prog.elf  %d bytes  %d symbols  (%.1fs total)"

@@ -17,7 +17,45 @@ import io
 import json
 import os
 import re
+
+# Identifiers that are followed by `( ... ) {` but are not definitions:
+# a function cannot be named `if`. See the note at the counting site.
+C_KEYWORDS = frozenset((
+    "if", "for", "while", "switch", "return", "catch", "sizeof",
+    "alignof", "decltype", "throw", "case", "do", "else", "goto",
+))
 import subprocess
+
+# THE AUDIT COMPILES EVERY prog/ UNIT TO CHECK IT STILL BUILDS.
+#
+# That check is `clang --target=aarch64-none-elf -fsyntax-only` once per unit --
+# 104 units in main alone -- and each one was opening a console window, because a
+# console application started from a process with no console is GIVEN a new one by
+# Windows. That is the flashing terminal, once per unit per audit.
+#
+# CREATE_NEW_CONSOLE + STARTF_USESHOWWINDOW/SW_HIDE is the measured fix
+# (work/hidden_console.py):
+#
+#     parent DETACHED (console-less)          new consoles=2   WINDOW
+#     parent CREATE_NEW_CONSOLE + SW_HIDE     new consoles=0   NO WINDOW
+#     parent CREATE_NO_WINDOW (console-less)  new consoles=1   WINDOW
+#
+# The console must EXIST and be HIDDEN. CREATE_NO_WINDOW hands the process nothing,
+# which is the opposite of what its name says, and every clang beneath it then
+# allocates its own -- and clang++ spawns `clang++ -cc1` itself, which no Python
+# creation flag can reach.
+_AUDIT_SI = None
+_AUDIT_FLAGS = {}
+if os.name == "nt":
+    _AUDIT_SI = subprocess.STARTUPINFO()
+    _AUDIT_SI.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _AUDIT_SI.wShowWindow = 0            # SW_HIDE
+    _AUDIT_FLAGS = {"creationflags": subprocess.CREATE_NEW_CONSOLE,
+                    "startupinfo": _AUDIT_SI}
+else:
+    _AUDIT_FLAGS = {}
+
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import time
 import sys
 
@@ -189,7 +227,7 @@ def main():
              "only %d named; the rest need manual RE" % len(named))
 
     # ------------------------------------------------------- block coverage
-    section("2. Block coverage (every recomp block in exactly one function)")
+    section("2. Block coverage (every decomp block in exactly one function)")
     import bisect
     grand_blocks = 0
     for m in MODULES:
@@ -222,7 +260,7 @@ def main():
         ok = stubs <= 32
         check(ok, "module %s blocks covered" % m,
               "%d blocks, %d entry-stub below first function" % (len(blocks), stubs))
-    print("  info  %-58s %d" % ("total recomp blocks", grand_blocks))
+    print("  info  %-58s %d" % ("total decomp blocks", grand_blocks))
 
     # -------------------------------------------------------------- ELF
     section("3. Rebuilt ELF binaries")
@@ -358,6 +396,27 @@ def main():
                 # What actually distinguishes a definition is the opening brace
                 # after a parameter list. `extern`, `//` and `/*` are excluded
                 # above because a declaration is not a definition.
+                #
+                # A CONTROL-FLOW STATEMENT has the same shape. `if (p0) {` is
+                # `name ( params ) {` with a keyword where the return type would
+                # be, and this pattern is deliberately permissive about everything
+                # before the signature, so it matched. One guarded body contributed
+                # exactly one spurious definition:
+                #
+                #   [FAIL] prog/ defines every function
+                #          152,067 definitions vs 152,062 rows
+                #
+                # -- a delta of five for five guarded bodies, none of which was
+                # actually the problem. Two earlier explanations were measured and
+                # rejected first (duplicate emission, and the callee `extern`);
+                # this one is the third, and it is in the audit rather than in the
+                # generator. The permissive pattern is still right -- three
+                # narrower ones each undercounted -- so the fix is to exclude the
+                # keywords, not to tighten the pattern.
+                m = re.search(r"([A-Za-z_][A-Za-z0-9_]*)\s*\([^;]*\)\s*"
+                              r"(?:const\s*)?\{", line)
+                if m and m.group(1) in C_KEYWORDS:
+                    continue
                 decls += 1
     check(decls == len(rows), "prog/ defines every function",
           "%d definitions vs %d rows" % (decls, len(rows)))
@@ -399,7 +458,7 @@ def main():
                 r = subprocess.run([clang, "--target=aarch64-none-elf",
                                     "-std=c++17", "-fsyntax-only", "-nostdinc++",
                                     "-Wall", "-I", inc, f],
-                                   capture_output=True, text=True, encoding="utf-8", errors="replace")
+                                   capture_output=True, text=True, encoding="utf-8", errors="replace", **_AUDIT_FLAGS)
                 if r.returncode != 0:
                     bad.append((f, r.stderr[:200]))
             check(not bad, "all prog/ units compile for NX64",
@@ -546,7 +605,7 @@ def main():
     else:
         try:
             _r = subprocess.run([sys.executable, _sem], cwd=ROOT,
-                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800, **_AUDIT_FLAGS)
         except Exception as _e:                # noqa: BLE001
             _r = None
             skip("semantic matcher selftest",
@@ -938,6 +997,54 @@ def main():
                              "tools/refresh_status_block.py"
                              % (len(diff) + abs(len(hl) - len(wl)),
                                 diff[0] if diff else "row count"))
+        # PROSE FIGURES ARE FIGURES TOO.
+        #
+        # The check above compares the GENERATED block only, and the README quotes
+        # the byte-weighted figure in prose beside it:
+        #
+        #     > **byte-weighted** (401476 / 38,172,368 bytes of code)
+        #
+        # That 401476 sat there stale through a beat that moved the figure to
+        # 412948, and `AUDIT PASSED` printed every time. This is precisely the
+        # failure the comment above this check warns about -- "when a check exists
+        # in two places, the local one must be the remote one or stricter; a weaker
+        # local approximation is worse than none, because it is believed" -- except
+        # the weaker local version was not an approximation of the same thing, it
+        # was a check of a DIFFERENT SUBSET: the block, and not the prose that
+        # states the same figure in a different format.
+        #
+        # So the two claims are matched as WHOLE PHRASES, by the shape that makes
+        # them unambiguous -- a numerator followed by the denominator it is a
+        # fraction of. A bare number scan would flag the 152,062 total, the
+        # 38,172,368 code size, and every historical number in the prose; matching
+        # the phrase is what distinguishes "a figure that is stale" from "a number
+        # that happens to be large".
+        _rd = io.open(os.path.join(ROOT, "README.md"), encoding="utf-8",
+                      errors="replace").read()
+        _rd_prose = re.sub(r"<!-- STATUS:START -->.*?<!-- STATUS:END -->", "",
+                           _rd, flags=re.S)
+        _nmatch = len([r for r in rows
+                       if r["decomp_name"] and not r["decomp_name"].endswith("!")])
+        _nbytes = sum(int(r["size"]) for r in rows
+                      if r["decomp_name"] and not r["decomp_name"].endswith("!"))
+        _nbytes = sum(int(r["size"]) for r in rows
+                      if r["decomp_name"] and not r["decomp_name"].endswith("!"))
+        # The byte-weighted claim: "<N> / <total> bytes of code".
+        for _m in re.finditer(r"([\d,]+)\s*/\s*([\d,]+)\s*bytes of code",
+                              _rd_prose):
+            _want, _got = int(_m.group(1).replace(",", "")), _nbytes
+            if _want != _got:
+                stale.append("README.md prose quotes %d matched bytes, CSV says %d "
+                             "-- the status block is generated but this sentence "
+                             "is hand-written and had drifted" % (_want, _got))
+        # The function-count claim: "<N> / 152,062" with a comma-grouped N.
+        for _m in re.finditer(r"\b([\d]{1,3}(?:,[\d]{3})+)\s*/\s*152,?062\b",
+                              _rd_prose):
+            _want = int(_m.group(1).replace(",", ""))
+            if _want != _nmatch:
+                stale.append("README.md prose quotes %d matched functions, CSV says "
+                             "%d" % (_want, _nmatch))
+
         check(not stale, "quoted figures agree with the CSV",
               "%d stale" % len(stale))
         for s in sorted(set(stale))[:6]:

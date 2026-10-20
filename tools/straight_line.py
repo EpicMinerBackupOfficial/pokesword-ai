@@ -112,7 +112,12 @@ EXTEND_TYPES = {
 FP_MNEMONICS = ("fmov", "fneg", "movi")
 
 BITWISE_MNEMONICS = ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
-                     "ubfiz", "mvn", "neg", "lsl", "lsr", "asr")
+                     "ubfiz", "bfxil", "mvn", "neg", "lsl", "lsr", "asr",
+                     # `sbfiz` is the SIGNED bitfield insert and `ubfiz` was
+                     # already handled -- the list carried the unsigned form and
+                     # not the signed one, and a missing mnemonic looks like a
+                     # missing population.
+                     "sbfiz")
 
 # Condition flags, and the branchless conditionals that consume them.
 #
@@ -191,6 +196,27 @@ MAX_ARG = 7           # AArch64 passes integer/pointer arguments in x0..x7.
 MUL_MNEMONICS = ("mul", "madd", "msub", "mneg",
                  "smull", "umull", "smaddl", "umaddl", "smsubl", "umsubl")
 # mnem -> (C operator, accumulator is subtracted?, 32x32->64 widening?)
+# Floating-point arithmetic. Measured before implemented, per the rule this
+# project has been bitten by more than once -- `work/fp_recipe.py`:
+#
+#     double a1, a2, r;  r = a1 + a2;   ->  fadd
+#     float  a1, a2, r;  r = a1 + a2;   ->  fadd      (the SINGLE form)
+#     double a1, a2, r;  r = a1 * a2;   ->  fmul
+#     double a1, a2, r;  r = a1 - a2;   ->  fsub
+#     float  a1;   double r;  r = a1;   ->  fcvt      (already `fpun`)
+#     double a1;   float  r;  r = a1;   ->  fcvt      (already `fpun`)
+#
+# The load-bearing line is the second: `s0` and `d0` are the SAME STORAGE, so a
+# `float` local and a `double` local are a pun rather than two values, and `fadd`
+# has two distinct encodings. THE WIDTH OF THE LOCAL DECIDES WHICH -- the same rule
+# as the store-width and register-class rules already in this file.
+#
+# `faddp` is NOT here: pairwise addition is an operation on a VECTOR, and scalar
+# `a1 + a2` compiles to plain `fadd`. `work/fp_recipe.py` confirmed it. A vector
+# form is a different value kind and is not claimed.
+FP_ARITH_MNEMONICS = ("fadd", "fsub", "fmul", "fdiv")
+FP_OPS = {"fadd": "+", "fsub": "-", "fmul": "*", "fdiv": "/"}
+
 MUL_OPS = {
     "mul":   ("*", False, False),
     "madd":  ("*", False, False),
@@ -277,6 +303,16 @@ def split_ops(op_str):
 def reg_num(op):
     m = re.fullmatch(r"[xw](\d+)", op)
     return int(m.group(1)) if m else None
+
+
+# A conditional branch whose flags come from the instruction before it, mapped to
+# the comparison the C must contain -- the NEGATION of the branch test, because
+# the branch SKIPS the guarded block.
+CMP_GUARDS = {
+    "b.eq": "!=", "b.ne": "==",
+    "b.lt": ">=", "b.ge": "<", "b.gt": "<=", "b.le": ">",
+    "b.hi": "<=", "b.hs": "<", "b.lo": ">", "b.ls": ">=",
+}
 
 
 def wreg(op):
@@ -587,14 +623,84 @@ class StraightLine:
     def __init__(self, insns):
         self.insns = insns
 
-    def translate(self, ident, calls=None):
+    def translate(self, ident, calls=None, guard=None, tail=None, dcut=None):
+        """Translate the walked body into a C function.
+
+        `guard` is the index into `body` of a CONDITIONAL BRANCH whose target is
+        the trailing `ret` -- a guarded block. It is `None` for every existing
+        caller, and `None` means this function behaves exactly as it did before
+        the parameter existed. That is the entire safety story: none of the
+        verified bodies pass a guard, so none of them can be disturbed by any of
+        the guarded code below.
+
+        The walk stays a SINGLE pass. A guarded block's statements read values
+        the pre-block produced -- `ldr x0,[x0,#0x50] ; cbz x0,ret ; ... ; bl F`
+        has the block call the pointer the first instruction loaded -- so two
+        passes with two `state` dicts cannot express it. Instead the walk
+        snapshots `state` and the two list lengths when it reaches the guard, and
+        `_emit` partitions on those.
+
+        See decomp/docs/control_flow.md.
+        """
         insns = self.insns
-        if not insns or insns[-1].mnemonic != "ret":
-            raise Bail("body does not end in ret")
-        body = insns[:-1]
+        if tail is not None:
+            # A TAIL CALL. The body is a straight-line prefix and then `b <target>`;
+            # the target does the returning, so there is no `ret` here.
+            #
+            #     add  x2, x0, #0xec
+            #     add  x3, x0, #0xe8
+            #     mov  w4, #1
+            #     b    target
+            #
+            # is
+            #
+            #     return target(a0, a1, a0 + 0xec, a0 + 0xe8, 1);
+            #
+            # -- the prefix sets up the ARGUMENT REGISTERS and the branch
+            # forwards them. `tail` is (callee name, arity).
+            # AN INDIRECT TAIL CALL.
+            #
+            # `br <reg>` is a tail call through a pointer, and the terminator
+            # check refused it outright:
+            #
+            #     raise Bail("tail body does not end in b")
+            #
+            # which stopped 1,762 bodies whose every other mnemonic the translator
+            # already handles. The obstacle was never the instruction -- it was
+            # that `tail` is (callee NAME, arity) and a pointer has no name.
+            #
+            # So `tail[0] is None` means "indirect", and the callee is rendered
+            # from the branch register's value instead. Everything else about a
+            # tail call is unchanged: the branch is still the terminator, the
+            # prefix still sets the argument registers, and the branch still
+            # forwards them.
+            #
+            #     ldr x2, [x8, #0x28] ; br x2      is   return ((T(*)(...))p1)(a0, ...)
+            #
+            # A DIRECT `b` keeps its name and its own path. There is no "try both"
+            # fallback: the terminator's mnemonic decides which it is.
+            if not insns or insns[-1].mnemonic not in ("b", "br"):
+                raise Bail("tail body does not end in b or br")
+            body = insns[:-1]
+        else:
+            if not insns or insns[-1].mnemonic != "ret":
+                raise Bail("body does not end in ret")
+            body = insns[:-1]
         if not body or len(body) > MAX_INSNS:
             raise Bail("empty body, or %d instructions > MAX_INSNS=%d" % (len(body), MAX_INSNS))
-        for i in body:
+        for _pf, i in enumerate(body):
+            # The guard is the one instruction the pre-filter must let through:
+            # `cbz` is not in any accepted list, because COND_MNEMONICS is the
+            # SELECT family (csel/cset) and not the branch family.
+            if guard is not None and _pf == guard:
+                continue
+            if dcut is not None and _pf == dcut:
+                # The unconditional `b` of a DIAMOND. It is a branch, not a
+                # terminator, so it produces no statement -- it is the boundary
+                # between ARM_A and ARM_B. The pre-filter must let it through for
+                # the same reason it lets the guard through, or it is declined as
+                # "unsupported mnemonic 'b'" before anything else happens.
+                continue
             # This is a whole-body pre-filter, and it runs before any of the
             # per-instruction handlers below. Anything missing here is declined as
             # "unsupported mnemonic" no matter how much the handler underneath
@@ -609,6 +715,7 @@ class StraightLine:
                     and i.mnemonic not in COND_MNEMONICS
                     and i.mnemonic not in MUL_MNEMONICS
                     and i.mnemonic not in WIDEN_MNEMONICS
+                    and i.mnemonic not in FP_ARITH_MNEMONICS
                     and i.mnemonic not in DIV_MNEMONICS
                     and i.mnemonic not in FP_MNEMONICS):
                 raise Bail("unsupported mnemonic %r" % (i.mnemonic,))
@@ -845,7 +952,92 @@ class StraightLine:
 
         # Comparison flags: a pseudo-register, since no instruction names it.
         flags = None
-        for i in body:
+        # Guarded-block bookkeeping. All None unless `guard` was passed.
+        _gstate = None       # state as it stood BEFORE the guarded block
+        _gn_stmts = None     # len(stmts) at the guard
+        _gn_calls = None     # len(call_stmts) at the guard
+        _gval = None         # value tuple the guard tests
+        # A DIAMOND's second cut: `len(stmts)` where ARM_B begins, i.e. at the
+        # unconditional `b`. `None` unless `dcut` was passed.
+        _gn_dstmts = None
+        _gform = None        # "nz" -> block runs when the value is NON-zero
+        for _gi, i in enumerate(body):
+            if dcut is not None and _gi == dcut:
+                # ARM_A is finished. The `b` that follows skips over ARM_B, so
+                # everything emitted from here on belongs to the else-arm.
+                _gn_dstmts = len(stmts)
+                continue
+            if guard is not None and _gi == guard:
+                _gstate = dict(state)
+                _gn_stmts = len(stmts)
+                _gn_calls = len(call_stmts)
+                _gval, _gform = self._guard_test(
+                    i, state, used_args, idx_args, ptr_args,
+                    prev=body[_gi - 1] if _gi else None)
+                # The guard's value needs a NAME.
+                #
+                # Rendered inline it appears twice -- once in the condition, once
+                # as the callee's argument -- and as an expression Clang is free
+                # to leave in a scratch register:
+                #
+                #     ldr x8, [x0, #0x50]          vs retail's  ldr x0, [x0, #0x50]
+                #
+                # A local is used twice, so it must be live in a register, and the
+                # register allocator puts it where retail has it. The same trick
+                # the `synth` mechanism already applies to a displaced address,
+                # for the same reason.
+                #
+                # Only an unsigned 64-bit LOAD is eligible. Anything else -- a
+                # narrower load, a signed one, an argument -- is a value whose
+                # type the guard did not establish, and re-typing it here would
+                # silently change the access.
+                if _gval[0] == "load" and _gval[3] in U and not _gval[4]:
+                    # The load s OWN WIDTH, not 64 bits. Restricting this to an
+                    # unsigned 64-bit load left every `ldrb` guard with the
+                    # original defect -- the value stayed an inline expression,
+                    # Clang kept it in a scratch register, and the candidate grew
+                    # a `mov x0, xzr ; ret` tail the original does not have:
+                    #
+                    #   retail  ldr x0, [x0, #0x20] ; cbz x0, +N ; ... ; ret
+                    #   ours    ldr x8, [x0, #0x20] ; cbz x8, +N ; ... ; mov x0,xzr ; ret
+                    _gw = _gval[3]
+                    _gkey = SYNTH_BASE + len(synth)
+                    synth.append((_gkey, "*(%s *)(%s)"
+                                  % (U[_gw], ptr_add(nm(_gval[1]), _gval[2]))))
+                    # The type is what the DECLARATION says, not what the value
+                    # would like to be.
+                    #
+                    # A synth local is emitted as `void* <name> = ...;`, so
+                    # claiming `uintptr_t` here made `call_arg` believe no cast
+                    # was needed -- it only adds one when the rendered type is not
+                    # already `uintptr_t` -- and produced
+                    #
+                    #     ((void (*)(uintptr_t))&g)(p0);
+                    #     error: cannot initialize a parameter of type 'uintptr_t'
+                    #            with an lvalue of type 'void *'
+                    #
+                    # C++ has no implicit void* -> integer, so the whole translation
+                    # unit failed to compile. `compile_resilient` on a single
+                    # candidate returns [] for a failed TU, so the body simply
+                    # produced nothing -- which is what "0 verified" looked like
+                    # for four beats while the C was in fact one cast away from
+                    # correct.
+                    _gval = ("local", nm(_gkey), "void*")
+                    # And REDEFINE the register, not just the condition. The
+                    # call argument is resolved from `state` when the walk reaches
+                    # the `bl`, and without this the condition used the local
+                    # while the argument still rendered the original load:
+                    #
+                    #   void *p0 = *(uint64_t *)(... + 80);
+                    #   if (p0) { g((uintptr_t)(*(uint64_t *)(... + 80))); }
+                    #
+                    # -- the load twice, and Clang puts it in a scratch register
+                    # for exactly that reason. One use, one register, x0.
+                    _gr = i.op_str.split(",")[0].strip()
+                    _gm = re.fullmatch(r"[a-z](\d+)", _gr)
+                    if _gm:
+                        state[_gr[0] + _gm.group(1)] = _gval
+                continue
             mn = i.mnemonic
             ops = split_ops(i.op_str)
 
@@ -1555,7 +1747,8 @@ class StraightLine:
             # All are ordinary value expressions on registers, which is exactly
             # what the existing `expr` value kind already renders.
             if mn in ("and", "orr", "eor", "bic", "movk", "ubfx", "sbfx",
-                      "ubfiz", "mvn", "neg", "lsl", "lsr", "asr"):
+                      "ubfiz", "bfxil", "sbfiz", "mvn", "neg", "lsl",
+                      "lsr", "asr"):
                 ops2 = split_ops(i.op_str)
                 if len(ops2) < 2:
                     raise Bail("%s with %d operands is not modelled" % (mn, len(ops2)))
@@ -1609,6 +1802,56 @@ class StraightLine:
                                          ("expr", "&", v, ("imm", mask, ty), ty),
                                          ("imm", lo, ty), ty), ty)
                     state[wreg(dst)] = e
+                    continue
+
+                # `sbfiz Rd, Rn, #lo, #width` -- the SIGNED bitfield insert.
+                # Sign-extend the low `width` bits of Rn, then place them at
+                # `lo`. `ubfiz` above is the same shape with no extension, which
+                # is exactly why the list carried one and not the other.
+                if mn == "sbfiz" and len(ops2) >= 4:
+                    v = _val(ops2[1])
+                    lo = parse_imm(ops2[2])
+                    wd = parse_imm(ops2[3])
+                    if lo is None or wd is None:
+                        raise Bail("sbfiz with non-immediate fields")
+                    ty = _rw(v)
+                    bits = 8 * (2 if ty.endswith("64_t") else 1)
+                    # The SIGNED type for the extension, or `>>` is a LOGICAL
+                    # shift and the result is a zero-extend -- which is `ubfiz`,
+                    # and is what this produced before the cast was made signed.
+                    # Measured: unsigned cast gave `ubfiz w0, w0, #8, #8`.
+                    sty = S[bits // 8]
+                    e = ("expr", "<<", v, ("imm", bits - wd, ty), ty)
+                    e = ("cast", sty, e)
+                    e = ("expr", ">>", e, ("imm", bits - wd, sty), sty)
+                    if lo:
+                        e = ("expr", "<<", e, ("imm", lo, ty), ty)
+                    state[wreg(dst)] = e
+                    continue
+
+                # `bfxil Rd, Rn, #lo, #width` -- extract bits [lo, lo+width)
+                # from Rn, place them at bit 0, merge into Rd. It is `ubfx` into
+                # a DESTINATION rather than overwriting it, so Rd s low `width`
+                # bits are cleared first.
+                if mn == "bfxil" and len(ops2) >= 4:
+                    v = _val(ops2[1])
+                    lo = parse_imm(ops2[2])
+                    wd = parse_imm(ops2[3])
+                    if lo is None or wd is None:
+                        raise Bail("bfxil with non-immediate fields")
+                    ty = _rw(v)
+                    dv = state.get(wreg(dst))
+                    bits = 8 * (2 if ty.endswith("64_t") else 1)
+                    field = ((1 << wd) - 1) if wd < bits else ((1 << bits) - 1)
+                    if lo:
+                        v = ("expr", ">>", v, ("imm", lo, ty), ty)
+                    ins = ("expr", "&", v, ("imm", field, ty), ty)
+                    if dv is None:
+                        state[wreg(dst)] = ins
+                        continue
+                    keep = ("expr", "&", dv,
+                            ("imm", ~field & ((1 << bits) - 1), ty), ty)
+                    state[wreg(dst)] = ("expr", "|", keep, ins, ty)
                     continue
 
                 # Wide-immediate move: `movk Rd, #imm, lsl #shift` merges into
@@ -1821,6 +2064,42 @@ class StraightLine:
             # `state` if there is one, otherwise `_value_arg`, because an incoming
             # argument has no state entry and requiring one declined every
             # `mul x8, x8, x1`-shaped body as "not a known register".
+            if mn in FP_ARITH_MNEMONICS:
+                # `fadd dD, dN, dM` -- three operands, no accumulator, and the
+                # destination register's CLASS picks the width. `s` is single,
+                # `d` is double, `q` is a pair of doubles, and `q` is not modelled
+                # because `faddp`/`fmul v` are vector operations that scalar C does
+                # not produce (measured, see FP_ARITH_MNEMONICS).
+                ops = split_ops(i.op_str)
+                if len(ops) != 3:
+                    raise Bail("%s with %d operands is not modelled"
+                               % (mn, len(ops)))
+                dst, o1, o2 = ops
+                _dcl = dst.strip()[:1]
+                if _dcl not in ("s", "d"):
+                    raise Bail("%s destination %r is not a scalar FP register"
+                               % (mn, dst))
+                ct = "float" if _dcl == "s" else "double"
+
+                def _foperand(reg, _mn=mn):
+                    v = state.get(wreg(reg.strip()))
+                    if v is None:
+                        raise Bail("%s operand %r is not a value"
+                                   % (_mn, reg))
+                    # `fpun` is a pun, `fpneg` a negation, `expr` a previous
+                    # arithmetic result, `load` a field. A bare `imm` would be an
+                    # integer literal in an FP operation, which is not a thing.
+                    if v[0] not in ("load", "expr", "arg", "argval",
+                                    "fpun", "fpneg", "local"):
+                        raise Bail("%s on a %r value is not FP arithmetic"
+                                   % (_mn, v[0]))
+                    return v
+
+                a = _foperand(o1)
+                b = _foperand(o2)
+                state[wreg(dst.strip())] = ("expr", FP_OPS[mn], a, b, ct)
+                continue
+
             if mn in MUL_MNEMONICS:
                 ops = split_ops(i.op_str)
                 op_sym, acc_sub, widening = MUL_OPS[mn]
@@ -2449,8 +2728,148 @@ class StraightLine:
         self._fp_slotmap = {k: _imax + 1 + k for k in sorted(fp_slots)}
         self._fp_args = fp_args
         self._late_synth = late_synth
+        if tail is not None:
+            # A tail call FORWARDS argument registers, so the arity defines the
+            # parameter list -- whether or not the body read them.
+            #
+            #     add  x2, x0, #0xec
+            #     add  x3, x0, #0xe8
+            #     mov  w4, #1
+            #     b    target
+            #
+            # forwards x0..x4. x0 and x1 are never READ by the body, so the
+            # walk never marked them used, and the signature came out with no
+            # parameters for them -- "tail call argument x1 is neither written
+            # nor an incoming argument".
+            for _k in range(tail[1]):
+                used_args.add(_k)
         return self._emit(ident, state, stmts, used_args, ptr_args, synth, idx_args,
-                               call_stmts, saw_call)
+                               call_stmts, saw_call, tail=tail,
+                               block=(None if guard is None else
+                                      (_gstate, _gn_stmts, _gn_calls, _gval,
+                                       _gform, _gn_dstmts)))
+
+    @staticmethod
+    def _guard_operand(reg, state, used_args):
+        """-> a value tuple for one operand of a guard's compare.
+
+        An FP slot is an FP parameter, not an integer one, so the lookup has to
+        go through the same state the walk built rather than treating `s0` as an
+        argument register. An unknown operand is an incoming argument.
+        """
+        # An IMMEDIATE operand. `cmp x2, #0x168 ; b.hi` is the common shape here and
+        # `_guard_operand` assumed both operands were registers, so the literal
+        # fell through to `arg_reg("#0x168")` and raised
+        #
+        #     operand '#0x168' is not an argument register (x0-x7)
+        #
+        # for 14 guarded bodies. A message about an argument register, for a
+        # constant that is not a register at all.
+        _t = reg.strip()
+        if _t.startswith("#"):
+            _iv = parse_imm(_t.lstrip("#"))
+            if _iv is not None:
+                return ("imm", _iv, "uintptr_t")
+        if reg in state:
+            return state[reg]
+        # `state` is keyed by the WIDENED register, so `w8` is stored as `x8`.
+        # Looking up the raw spelling missed every 32-bit guard operand and fell
+        # through to `arg_reg("w8")`, which raises "operand 'w8' is not an
+        # argument register (x0-x7)" -- 17 guarded bodies, and a confusing message
+        # for what is really a widened key. `orr w8, w1, #2 ; cmp w8, #2 ;
+        # b.ne` writes x8, so the compare finds nothing.
+        _w = wreg(reg)
+        if _w in state:
+            return state[_w]
+        if reg in ("xzr", "wzr"):
+            return ("imm", 0, "uintptr_t")
+        return ("arg", arg_reg(reg), "uintptr_t")
+
+    def _guard_test(self, ins, state, used_args, idx_args, ptr_args,
+                     prev=None):
+        """-> (value tuple, "nz"|"z") for a guarded block's condition.
+
+        The branch SKIPS the block when it is taken, so the C is the negation of
+        the branch test, and `_gform` records which way round that is:
+
+            cbz  Rd, ret     ->  if (Rd)            form "nz"
+            cbnz Rd, ret     ->  if (!(Rd))         form "z"
+            tbz  Rd, #b, ret ->  if (!((Rd) & 1<<b)) form "z"
+            tbnz Rd, #b, ret ->  if ((Rd) & 1<<b)    form "nz"
+
+        `tbz`/`tbnz` test a BIT, not the whole register, so the value is masked
+        and the mask is carried in the value tuple -- `imm` values render as a
+        literal, and masking is a `bitwise` value.
+        """
+        _o = [x.strip() for x in ins.op_str.split(",")]
+        mn = ins.mnemonic
+        if mn in CMP_GUARDS:
+            # A CONDITIONAL branch on the flags set by the instruction before it.
+            #
+            # Every one of these in the guarded population is an FP compare --
+            # `fcmp s0, s1 ; b.lt` and `b.hi` -- so the condition is a direct
+            # comparison of two values the walk has already loaded, and the
+            # existing `expr` value kind renders it: `(a) < (b)`.
+            #
+            # The branch SKIPS the block, so the C is the NEGATION of the branch
+            # test. That inversion is the whole table:
+            #
+            #     b.eq  taken when ==      ->  if (a != b)
+            #     b.ne  taken when !=      ->  if (a == b)
+            #     b.lt  taken when <       ->  if (a >= b)
+            #     b.hi  taken when >       ->  if (a <= b)
+            #
+            # `hi`/`hs`/`lo`/`ls` are the UNSIGNED orderings, and on FP operands
+            # Clang would fold them to the same thing, but the spelling is kept
+            # as the integer meaning so an integer `cmp` reads correctly too.
+            if prev is None or prev.mnemonic not in ("fcmp", "cmp", "cmn"):
+                raise Bail("guard %r is not preceded by a compare" % (mn,))
+            _p = [x.strip() for x in prev.op_str.split(",")]
+            if len(_p) != 2:
+                raise Bail("compare %r is not two-operand" % (prev.op_str,))
+            op = CMP_GUARDS[mn]
+            a, b = _p
+            va = self._guard_operand(a, state, used_args)
+            vb = self._guard_operand(b, state, used_args)
+            ct = "double" if prev.mnemonic == "fcmp" else "uintptr_t"
+            # "cmpnz", NOT "nz".
+            #
+            # The two differ in what the FALLTHROUGH knows about x0, which is the
+            # difference between a correct body and a wrong one:
+            #
+            #     ldr x0, [x0, #0x50] ; cbz x0, ret   -- the zero is PROVEN, so the
+            #                                            fallthrough returns 0
+            #     ldr w8, [x0, #0x8c] ; cmp w8, #1    -- nothing is proven about x0,
+            #     b.eq ret                                  which is still the
+            #                                                incoming argument
+            #
+            # main+0xb327c0 is the second shape, and returning "nz" for it emitted
+            # `return 0;` where retail returns its argument. The condition itself
+            # was right -- `CMP_GUARDS` already holds the NEGATED operators, and
+            # `b.eq` on a compare correctly becomes `!=` -- so the source read
+            # correctly and still decompiled to the wrong function.
+            return ("expr", op, va, vb, ct), "cmpnz"
+        if mn in ("cbz", "cbnz"):
+            reg, form, mask = _o[0], ("nz" if mn == "cbz" else "z"), None
+        elif mn in ("tbz", "tbnz"):
+            reg, form = _o[0], ("nz" if mn == "tbnz" else "z")
+            mask = parse_imm(_o[1].lstrip("#"))
+        else:
+            raise Bail("guard %r is not a single-register test" % (mn,))
+        if reg in ("xzr", "wzr"):
+            raise Bail("guard tests the zero register")
+        if wreg(reg) in state:
+            val = state[wreg(reg)]
+        else:
+            an = arg_reg(reg)
+            used_args.add(an)
+            val = ("arg", an, "uintptr_t")
+        if mask is not None:
+            # `expr` is the arithmetic/binary kind and renders `(a) & (b)` for any
+            # operator, so it carries the mask without a new value kind. There is
+            # no `bitwise` kind -- checked, not assumed.
+            val = ("expr", "&", val, ("imm", mask, "uintptr_t"), "uintptr_t")
+        return val, form
 
     @staticmethod
     def _value_arg(reg, used_args, idx_args, ptr_args=None):
@@ -2533,8 +2952,33 @@ class StraightLine:
             # real names, so this only works in `_emit` -- which is exactly where
             # the result is needed.
             _, op, s1, s2, ct = val
-            _ct1, _e1 = self._render(s1, names) if isinstance(s1, tuple) \
-                else (None, s1)
+            # A POINTER-typed left operand makes this pointer arithmetic, not
+            # integer arithmetic, and C++ will not compile `(a0) + (360)` when
+            # `a0` is `void *`:
+            #
+            #     error: arithmetic on a pointer to void
+            #
+            # That error killed a whole 20-candidate batch, so the population it
+            # came from (6,467 prefix tail calls in main) was never compared at
+            # all -- the run reported 5,083 of 11,550 tried and stopped.
+            #
+            # `ptr_add(left, 0)` is the existing spelling for "this pointer,
+            # byte 0", so it produces `(char *)(a0)` and the arithmetic becomes
+            # byte arithmetic. An argument whose declared type is an integer is
+            # left alone -- casting that to `char *` would change the code
+            # Clang emits, not just make it compile.
+            _s1 = s1
+            if (op == "+" and isinstance(s1, tuple) and s1[0] == "arg"
+                    and (len(s1) < 3 or s1[2] == "void*")):
+                _ct0, _e0 = self._render(s1, names)
+                if _e0 in names.values():
+                    _s1 = _e0
+                    _c1, _e1 = "void*", ptr_add(_e0, 0)
+                else:
+                    _ct1, _e1 = self._render(s1, names)
+            else:
+                _ct1, _e1 = self._render(s1, names) if isinstance(s1, tuple) \
+                    else (None, s1)
             if isinstance(s2, tuple):
                 if s2[0] == "shift":
                     _c2, _e2 = self._render(s2[3], names)
@@ -2748,7 +3192,7 @@ class StraightLine:
         raise Bail("unknown value kind %r" % (kind,))
 
     def _emit(self, ident, state, stmts, used_args, ptr_args, synth=(), idx_args=(),
-              call_stmts=(), saw_call=False):
+              call_stmts=(), saw_call=False, block=None, tail=None):
         """Render the walked body as a function.
 
         `call_stmts` arrives as (callee name, raw argument value tuples) because
@@ -2915,7 +3359,14 @@ class StraightLine:
             # forcing a live pointer into a register is not free.
             if key in getattr(self, "_pinned", ()):
                 pins.append('__asm__ volatile("" : "+r"(%s));' % nm(key))
-        for stmt in stmts:
+        _bcut = None          # (len(pre), len(body_txt)) where the block starts
+        _dcut = None          # ... and where ARM_B starts, for a DIAMOND
+        for _si, stmt in enumerate(stmts):
+            if block and _si == block[1] and _bcut is None:
+                _bcut = (len(pre), len(body_txt))
+            if (block and len(block) > 5 and block[5] is not None
+                    and _si == block[5] and _dcut is None):
+                _dcut = (len(pre), len(body_txt))
             if stmt[0] == "qstore":
                 # See the q-pair store below for the measurement. One field.
                 _, n, off, v, _early = stmt
@@ -2943,7 +3394,18 @@ class StraightLine:
                     if _sig in _seen:
                         _names.append(_names[_seen.index(_sig)])
                         continue
-                    _ln = "vq%d" % len(_seen)
+                    # The name has to be unique across the WHOLE FUNCTION, not
+                    # across this one statement. `_seen` is reset to `[]` for
+                    # every pair store, so `vq%d % len(_seen)` restarted at vq0
+                    # for the second one and the batch died with
+                    #
+                    #     error: redefinition of 'vq0'
+                    #
+                    # A synthetic local's scope is the function, so the counter
+                    # has to be too. `pre + body_txt` is the number of statements
+                    # actually emitted so far, and this branch appends one line
+                    # per distinct operand, so it strictly increases here.
+                    _ln = "vq%d" % (len(pre) + len(body_txt))
                     _seen.append(_sig)
                     _names.append(_ln)
                     _sink.append("%s %s = %s;" % (_ct, _ln, _ex))
@@ -2956,6 +3418,28 @@ class StraightLine:
                 continue
             w, n, off, val = stmt[:4]
             iexpr = stmt[4] if len(stmt) > 4 else None
+            # An index expression is a VALUE TUPLE, not text, and it has to be
+            # rendered like any other value.
+            #
+            # It was interpolated straight into the format string, which put the
+            # tuple's repr into the emitted C:
+            #
+            #     *(uint64_t*)(((char*)(p1) + ('expr', '*', ('load', 0, 336, 4,
+            #      True), ('imm', 8, 'int32_t'), 'int32_t'))) = a1;
+            #
+            # That is not a compile error inside one function -- it is a compile
+            # error in a TRANSLATION UNIT, and `auto_match --module main` batches
+            # 60 candidates per unit. So it aborted the whole batch, the run
+            # exited 1, and the per-shape MATCH lines were never printed at all:
+            # the report read as "the generators were exhausted" when in fact
+            # 18 copy-chain and 6 float_const candidates had never been compiled.
+            #
+            # An address index is also an integer, never a pointer, so it is
+            # spelled `uintptr_t`; `ptr_add` has already made the left side
+            # `(char *)`, so the addition is byte arithmetic.
+            if isinstance(iexpr, tuple):
+                _ict, iexpr = self._render(iexpr, names)
+                iexpr = "((uintptr_t)(%s))" % iexpr
             ct, expr = self._render(val, names)
             # An address expression may only be stored at pointer width. Storing
             # one through a narrower type is ill-formed C++ -- `*(uint32_t*)p =
@@ -3081,9 +3565,19 @@ class StraightLine:
         # `names` does not exist during the instruction walk -- synthetic pointer
         # locals are allocated at emit time. Rendering them here, after `pre` has
         # been built, is the first point where every argument name is known.
+        # Defaults, not just initialised-for-calls. The guarded emit below splices
+        # the call statements into the guarded block and reads both of these, and
+        # a guarded body with NO CALL -- again the commonest guarded shape -- never
+        # had them, so `return _call_txt` raised UnboundLocalError. Every guarded
+        # body banked so far is a call body, which is why this never showed.
+        _call_txt = []
+        _ccut = 0
         if call_stmts:
             _call_txt = []
-            for _nm, _vals, _rt, _alias in call_stmts:
+            _ccut = 0             # where the block's calls start
+        for _ci, (_nm, _vals, _rt, _alias) in enumerate(call_stmts):
+            if block and _ci == block[2] and _ccut == 0:
+                _ccut = len(_call_txt)
                 # Through a cast of the callee's own address, for the same reason
                 # as the `call_n` arm: two bodies in one unit calling one callee
                 # with different arities would otherwise be two `extern` lines that
@@ -3128,7 +3622,144 @@ class StraightLine:
         # at -O3, -O2 and -Os, with no compiler flag.
         FRAME_ASM = 'asm volatile("");'
 
-        if ret_val is None:
+        if tail is not None:
+            # A TAIL CALL is the return. The prefix set up the argument
+            # registers and the branch forwards them, so the C is
+            #
+            #     return callee(a0, a1, <x2>, <x3>, ...);
+            #
+            # A register the prefix did NOT write still holds its incoming
+            # argument, so it is passed on as `aN`. A register it DID write
+            # holds an expression the walk computed, and that is what goes.
+            #
+            # This has to come BEFORE the `not all_txt` early return below: a
+            # tailcall whose prefix only sets up arguments has no stores and no
+            # call, so `all_txt` is empty and the early return produced
+            # `void f() {}` -- the whole body silently dropped.
+            # `tail` is (callee name or None, arity, branch register or None).
+            # A DIRECT tail call still passes a 2-tuple from several callers, so
+            # the third element is read defensively rather than requiring every
+            # call site to be updated -- `tail[2]` on a 2-tuple raises
+            # IndexError, which is a crash, not a decline.
+            _tname, _tn = tail[0], tail[1]
+            _treg = tail[2] if len(tail) > 2 else None
+            if _tname is None:
+                # A TAIL CALL IS THE RETURN. The wrapper's declared return type
+                # must therefore be whatever the CALLEE returns, not whatever the
+                # body's last value was -- and the callee here is a pointer we
+                # cannot see, so the cast below declares it `void` and the
+                # wrapper has to agree.
+                #
+                # The first version of this emitter left `rct` alone, so 1,513
+                # generated candidates were
+                #
+                #     uint64_t f_t(...) { return ((void (*)(...))...)(...); }
+                #
+                # and Clang rejected every one:
+                #
+                #     error: cannot initialize return object of type 'uint64_t'
+                #            with an rvalue of type 'void'
+                #
+                # A compile error in a BATCH is not one failed candidate, it is
+                # every candidate sharing the translation unit -- which is why
+                # all four modules reported the error and none reported a match.
+                rct = "void"
+            _targs = []
+            for _k in range(_tn):
+                _rk = "x%d" % _k
+                if _rk in state:
+                    _ct2, _ex2 = self._render(state[_rk], names)
+                    # The callee is declared with `uintptr_t` parameters, so
+                    # every argument is spelled the way `call_arg` spells one.
+                    # Without it the prefix s pointer arithmetic -- `(char *)(a0)
+                    # + 236` -- is a `char *` and does not convert to uintptr_t
+                    # in C++.
+                    _targs.append(call_arg((_ct2, _ex2)))
+                elif _k < len(used_args):
+                    _targs.append("((uintptr_t)(a%d))" % _k)
+                else:
+                    raise Bail("tail call argument x%d is neither written nor "
+                               "an incoming argument" % _k)
+            if _tname is None:
+                # INDIRECT: the callee is the value the branch register holds at
+                # the branch. `state[reg]` is that value -- a load, a computed
+                # pointer, whatever the prefix produced -- and it is already
+                # rendered as an expression by everything above.
+                #
+                # The cast is the whole trick. Without one the call cannot be
+                # written at all; with it Clang sees a call through an opaque
+                # function pointer in TAIL POSITION, and its TAILCC pass emits
+                # `br` rather than `blr` (measured, work/tail_recipe.py):
+                #
+                #     ((T*)p)->f(a0, 1, 1)          ->  br, NO blr
+                #     the same call twice            ->  blr AND br
+                #
+                # The parameter types are `uintptr_t` for the same reason the direct
+                # path uses them: the callee's real signature is not derivable
+                # from the call site, and a `char *` does not convert to a
+                # `uintptr_t` parameter in C++.
+                if _treg is None:
+                    raise Bail("indirect tail call has no branch register")
+                _cv, _cex = self._render(state.get(wreg(_treg)), names)
+                if _cv is None:
+                    raise Bail("indirect tail target %r is not a value"
+                               % _treg)
+                _tname = "((void (*)(%s))((void *)%s))" % (
+                    ", ".join(["uintptr_t"] * _tn), call_arg((_cv, _cex)))
+            _tcall = "%s(%s)" % (_tname, ", ".join(_targs))
+            _lines = list(all_txt)
+            _lines.append("return %s;" % _tcall)
+            # `sig`, not "v". The parameter list above is built from the
+            # argument registers the tail call forwards, and `sig` is its Itanium
+            # encoding -- so a five-argument tail call mangles as `Pm...`, not as
+            # the empty parameter list `v`. Returning "v" made every prefixed
+            # tail call look for a symbol the object does not define:
+            #
+            #     MISS tailcall 0x17dfdb0  symbol not found / no code
+            #
+            # which is the harness blaming the emitter for a malformed lookup
+            # key -- the same shape of error as the "no parameters" note above.
+            # Return types are absent from the mangling, so the `uint64_t` here
+            # costs nothing.
+            #
+            # AND IT MUST NOT BE `rct`. `rct` at this point is whatever the BODY's
+            # last value was, and a tail-call body has no last value -- the branch
+            # IS the return -- so `rct` is `void` for most thunks. Using `rct`
+            # here took main from 11,550 tail-call candidates to 5,083:
+            #
+            #     main --shape tailcall   BASE 11550   NOW 5083   -6467
+            #
+            # which reads as "the new indirect shape stole them" and was not. The
+            # direct path was compiling to the wrong return type and the batches
+            # died, which is a different failure with the same symptom.
+            #
+            # An INDIRECT tail call is the one case that must be `void`, because
+            # the cast declares the callee `void` and a `uint64_t` wrapper cannot
+            # return a void call:
+            #
+            #     error: cannot initialize return object of type 'uint64_t'
+            #            with an rvalue of type 'void'
+            _trt = "void" if tail[0] is None else "uint64_t"
+            return "%s %s(%s) {\n    %s\n}\n" % (
+                _trt, ident, plist, "\n    ".join(_lines)), sig
+        # A GUARDED body must not take this early return.
+        #
+        # The guarded emit is BELOW, at `if block is not None:`, so a guarded body
+        # with no return value -- the commonest guarded shape there is, a void
+        # setter behind a field test -- returned here with its statements
+        # UNGUARDED:
+        #
+        #     add x8,x0,w1,uxtw #3 ; ldr x8,[x8,#0x350]
+        #     cbz x8, ret ; strh w2,[x8,#0x8a] ; ret
+        #
+        # became a body with no `if` at all. The test and both of its outcomes
+        # were deleted, with no error anywhere.
+        #
+        # `block is None` sends the guarded bodies down to the emit that is
+        # written for them. Everything after this point still sees `ret_val`, so
+        # the unguarded path is unchanged -- a body with no guard and no return
+        # value still comes out `void`.
+        if ret_val is None and block is None:
             if saw_call:
                 all_txt.append(FRAME_ASM)
             if not all_txt:
@@ -3136,7 +3767,15 @@ class StraightLine:
             return "void %s(%s) {\n    %s\n}\n" % (
                 ident, plist, "\n    ".join(all_txt)), sig
 
-        rct, rexpr = self._render(ret_val, names)
+        # Reached with `ret_val is None` by a GUARDED void body, which the early
+        # return above now lets through. `_render(None, ...)` would raise, and the
+        # guarded emit does not use `rct`/`rexpr` -- it renders its own return
+        # from `_oexpr` -- so these are placeholders that keep the unguarded code
+        # below well-formed.
+        if ret_val is None:
+            rct, rexpr = "void", "0"
+        else:
+            rct, rexpr = self._render(ret_val, names)
         # Promote a *signed narrow* return to int32_t.
         #
         # AAPCS64 leaves the upper half of w0 unspecified for a narrow return, so
@@ -3152,6 +3791,170 @@ class StraightLine:
         # so this changes no symbol.
         if rct in ("int8_t", "int16_t"):
             rct = "int32_t"
+        if block is not None:
+            # A GUARDED BLOCK:
+            #
+            #     <decls> <outer calls> <outer stores>
+            #     if (<cond>) { <inner calls> <inner stores> return <inner>; }
+            #     return <outer>;
+            #
+            # `pre` and `pins` are deliberately NOT split. Both are fully
+            # populated before the store loop runs -- the synthetic pointers and
+            # their "+r" pins are emitted in the synth loop above -- so there is
+            # no cut to make, and hoisting a declaration or a register pin above
+            # an `if` is ordinary C. The pin is an empty asm whose only job is to
+            # stop Clang folding a displaced address into the addressing mode,
+            # and it does that wherever it sits.
+            if sret_writes:
+                raise Bail("guarded block writing through the sret register")
+            _gstate, _gn, _gc, _gval, _gform = block[:5]
+            _gdcut = block[5] if len(block) > 5 else None
+            _gct, _gexpr = self._render(_gval, names)
+            # Both "nz" and "cmpnz" are non-zero senses, and `CMP_GUARDS` already
+            # carries the negated operator -- so neither is wrapped in `!` here.
+            # They differ only in what the fallthrough returns.
+            _cond = (_gexpr if _gform in ("nz", "cmpnz")
+                     else "(!%s)" % _gexpr)
+            if _gform == "nz":
+                # `cbz`: the BLOCK runs when the value is non-zero, so the
+                # fallthrough runs when it is ZERO. The constant IS the fact the
+                # guard proved, and writing it out is what removes an instruction:
+                #
+                #   return (uint32_t)(*(uint64_t *)((char *)(a0) + 80));
+                #       -> ldr x8,[x0,#0x50] ; cbz x8,+N ; ... ; mov w0,wzr ; ret
+                #   return 0;
+                #       -> ldr x0,[x0,#0x50] ; cbz x0,+N ; ... ; ret
+                #
+                # Two instructions fixed at once. Re-evaluating the load forced
+                # Clang to materialise the zero, AND it needed the value in a
+                # scratch register because it had to keep it for the return.
+                # With one use, the register is free and the load lands in x0 as
+                # retail has it.
+                _oexpr = "0"
+            else:
+                # `cbnz`, and every COMPARE guard. The fallthrough does not prove
+                # the value is zero, so x0 is whatever it was and has to be
+                # rendered -- see the "cmpnz" note in `_guard_test`.
+                _oret = _gstate.get("x0")
+                if _oret is None:
+                    raise Bail("guarded body has no value for the fallthrough "
+                               "return")
+                _oct, _oexpr = self._render(_oret, names)
+                if _oct != rct:
+                    # A 32-bit body returning the tested value needs the
+                    # narrowing written out, or the wrong width is stored.
+                    _oexpr = "(%s)(%s)" % (rct, _oexpr)
+            if _bcut is None:
+                _bcut = (len(pre), len(body_txt))
+            _ob = _bcut[1]
+            _outer = pre + _call_txt[:_ccut] + pins + body_txt[:_ob]
+            _inner = _call_txt[_ccut:] + body_txt[_ob:]
+            _lines = list(_outer)
+            # THE `else`.
+            #
+            # A DIAMOND is the same shape as a guarded body with one difference:
+            # its guard skips to ARM_B rather than to the `ret`, and ARM_A ends in
+            # a `b <join>`. So the region between the guard and the end holds TWO
+            # arms, and `_dcut` is the boundary between them:
+            #
+            #     <test>
+            #     b.cond  ARM_B
+            #     ARM_A                       \\  block[1] .. block[5]
+            #     b       JOIN                <-- dcut
+            #     ARM_B                       /   block[5] ..
+            #     JOIN
+            #
+            # Clang will not invert a conditional branch to make a block fall
+            # through -- MachineBasicBlock::updateTerminator returns rather than
+            # reversing the condition -- and with no profile data
+            # MachineBlockPlacement keeps the TOPOLOGICAL order, which is SOURCE
+            # order. So the polarity is fixed and the arm order is whatever the
+            # original has; the generator reads it off the branch target and emits
+            # the matching C. There is no variant to search over.
+            if _gdcut is not None and _dcut is not None:
+                _lines.append("if (%s) {" % _cond)
+                for _l in _inner[:_dcut[1] - _ob]:
+                    _lines.append("    " + _l)
+                _lines.append("} else {")
+                for _l in _inner[_dcut[1] - _ob:]:
+                    _lines.append("    " + _l)
+                _lines.append("}")
+                # THE TRAILING RETURN, and it is load-bearing in a way the guarded
+                # path does not reveal.
+                #
+                # This branch returns EARLY -- before the guarded path appends its
+                # `return;` / `return <rexpr>;` -- so every generated diamond had
+                # NO return statement at all. Clang 5.0.1 at -O3 accepts that:
+                # falling off the end of a non-void function is UB, not an error,
+                # and -Wno-everything hides the diagnostic. It then emits a
+                # ZERO-BYTE body:
+                #
+                #     nm: 0000000000000000 0000000000000000 T _Z3f_tPvS_
+                #
+                # So the function compiles, the batch reports no error, and all 27
+                # candidates were rejected for a reason that has nothing to do with
+                # block layout. Controls under the same flags: the same if/else
+                # with a `return` emits 0x14 bytes; without one, nothing.
+                #
+                # This is the failure mode this project keeps meeting in a new
+                # costume -- a pipeline that CANNOT FAIL SILENTLY, or can succeed
+                # wrongly. A green batch is not evidence that a body was written.
+                _lines.append("    return;" if rct == "void"
+                              else "    return %s;" % rexpr)
+                return "%s %s(%s) {\n    %s\n}\n" % (
+                    rct, ident, plist, "\n    ".join(_lines)), sig
+            _lines.append("if (%s) {" % _cond)
+            for _l in _inner:
+                _lines.append("    " + _l)
+            # The INNER return. A `void` body gets a bare `return;`.
+            #
+            # `rexpr` is "0" for a void body -- the placeholder installed so that
+            # `_render(None, ...)` is not reached -- and `return 0;` in a `void`
+            # function is a hard C++ error, not a warning:
+            #
+            #     error: void function 'main_f_8018f0' should not return a value
+            #
+            # The harness compiles candidates in batches, so one of these takes a
+            # whole translation unit with it; and this one reached prog/ and the
+            # audit, because the harness's own batch had compiled it inside a body
+            # where the same construct happened to be legal.
+            _lines.append("    return;" if rct == "void"
+                          else "    return %s;" % rexpr)
+            # NO FRAME_ASM inside the block.
+            #
+            # It is `asm volatile("")`, which exists only to order the `r0`
+            # binding in the flat path. Inside a guarded block it sits after a
+            # `return` -- dead code -- but it is a side-effecting statement, so
+            # Clang will not merge the two return paths, and the candidate keeps
+            # an extra `mov w0, wzr ; ret` the original does not have. The
+            # measured recipe for this shape contains no asm at all.
+            _lines.append("}")
+            # A `void` function returns nothing, so the guarded and fallthrough
+            # exits are a bare `return;`.
+            #
+            # `return 0;` in a `void` function is accepted by C with a warning and
+            # rejected outright by C++, and every candidate is compiled as C++ --
+            # so it is a hard compile error, and a compile error in a 60-candidate
+            # translation unit removes all 60. A guarded VOID body is the commonest
+            # guarded shape there is, so this would have taken the whole population
+            # with it rather than one body.
+            if rct == "void":
+                # NO trailing return for a void body.
+                #
+                # `if (c) { ...; return; } return;` is one `ret` too many:
+                # Clang keeps both exits, so the guarded block's branch target
+                # lands 4 bytes past retail's, and the single largest bucket of
+                # guarded misses is exactly that --
+                #
+                #     insn 1: orig ('cbz', 'w8 -> +12') vs new ('cbz', 'w8 -> +16')
+                #
+                # Falling off the end of a void function is the same `ret`, and
+                # there is no value to return, so there is nothing to write.
+                pass
+            else:
+                _lines.append("return %s;" % _oexpr)
+            return "%s %s(%s) {\n    %s\n}\n" % (
+                rct, ident, plist, "\n    ".join(_lines)), sig
         if not all_txt and not saw_call:
             return "%s %s(%s) { return %s; }\n" % (
                 rct, ident, plist, rexpr), sig

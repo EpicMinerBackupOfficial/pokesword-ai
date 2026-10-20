@@ -50,6 +50,7 @@ import argparse
 import json
 import os
 import subprocess
+import nocon  # noqa: E402  -- installs the no-console default for every subprocess below
 import sys
 import time
 import traceback
@@ -93,7 +94,33 @@ LIVENESS = os.path.join(ROOT, "work", "keepalive_live.json")
 # leaves them in the parent's process group, so a console control event still
 # reaches them and they die with 0xC000013A. tools/ping_watchdog.py and
 # tools/ping_supervisor.py spawn theirs with DETACHED_PROCESS for that reason.
-NOWINDOW = ({"creationflags": subprocess.CREATE_NO_WINDOW}
+#
+# THIS IS THE FLASHING WINDOW, and the flag named after the symptom is the wrong
+# one. Measured on this machine, three runs per case, a spawned console counted as
+# a conhost.exe that outlives the settle time (work/console_flags.py):
+#
+#     DETACHED_PROCESS                              no window  3/3
+#     CREATE_NO_WINDOW                              WINDOW     3/3   <- this file's flag
+#     CREATE_NO_WINDOW|CREATE_NEW_PROCESS_GROUP     WINDOW     3/3
+#     DETACHED_PROCESS|CREATE_NEW_PROCESS_GROUP     no window  3/3
+#
+# Every short-lived probe in the tick -- tasklist, git, audit.py, the clang runs --
+# spawns with NOWINDOW, several times a minute, so the terminal the user saw
+# flashing up and vanishing several times a minute was exactly this constant.
+#
+# CREATE_NO_WINDOW reads like the right answer and is not: it is documented as
+# "run without a console window" and it is ignored alongside DETACHED_PROCESS, but
+# on its own here it does not suppress the allocation. DETACHED_PROCESS does.
+#
+# CREATE_NEW_PROCESS_GROUP is kept because it is the flag that answers the question
+# the comment above actually asks -- CTRL+C must not reach the children and kill
+# them with 0xC000013A -- and it does not reintroduce a window.
+#
+# DETACHED_PROCESS does not strand the pipes: it affects the CONSOLE, not inherited
+# standard handles, so `stdout=PIPE` still works. That was the reason the two were
+# split apart, and it is the reason the window was never suppressed.
+NOWINDOW = ({"creationflags": (subprocess.DETACHED_PROCESS
+                               | subprocess.CREATE_NEW_PROCESS_GROUP)}
             if os.name == "nt" else {})
 
 # The compiler, pinned here rather than inherited.

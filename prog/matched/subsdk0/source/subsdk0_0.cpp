@@ -1,4 +1,4 @@
-/* subsdk0 -- 28 functions verified to match the original.
+/* subsdk0 -- 38 functions verified to match the original.
  *
  * These bodies were synthesised from the instruction stream by
  * tools/auto_match.py and confirmed by compiling them for
@@ -35,9 +35,12 @@ struct Q2 { uint64x2_t a, b; };
 
 namespace subsdk0 { void sub_54020(); }
 namespace subsdk0 { void libnvmm_camera(); }
+namespace subsdk0 { uint64_t sub_2815e0(uintptr_t); }
+namespace subsdk0 { uint64_t sub_2abbd0(uintptr_t); }
 namespace subsdk0 { void sub_273e00(); }
 namespace subsdk0 { void sub_273c50(); }
 extern uint32_t subsdk0_f_273a10();
+namespace subsdk0 { uint64_t sub_2abae0(uintptr_t); }
 namespace subsdk0 { void BlockMP3Dec_2(); }
 namespace subsdk0 { void BlockAACEnc(); }
 namespace subsdk0 { void BlockH264Dec(); }
@@ -68,14 +71,76 @@ void subsdk0_f_54010() { subsdk0::sub_54020(); }
 // sub_258660  (orig 0x258660, tailcall)
 void subsdk0_f_258660() { subsdk0::libnvmm_camera(); }
 
+// sub_293050  (orig 0x293050, tailcall)
+uint64_t subsdk0_f_293050(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    *(uint32_t*)((char*)(p0) + 10016L) = 0;
+    return subsdk0::sub_2815e0(((uintptr_t)((char*)(p0) + 24)));
+}
+
+// sub_293060  (orig 0x293060, tailcall)
+uint64_t subsdk0_f_293060(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    *(uint32_t*)((char*)(p0) + 11076L) = 0;
+    return subsdk0::sub_2abbd0(((uintptr_t)((char*)(p0) + 24)));
+}
+
 // sub_297280  (orig 0x297280, tailcall)
 void subsdk0_f_297280() { subsdk0::sub_273e00(); }
 
 // sub_297290  (orig 0x297290, tailcall)
 void subsdk0_f_297290() { subsdk0::sub_273c50(); }
 
+// sub_299d20  (orig 0x299d20, tailcall)
+uint64_t subsdk0_f_299d20(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2815e0(((uintptr_t)((char*)(p0) + 32)));
+}
+
+// sub_299d30  (orig 0x299d30, tailcall)
+uint64_t subsdk0_f_299d30(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2abbd0(((uintptr_t)((char*)(p0) + 32)));
+}
+
 // sub_29af10  (orig 0x29af10, tailcall)
 uint32_t subsdk0_f_29af10() { return subsdk0_f_273a10(); }
+
+// sub_29b910  (orig 0x29b910, tailcall)
+uint64_t subsdk0_f_29b910(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2815e0(((uintptr_t)((char*)(p0) + 24)));
+}
+
+// sub_29b920  (orig 0x29b920, tailcall)
+uint64_t subsdk0_f_29b920(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2abbd0(((uintptr_t)((char*)(p0) + 24)));
+}
+
+// sub_29db00  (orig 0x29db00, tailcall)
+uint64_t subsdk0_f_29db00(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2815e0(((uintptr_t)((char*)(p0) + 40)));
+}
+
+// sub_29f4b0  (orig 0x29f4b0, tailcall)
+uint64_t subsdk0_f_29f4b0(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2abbd0(((uintptr_t)((char*)(p0) + 16)));
+}
+
+// sub_2a28c0  (orig 0x2a28c0, tailcall)
+uint64_t subsdk0_f_2a28c0(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2abae0(((uintptr_t)((char*)(p0) + 16)));
+}
+
+// sub_2a6a20  (orig 0x2a6a20, tailcall)
+uint64_t subsdk0_f_2a6a20(void* a0) {
+    void* p0 = (void*)(*(uint64_t *)((char*)(a0) + 272));
+    return subsdk0::sub_2abbd0(((uintptr_t)((char*)(p0) + 16)));
+}
 
 // sub_2a6fa0  (orig 0x2a6fa0, tailcall)
 void subsdk0_f_2a6fa0() { subsdk0::BlockMP3Dec_2(); }
