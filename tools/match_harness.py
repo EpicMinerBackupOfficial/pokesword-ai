@@ -36,6 +36,7 @@ import subprocess
 import sys
 import tempfile
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, "work")
 TOOLS = os.path.join(ROOT, "tools")
@@ -58,7 +59,7 @@ TOOLS = os.path.join(ROOT, "tools")
 #
 # The default is now the 5.0.1 path, matching tools/heartbeat.py, and the
 # resolved version is checked below so a wrong compiler says so out loud.
-LLVM_BIN = os.environ.get("POKESWORD_CLANG", r"C:\llvm-5.0.1\bin")
+LLVM_BIN = os.environ.get("POKESWORD_CLANG") or clangdir.default()
 
 # The one compiler version this project measures against. See decomp/docs/ceiling.md:
 # retail code was built with Nintendo's NX Clang, so vanilla 5.0.1 already tops out

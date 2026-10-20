@@ -32,9 +32,15 @@ import sys
 import threading
 import time
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NODE = r"C:\Program Files\nodejs\node.exe"
-MJS = os.path.join(os.environ["APPDATA"], "npm", "node_modules",
+# `node` comes from mise on this machine, so PATH is the only reliable source;
+# /usr/bin/node is the last-resort fallback. The Windows literal this replaced
+# (`C:\Program Files\nodejs\node.exe`) does not exist on Linux.
+NODE = __import__("shutil").which("node") or r"/usr/bin/node"
+# %APPDATA%\npm on Windows; ~/.local/share/npm (or the npm global prefix) on Linux.
+MJS = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~/.local/share"),
+                   "npm", "node_modules",
                    "rea-agents", "scripts", "rea.mjs")
 TIMEOUT = 120
 

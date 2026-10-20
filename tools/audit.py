@@ -21,6 +21,7 @@ import subprocess
 import time
 import sys
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES = ["rtld", "main", "sdk", "subsdk0", "subsdk1"]
 
@@ -696,7 +697,8 @@ def main():
         warn("build/prog.elf absent; skipped the linked-ELF symbol checks "
              "(run tools/build_nx64.py first)")
     if os.path.exists(prog_elf):
-        llvmnm = r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-nm.exe"
+        llvmnm = (__import__("shutil").which("llvm-nm")
+                      or r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-nm.exe")
         if os.path.isfile(llvmnm):
             out = subprocess.run([llvmnm, "--defined-only", prog_elf],
                                  capture_output=True, text=True, encoding="utf-8", errors="replace").stdout

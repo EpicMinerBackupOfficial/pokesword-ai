@@ -107,8 +107,13 @@ def load_typeinfo(mod):
 def demangle(mangled):
     """Itanium mangled name -> C++, via llvm-cxxfilt if available."""
     import subprocess
-    exe = r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-cxxfilt.exe"
-    if not os.path.isfile(exe):
+    import shutil
+    # Search PATH first. This previously tested a hardcoded
+    # `C:\Users\charl\scoop\...\llvm-cxxfilt.exe`, which never exists on Linux,
+    # so it always fell through to the pure-python `cxxfilt` module and never
+    # used the llvm-cxxfilt that ships with the clang 5.0.1 toolchain.
+    exe = shutil.which("llvm-cxxfilt") or shutil.which("c++filt")
+    if not exe:
         try:
             import cxxfilt
             return cxxfilt.demangle(mangled)

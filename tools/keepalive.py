@@ -54,6 +54,7 @@ import sys
 import time
 import traceback
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODULES = ("main", "sdk", "subsdk0", "subsdk1")
 STATE = os.path.join(ROOT, "work", "keepalive_state.json")
@@ -113,7 +114,7 @@ NOWINDOW = ({"creationflags": subprocess.CREATE_NO_WINDOW}
 #
 # Overridable for a machine that puts Clang somewhere else, but never inherited
 # implicitly: an unset variable must not change what "verified" means.
-CLANG_DIR = os.environ.get("POKESWORD_CLANG") or r"C:\llvm-5.0.1\bin"
+CLANG_DIR = os.environ.get("POKESWORD_CLANG") or clangdir.default()
 
 
 def tool_env():

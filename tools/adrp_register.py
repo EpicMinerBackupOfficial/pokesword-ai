@@ -49,9 +49,10 @@ import shutil
 import subprocess
 import sys
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
-os.environ.setdefault("POKESWORD_CLANG", r"C:\llvm-5.0.1\bin")
+os.environ.setdefault("POKESWORD_CLANG", clangdir.default())
 
 import call_register as CR
 import match_harness as MH

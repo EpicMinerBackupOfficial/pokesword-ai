@@ -43,13 +43,13 @@ import subprocess
 import sys
 import time
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROG = os.path.join(ROOT, "prog")
 BUILD = os.path.join(ROOT, "build")
 LIB = os.path.join(ROOT, "lib")
 
-CLANG = os.environ.get("POKESWORD_CLANG",
-                       r"C:\Users\charl\scoop\apps\llvm\current\bin")
+CLANG = os.environ.get("POKESWORD_CLANG") or clangdir.default()
 DEVKITA64 = os.environ.get("DEVKITA64", "")
 
 OPT = os.environ.get("POKESWORD_OPT", "-O3")

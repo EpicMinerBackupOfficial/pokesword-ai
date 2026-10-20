@@ -19,14 +19,15 @@ import subprocess
 import sys
 import tempfile
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__))))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 import sem_match as SM   # noqa: E402
 
-CLANG = os.path.join(r"C:\llvm-5.0.1\bin", "clang.exe")
-OBJDUMP = os.path.join(r"C:\llvm-5.0.1\bin", "llvm-objdump.exe")
+CLANG = os.path.join(clangdir.default(), "clang.exe" if os.name == "nt" else "clang")
+OBJDUMP = os.path.join(clangdir.default(), "llvm-objdump.exe" if os.name == "nt" else "llvm-objdump")
 
 
 def compile_to_bytes(src, name="f"):

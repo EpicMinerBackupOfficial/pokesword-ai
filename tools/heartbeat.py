@@ -12,8 +12,9 @@
 # the detached `tools/keepalive.py --work auto`, which does not depend on it.
 import json, os, subprocess, sys, time, datetime
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENV = dict(os.environ, POKESWORD_CLANG=r"C:\llvm-5.0.1\bin")
+ENV = dict(os.environ, POKESWORD_CLANG=os.environ.get("POKESWORD_CLANG") or clangdir.default())
 # Overridable so a short ping can be launched for a specific purpose without
 # editing the file. The default is deliberately short-ish: a missed wake costs
 # little, and the chain is self-sustaining.

@@ -47,7 +47,7 @@ foreach($m in 'rtld','subsdk0','subsdk1','sdk','main'){
   foreach($side in 'stock','decomp'){
     $exe = if($side -eq 'stock'){ "exefs/$m/build_stock/Release/translated.exe" }
            else                     { "build_host/bin/decompiled_$m.exe" }
-    $d = "$env:TEMP/fin_${m}_$side"
+    $d = "/tmp/fin_${m}_$side"
     Remove-Item -Recurse -Force $d -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force -Path $d | Out-Null
     Copy-Item "exefs/$m/data" $d -Recurse -ErrorAction SilentlyContinue

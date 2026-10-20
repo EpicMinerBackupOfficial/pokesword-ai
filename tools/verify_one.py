@@ -91,7 +91,8 @@ def main():
         obj = os.path.join(td, "cand.o")
         # Compile the file verbatim, with the harness's own flags so a pass here
         # means what a pass in the generated path means.
-        cmd = [MH.tool("clang++")] + MH.CFLAGS + [a.source, "-c", "-o", obj]
+        cmd = ([MH.tool("clang++")] + MH.CFLAGS + MH.EXTRA_INC +
+               [a.source, "-c", "-o", obj])
         p = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
         if p.returncode != 0:
             print("COMPILE FAILED:\n%s" % p.stderr[:4000])

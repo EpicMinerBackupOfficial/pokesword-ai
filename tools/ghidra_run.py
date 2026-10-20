@@ -37,12 +37,14 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "work", "ghidra_out")
-PROJ = r"C:\Users\EpicM\ghidra_proj"
+PROJ = r"/home/terraelysio/ghidra_proj"
 SCRIPTS = os.path.join(ROOT, "tools", "ghidra", "scripts")
 
-# Instance 12.1.4 with bundled JDK 21 on this machine.
-GHIDRA = r"C:\Users\EpicM\.abacusai-bot\bot-home\ghidra\ghidra_12.1.4_PUBLIC\support\analyzeHeadless.bat"
-JAVA_HOME = r"C:\Users\EpicM\.abacusai-bot\bot-home\jdk21\jdk-21.0.12.1+1"
+# Instance 12.1.4 with bundled JDK 21 on this machine. Linux ships the
+# extensionless `analyzeHeadless` shell script next to `analyzeHeadless.bat`;
+# the .bat is the Windows launcher and cannot run here.
+GHIDRA = r"/home/terraelysio/.abacusai-bot/bot-home/ghidra/ghidra_12.1.4_PUBLIC/support/analyzeHeadless"
+JAVA_HOME = r"/home/terraelysio/.abacusai-bot/bot-home/jdk21/jdk-21.0.12.1+1"
 LANG = "AARCH64:LE:64:v8A"
 
 # Smallest first: a module that finishes proves the pipeline end to end before

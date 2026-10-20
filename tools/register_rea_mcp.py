@@ -20,8 +20,12 @@ import os
 import sys
 
 CFG = os.path.expanduser("~/.config/opencode/opencode.json")
-REA = os.path.expandvars(r"%APPDATA%\npm\node_modules\rea-agents\scripts\rea.mjs")
-NODE = r"C:\Program Files\nodejs\node.exe"
+REA = os.path.expandvars(r"/home/terraelysio/.config/npm/node_modules/rea-agents/scripts/rea.mjs")
+# Resolve `node` the same way rea_call.py and rea_handshake.py do. The Windows
+# literal `C:\Program Files\nodejs\node.exe` is meaningless here: node arrives
+# via mise at ~/.local/share/mise/installs/node/.../bin/node and is only on PATH
+# through the shell that launched the bot.
+NODE = __import__("shutil").which("node") or r"/usr/bin/node"
 
 
 def main():

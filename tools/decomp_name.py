@@ -20,8 +20,19 @@ import re
 import subprocess
 import sys
 
+import clangdir  # resolves the clang 5.0.1 toolchain dir (Linux migration)
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CXXFILT = r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-cxxfilt.exe"
+def _find_cxxfilt():
+    import shutil
+    for cand in ("llvm-cxxfilt", "llvm-cxxfilt.exe", "c++filt",
+                 r"C:\Users\charl\scoop\apps\llvm\current\bin\llvm-cxxfilt.exe"):
+        found = cand if os.path.isfile(cand) else shutil.which(cand)
+        if found:
+            return found
+    return "llvm-cxxfilt"
+
+
+CXXFILT = os.environ.get("CXXFILT") or _find_cxxfilt()
 
 
 def demangle(names):
